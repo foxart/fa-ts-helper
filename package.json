@@ -1,11 +1,13 @@
 {
-  "name": "fa-ts",
+  "name": "fa-ts-helper",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "Ivan Kosenko",
+  "description": "",
+  "license": "ISC",
+  "private": false,
+  "homepage": "https://github.com/foxart/fa-ts-helper"
 }
