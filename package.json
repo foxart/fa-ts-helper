@@ -1,13 +1,57 @@
 {
   "name": "fa-ts-helper",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Ivan Kosenko",
+  "version": "1.0.1",
   "description": "",
   "license": "ISC",
+  "author": "Ivan Kosenko",
+  "homepage": "https://github.com/foxart/fa-ts-helper",
   "private": false,
-  "homepage": "https://github.com/foxart/fa-ts-helper"
+  "main": "./lib/cjs/index.js",
+  "types": "./lib/cjs/types/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/types/index.d.ts",
+        "default": "./lib/esm/index.mjs"
+      },
+      "require": {
+        "types": "./lib/cjs/types/index.d.ts",
+        "default": "./lib/cjs/index.js"
+      }
+    }
+  },
+  "scripts": {
+    "start:debug": "nodemon -e ts --watch scr -x ts-node examples/debug.ts",
+    "build:": "tsc --build",
+    "clean": "rm -rf ./lib",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "tsc -p ./configs/tsconfig.cjs.json",
+    "prepack": "npm run build",
+    "publish": "npm publish --access=public",
+    "publish:dry": "npm publish --dry-run",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "class-validator": "^0.14.0",
+    "crypto-js": "^4.1.1",
+    "mongodb": "^5.7.0",
+    "reflect-metadata": "^0.1.13",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/jest": "^29.5.3",
+    "@types/node": "^20.4.9",
+    "@types/uuid": "^9.0.2",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "nodemon": "^3.0.1",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1"
+  }
 }

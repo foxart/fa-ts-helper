@@ -1,0 +1,8 @@
+{
+	"eslintIntegration": true,
+	"singleQuote": true,
+	"trailingComma": "all",
+	"printWidth": 120,
+	"bracketSameLine": false,
+	"prettier.arrayExpand": true
+}
