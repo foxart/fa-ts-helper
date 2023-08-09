@@ -1,5 +1,6 @@
-.idea
-dist
-lib
-node_modules
-packages
+.DS_STORE
+/.idea
+/dist
+/lib
+/node_modules
+/packages

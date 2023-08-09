@@ -1,6 +1,6 @@
 {
-  "name": "fa-ts-helper",
-  "version": "1.0.12",
+  "name": "fa-node",
+  "version": "0.0.1",
   "description": "",
   "license": "MIT",
   "author": "Ivan Kosenko",
@@ -38,6 +38,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@nestjs/mapped-types": "^2.0.2",
     "class-validator": "^0.14.0",
     "crypto-js": "^4.1.1",
     "mongodb": "^5.7.0",
@@ -54,9 +55,13 @@
     "eslint": "^8.46.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.6.2",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.1",
+    "source-map-support": "^0.5.21",
     "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.1"
+    "ts-loader": "^9.4.4",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
   }
 }

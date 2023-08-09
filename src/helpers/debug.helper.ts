@@ -19,21 +19,20 @@ function stdout(key: DebugEnum, stack: string[], data: unknown[]): void {
 	const path = Array.isArray(stack) ? stack.join('\n') : stack;
 	switch (key) {
 		case DebugEnum.LOG:
-			process.stdout.write(`${gray}[${green}LOG${gray}] ${path}${reset}`);
+			process.stdout.write(`${gray}[${green}LOG${gray}]${reset} ${path} `);
 			break;
 		case DebugEnum.INFO:
-			process.stdout.write(`${gray}[${blue}INF${gray}] ${path}${reset}`);
+			process.stdout.write(`${gray}[${blue}INF${gray}]${reset} ${path} `);
 			break;
 		case DebugEnum.WARN:
-			process.stdout.write(`${gray}[${yellow}WRN${gray}] ${path}${reset}`);
+			process.stdout.write(`${gray}[${yellow}WRN${gray}]${reset} ${path} `);
 			break;
 		case DebugEnum.ERROR:
-			process.stdout.write(`${gray}[${red}ERR${gray}] ${path}${reset}`);
+			process.stdout.write(`${gray}[${red}ERR${gray}]${reset} ${path} `);
 			break;
 		default:
-			process.stdout.write(`${gray}[${green}LOG${gray}] ${path}${reset}`);
+			process.stdout.write(`${gray}[${green}LOG${gray}]${reset} ${path} `);
 	}
-	process.stdout.write(' ');
 	data.forEach((item) => {
 		process.stdout.write(util.inspect(item, true, null, true));
 		process.stdout.write(' ');
