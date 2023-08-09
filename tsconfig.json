@@ -1,12 +1,12 @@
 {
 	"compilerOptions": {
-		"baseUrl": "./",
-		"outDir": "./dist",
-		"target": "es2017",
-		"module": "commonjs",
+		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
-		"declaration": false,
+		"checkJs": true,
+		"declaration": true,
+		"declarationMap": true,
 		"emitDecoratorMetadata": true,
+		"esModuleInterop": true,
 		"experimentalDecorators": true,
 		"forceConsistentCasingInFileNames": true,
 		"incremental": true,
@@ -15,7 +15,11 @@
 		"removeComments": true,
 		"skipLibCheck": true,
 		"sourceMap": true,
+		"strict": true,
 		"strictBindCallApply": true,
 		"strictNullChecks": true
-	}
+	},
+	"files": [
+		"./src/index.ts"
+	]
 }

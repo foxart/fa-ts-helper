@@ -7,6 +7,7 @@ function wordArrayToString(data: CryptoJS.lib.WordArray): string {
 
 function decrypt(data: string, secret: string): string {
   return CryptoJS.AES.decrypt(data, secret).toString(CryptoJS.enc.Utf8);
+//
 }
 
 function encrypt(data: string, secret: string): string {

@@ -83,10 +83,19 @@ function trace(
 	}
 }
 
+function config() {
+	console.clear();
+	console.log = debugHelper.log;
+	console.warn = debugHelper.warn;
+	console.info = debugHelper.info;
+	console.error = debugHelper.error;
+}
+
 export const debugHelper = {
 	log,
 	info,
 	warn,
 	error,
 	trace,
+	config,
 };

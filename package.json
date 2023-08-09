@@ -1,8 +1,8 @@
 {
   "name": "fa-ts-helper",
-  "version": "1.0.1",
+  "version": "1.0.12",
   "description": "",
-  "license": "ISC",
+  "license": "MIT",
   "author": "Ivan Kosenko",
   "homepage": "https://github.com/foxart/fa-ts-helper",
   "private": false,
@@ -24,13 +24,15 @@
     }
   },
   "scripts": {
-    "start:debug": "nodemon -e ts --watch scr -x ts-node examples/debug.ts",
-    "build:": "tsc --build",
+    "start:paramDecorator": "nodemon -e ts --watch src -x ts-node src/tests/param-decorator.ts",
+    "start:debug": "nodemon -e ts --watch src -x ts-node src/tests/debug.ts",
     "clean": "rm -rf ./lib",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc -p ./configs/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
-    "build:cjs": "tsc -p ./configs/tsconfig.cjs.json",
+    "build:esm": "tsc -p config/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "tsc -p config/tsconfig.cjs.json",
+    "link": "npm link",
     "prepack": "npm run build",
+    "pack": "npm pack --pack-destination packages",
     "publish": "npm publish --access=public",
     "publish:dry": "npm publish --dry-run",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -47,10 +49,13 @@
     "@types/jest": "^29.5.3",
     "@types/node": "^20.4.9",
     "@types/uuid": "^9.0.2",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
     "eslint": "^8.46.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "nodemon": "^3.0.1",
+    "prettier": "^3.0.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1"
   }

@@ -1,8 +1,6 @@
 import 'reflect-metadata';
 
-type DescriptorType = (...args: unknown[]) => unknown;
-type ParameterArgs = [target: object, propertyKey: string | symbol, parameterIndex: number];
-type ParameterType<I, O> = (parameter: I) => O;
+type CallbackFunction = (...args: unknown[]) => unknown;
 type MethodType = (target: object, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 
 class MetadataClass extends Map {
@@ -17,24 +15,27 @@ class MetadataClass extends Map {
 
 export class ParamDecoratorHelper {
 	private static readonly metadataKey = Symbol('DecoratorClass');
-	private static decoratorList: { [key: string]: ParameterType<unknown, unknown> } = {};
+	private static decoratorList: {
+		[key: string]: {
+			callback: CallbackFunction;
+			args?: unknown[];
+		};
+	} = {};
 
 	public static get wrapMethod(): MethodType {
 		return function (target: object, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor {
 			// const keys = Reflect.getMetadataKeys(target, propertyKey);
 			const metadataValue = ParamDecoratorHelper.getOwnMetadata(target, propertyKey);
 			return {
-				// configurable: descriptor.configurable,
-				// enumerable: descriptor.enumerable,
-				// writable: descriptor.writable,
-				get(): DescriptorType {
+				get() {
 					return (...args: unknown[]) => {
-						return (<DescriptorType>descriptor.value).apply(
+						return (<CallbackFunction>descriptor.value).apply(
 							this,
 							args.map((item, index) => {
 								if (metadataValue.has(index)) {
 									return metadataValue.get(index).reduce((prev, curr) => {
-										return ParamDecoratorHelper.getCallback(curr).call(this, prev);
+										const decorator = ParamDecoratorHelper.getCallback(curr);
+										return decorator.callback.call(this, prev, decorator.args);
 									}, item);
 								} else {
 									return item;
@@ -47,10 +48,12 @@ export class ParamDecoratorHelper {
 		};
 	}
 
-	public static wrapParam(key: string, handler: (value: unknown) => unknown): (...args: ParameterArgs) => void {
-		return function (...args: ParameterArgs): void {
+	public static wrapParam(key: string, handler: CallbackFunction, additional: unknown[]): ParameterDecorator {
+		return function (target, propertyKey, parameterIndex): void {
 			if (!ParamDecoratorHelper.getCallback(key)) {
-				ParamDecoratorHelper.setCallback(key, handler);
+				console.warn(handler);
+				//
+				ParamDecoratorHelper.setCallback(key, handler, additional);
 			} else {
 				// throw new Error(`Decorator already registered: ${key}`);
 			}
@@ -58,9 +61,9 @@ export class ParamDecoratorHelper {
 				ParamDecoratorHelper.setOwnMetadata(
 					target,
 					propertyKey,
-					ParamDecoratorHelper.getOwnMetadata(target, propertyKey).set(parameterIndex, key),
+					ParamDecoratorHelper.getOwnMetadata(target, propertyKey || 'propertyKey').set(parameterIndex, key),
 				);
-			})(...args);
+			})(target, propertyKey, parameterIndex);
 		};
 	}
 
@@ -71,15 +74,19 @@ export class ParamDecoratorHelper {
 		);
 	}
 
-	private static setOwnMetadata(target: object, propertyKey: string | symbol, metadataValue: MetadataClass): void {
-		Reflect.defineMetadata(ParamDecoratorHelper.metadataKey, metadataValue, target, propertyKey);
+	private static setOwnMetadata(
+		target: object,
+		propertyKey: string | symbol | undefined,
+		metadata: MetadataClass,
+	): void {
+		Reflect.defineMetadata(ParamDecoratorHelper.metadataKey, metadata, target, propertyKey || 'propertyKey');
 	}
 
-	private static setCallback<I, O>(key: string, func: ParameterType<I, O>): void {
-		ParamDecoratorHelper.decoratorList[key] = func as ParameterType<unknown, unknown>;
+	private static setCallback(key: string, callback: CallbackFunction, args?: unknown[]): void {
+		ParamDecoratorHelper.decoratorList[key] = { callback, args };
 	}
 
-	private static getCallback<I, O>(key: string): ParameterType<I, O> {
-		return <ParameterType<I, O>>ParamDecoratorHelper.decoratorList[key];
+	private static getCallback(key: string): { callback: CallbackFunction; args?: unknown[] } {
+		return ParamDecoratorHelper.decoratorList[key];
 	}
 }
