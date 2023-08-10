@@ -41,6 +41,6 @@ function filterUndefined(data: unknown): unknown {
 	return data;
 }
 
-export const dataHelper = {
+export const DataHelper = {
 	filterUndefined,
 };

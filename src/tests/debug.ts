@@ -1,3 +1,3 @@
-import { debugHelper } from "../helpers/debug.helper";
+import { DebugHelper } from '../helpers/debug.helper';
 
-debugHelper.log("Hello World!");
+DebugHelper.log('Hello World!');

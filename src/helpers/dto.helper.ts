@@ -28,6 +28,6 @@ function validate<T>(dto: T, options?: ValidatorOptions): { dto: T; errors: stri
 	return { dto, errors: null };
 }
 
-export const dtoHelper = {
+export const DtoHelper = {
 	validate,
 };

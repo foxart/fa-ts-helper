@@ -15,6 +15,6 @@ function writeSync(filename: string, content: unknown, directory = 'tpm'): void 
 	fs.writeFileSync(file, data, 'utf-8');
 }
 
-export const fileHelper = {
+export const FileHelper = {
 	writeSync,
 };

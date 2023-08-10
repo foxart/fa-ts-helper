@@ -1,31 +1,31 @@
 import { ObjectId } from 'mongodb';
 
 interface UpdateResult {
-  acknowledged: boolean;
-  matchedCount: number;
-  modifiedCount: number;
-  upsertedCount: number;
-  upsertedId: ObjectId | null;
+	acknowledged: boolean;
+	matchedCount: number;
+	modifiedCount: number;
+	upsertedCount: number;
+	upsertedId: ObjectId | null;
 }
 
 interface DeleteResult {
-  acknowledged: boolean;
-  deletedCount: number;
+	acknowledged: boolean;
+	deletedCount: number;
 }
 
 function isUpdated(result: unknown, count = 1): boolean {
-  return (
-    (result as UpdateResult).acknowledged &&
-    (result as UpdateResult).matchedCount === count &&
-    (result as UpdateResult).modifiedCount === count
-  );
+	return (
+		(result as UpdateResult).acknowledged &&
+		(result as UpdateResult).matchedCount === count &&
+		(result as UpdateResult).modifiedCount === count
+	);
 }
 
 function isDeleted(result: unknown, count = 1): boolean {
-  return (result as DeleteResult).acknowledged && (result as DeleteResult).deletedCount === count;
+	return (result as DeleteResult).acknowledged && (result as DeleteResult).deletedCount === count;
 }
 
-export const mongoHelper = {
-  isUpdated,
-  isDeleted,
+export const MongoHelper = {
+	isUpdated,
+	isDeleted,
 };
