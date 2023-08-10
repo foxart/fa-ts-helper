@@ -1,5 +1,4 @@
 import { DebugHelper } from '../helpers/debug.helper';
-import { ParamDecoratorHelper } from '../helpers/param-decorator.helper';
 import { FaParamDecorator } from '../index';
 
 DebugHelper.config();
