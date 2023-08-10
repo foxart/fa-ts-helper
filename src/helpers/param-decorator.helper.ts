@@ -17,7 +17,6 @@ class ParamDecoratorHelper {
 	public static getInstance(): ParamDecoratorHelper {
 		if (!ParamDecoratorHelper.self) {
 			ParamDecoratorHelper.self = new ParamDecoratorHelper();
-			console.error(['XXX: ParamDecoratorHelper']);
 		}
 		return ParamDecoratorHelper.self;
 	}
