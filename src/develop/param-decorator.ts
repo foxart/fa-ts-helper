@@ -1,7 +1,4 @@
-import { DebugHelper } from '../helpers/debug.helper';
 import { FaParamDecorator } from '../index';
-
-DebugHelper.config();
 
 function ModelMethod(): MethodDecorator {
 	return FaParamDecorator.decorateMethod();
@@ -13,7 +10,6 @@ const Dec1 = (payload: string): ParameterDecorator => {
 	};
 	return FaParamDecorator.decorateParam(Dec1.name, handler, payload);
 };
-
 const Dec2 = (): ParameterDecorator => {
 	const handler: CallableFunction = function (data: string): string {
 		return `${data}<-Dec2`;
@@ -38,7 +34,7 @@ class Test {
 	// }
 }
 
-export function paramDecoratorTest() {
+export function testParamDecorator() {
 	const test = new Test();
 	test.create('Name', 'Surname');
 	test.update('Ivan', 'Kosenko');

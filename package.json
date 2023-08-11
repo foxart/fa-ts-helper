@@ -24,7 +24,7 @@
     }
   },
   "scripts": {
-    "start": "nodemon -e ts --watch src -x ts-node src/tests/index.ts",
+	  "develop": "nodemon -e ts --watch src -x ts-node src/develop.ts",
     "clean": "rm -rf ./lib",
     "build": "npm run clean && npm run build:esm && npm run build:cjs",
     "build:esm": "tsc -p config/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
