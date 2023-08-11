@@ -53,10 +53,6 @@ class DebugHelper {
 		short: false,
 	};
 
-	public get getTrace() {
-		return DebugHelper.trace;
-	}
-
 	public static getInstance(): DebugHelper {
 		if (!DebugHelper.self) {
 			DebugHelper.self = new DebugHelper();
@@ -64,7 +60,73 @@ class DebugHelper {
 		return DebugHelper.self;
 	}
 
-	private static stdout(key: LevelEnum, stack: string[], data: unknown[]): void {
+	public config(options?: OptionsInterface): void {
+		DebugHelper.options = {
+			...DebugHelper.options,
+			...options,
+		};
+		console.log = (...args: unknown[]): void => this.log(...args);
+		console.warn = (...args: unknown[]): void => this.warn(...args);
+		console.info = (...args: unknown[]): void => this.info(...args);
+		console.error = (...args: unknown[]): void => this.error(...args);
+		console.debug = (...args: unknown[]): void => this.debug(...args);
+	}
+
+	public log(...data: unknown[]): void {
+		this.stdout(LevelEnum.LOG, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+	}
+
+	public info(...data: unknown[]): void {
+		this.stdout(LevelEnum.INFO, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+	}
+
+	public warn(...data: unknown[]): void {
+		this.stdout(LevelEnum.WARN, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+	}
+
+	public error(...data: unknown[]): void {
+		this.stdout(LevelEnum.ERROR, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+	}
+
+	public debug(...data: unknown[]): void {
+		this.stdout(LevelEnum.DEBUG, this.trace(new Error(), { ...DebugHelper.options }), data);
+	}
+
+	public trace(error: Error, options?: TraceOptionsInterface): string[] {
+		const cwd = process.cwd();
+		let matches = [];
+		const myString = error.stack as string;
+		const myRegexp = /\/(.+:\d+:\d+)/gm;
+		let match = myRegexp.exec(myString);
+		while (match != null) {
+			if (match[0].indexOf(cwd) !== -1) {
+				matches.push(match[0]);
+			}
+			match = myRegexp.exec(myString);
+		}
+		if (options?.filter) {
+			matches = matches.filter((item) => {
+				return (options.filter as RegExp).test(item);
+			});
+		}
+		if (options?.omit) {
+			matches = matches.filter((item) => {
+				return !(options.omit as RegExp).test(item);
+			});
+		}
+		if (options?.short) {
+			matches = matches.map((item) => {
+				return path.relative(process.cwd(), item);
+			});
+		}
+		if (options?.level) {
+			return [matches[options.level]];
+		} else {
+			return matches;
+		}
+	}
+
+	private stdout(key: LevelEnum, stack: string[], data: unknown[]): void {
 		const path = Array.isArray(stack) ? stack.join('\n') : stack;
 		switch (key) {
 			case LevelEnum.LOG:
@@ -103,81 +165,6 @@ class DebugHelper {
 		});
 		process.stdout.write('\n');
 	}
-
-	private static trace(error: Error, options?: TraceOptionsInterface): string[] {
-		const cwd = process.cwd();
-		let matches = [];
-		const myString = error.stack as string;
-		const myRegexp = /\/(.+:\d+:\d+)/gm;
-		let match = myRegexp.exec(myString);
-		while (match != null) {
-			if (match[0].indexOf(cwd) !== -1) {
-				matches.push(match[0]);
-			}
-			match = myRegexp.exec(myString);
-		}
-		if (options?.filter) {
-			matches = matches.filter((item) => {
-				return (options.filter as RegExp).test(item);
-			});
-		}
-		if (options?.omit) {
-			matches = matches.filter((item) => {
-				return !(options.omit as RegExp).test(item);
-			});
-		}
-		if (options?.short) {
-			matches = matches.map((item) => {
-				return path.relative(process.cwd(), item);
-			});
-		}
-		log('LEVEL', options?.level);
-		if (options?.level) {
-			return [matches[options.level]];
-		} else {
-			return matches;
-		}
-	}
-
-	private static traceCaller(level?: number) {
-		return DebugHelper.trace(new Error(), {
-			...DebugHelper.options,
-			level,
-		});
-	}
-
-	public config(options?: OptionsInterface): void {
-		DebugHelper.options = {
-			...DebugHelper.options,
-			...options,
-		};
-		console.log = this.log;
-		console.warn = this.warn;
-		console.info = this.info;
-		console.error = this.error;
-		console.debug = this.debug;
-	}
-
-	public log(...data: unknown[]): void {
-		DebugHelper.stdout(LevelEnum.LOG, DebugHelper.trace(new Error(), { ...DebugHelper.options, level: 1 }), data);
-	}
-
-	public info(...data: unknown[]): void {
-		DebugHelper.stdout(LevelEnum.INFO, DebugHelper.trace(new Error(), { ...DebugHelper.options, level: 1 }), data);
-	}
-
-	public warn(...data: unknown[]): void {
-		DebugHelper.stdout(LevelEnum.WARN, DebugHelper.trace(new Error(), { ...DebugHelper.options, level: 1 }), data);
-	}
-
-	public error(...data: unknown[]): void {
-		DebugHelper.stdout(LevelEnum.ERROR, DebugHelper.trace(new Error(), { ...DebugHelper.options, level: 1 }), data);
-	}
-
-	public debug(...data: unknown[]): void {
-		DebugHelper.stdout(LevelEnum.DEBUG, DebugHelper.trace(new Error(), { ...DebugHelper.options }), data);
-	}
 }
 
-const log = console.log;
 export const FaDebug = DebugHelper.getInstance();

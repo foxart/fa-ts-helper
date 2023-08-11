@@ -27,11 +27,11 @@ class ParamDecoratorHelper {
 			return {
 				get() {
 					return (...args: unknown[]) => {
-						return descriptor.value.apply(
+						return (descriptor.value as (...args: unknown[]) => unknown).apply(
 							this,
-							args.map((value, key) => {
+							args.map(function (value, key) {
 								return metadata.has(key)
-									? ParamDecoratorHelper.self.applyCallback(metadata.get(key) || [], value)
+									? ParamDecoratorHelper.self.applyCallback(metadata.get(key) ?? [], value)
 									: value;
 							}),
 						);
@@ -47,9 +47,9 @@ class ParamDecoratorHelper {
 				ParamDecoratorHelper.self.setCallback(index, callback);
 			}
 			(function (target, propertyKey, parameterIndex): void {
-				// console.log(`${index}->${String(propertyKey)}[${parameterIndex}]`);
+				// process.stdout.write(`${index}->${String(propertyKey)}[${parameterIndex}]`);
 				const metadataMap = ParamDecoratorHelper.self.getMetadata(target, propertyKey);
-				const metadata = (metadataMap.get(parameterIndex) || []).concat({
+				const metadata = (metadataMap.get(parameterIndex) ?? []).concat({
 					args,
 					callback: index,
 				});
@@ -63,7 +63,7 @@ class ParamDecoratorHelper {
 		if (!propertyKey) {
 			throw new Error('propertyKey is required');
 		}
-		return Reflect.getOwnMetadata(this.metadataKey, target, propertyKey) ?? new Map();
+		return (Reflect.getOwnMetadata(this.metadataKey, target, propertyKey) ?? new Map()) as MetadataMapType;
 	}
 
 	private setMetadata(target: object, propertyKey: PropertyKeyType, metadata: MetadataMapType): void {
@@ -83,8 +83,8 @@ class ParamDecoratorHelper {
 
 	private applyCallback(metadata: MetadataMapValueType[], propertyValue: unknown): unknown {
 		/** handle multiple decorators */
-		return metadata.reverse().reduce((prev, curr) => {
-			return this.getCallback(curr.callback)(prev, ...curr.args);
+		return [...metadata].reverse().reduce(function (prev, curr) {
+			return ParamDecoratorHelper.self.getCallback(curr.callback)(prev, ...curr.args);
 		}, propertyValue);
 	}
 }

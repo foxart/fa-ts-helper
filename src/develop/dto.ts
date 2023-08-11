@@ -8,7 +8,7 @@ class Entity {
 	public name!: number;
 }
 
-export function testDto() {
+export function testDto(): void {
 	const data = {
 		id: 1,
 		name: 'Name',
@@ -20,11 +20,5 @@ export function testDto() {
 			forbidNonWhitelisted: true,
 		},
 	});
-	const trace = FaDebug.getTrace(new Error('test'), {
-		// short: true,
-		// filter: /node_modules\//,
-		// omit: /node_modules\//,
-	});
-	console.error(trace);
-	// FaDebug.debug(result.errors);
+	FaDebug.log(result.errors);
 }

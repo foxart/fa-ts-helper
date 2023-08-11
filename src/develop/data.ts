@@ -1,6 +1,6 @@
 import { FaData } from '../index';
 
-export function testData() {
+export function testData(): void {
 	const data = {
 		a: [1, 2, 3, undefined, 5, 6, 7, undefined, 9],
 		b: undefined,

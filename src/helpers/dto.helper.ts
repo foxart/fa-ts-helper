@@ -1,7 +1,6 @@
 import { validateSync, ValidationError, ValidatorOptions } from 'class-validator';
 import { ClassConstructor, plainToInstance } from 'class-transformer';
 import { ClassTransformOptions } from 'class-transformer/types/interfaces';
-import { deprecate } from 'util';
 
 class DtoHelper {
 	private static self: DtoHelper;
@@ -20,6 +19,9 @@ class DtoHelper {
 		return DtoHelper.self;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public plainToInstanceValidateSync<DATA, DTO>(
 		data: DATA,
 		constructor: ClassConstructor<DTO>,
@@ -43,7 +45,6 @@ class DtoHelper {
 			dto: instance,
 			errors: null,
 		};
-		//
 	}
 
 	private validationErrors(data: ValidationError[], property?: string): string[] {

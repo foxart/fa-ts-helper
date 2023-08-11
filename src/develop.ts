@@ -4,15 +4,17 @@ import { testDebug } from './develop/debug';
 import { testParamDecorator } from './develop/param-decorator';
 import { FaDebug } from './helpers/debug.helper';
 
-(function () {
+(function (): void {
 	console.clear();
 	FaDebug.config();
 	testCases().forEach((item) => {
-		item.test ? item.fn() : null;
+		if (item.test) {
+			item.fn();
+		}
 	});
 })();
 
-function testCases(): Array<{ fn: Function; test?: boolean }> {
+function testCases(): Array<{ fn: () => void; test?: boolean }> {
 	return [
 		{
 			fn: testData,
@@ -20,7 +22,7 @@ function testCases(): Array<{ fn: Function; test?: boolean }> {
 		},
 		{
 			fn: testDebug,
-			test: true,
+			// test: true,
 		},
 		{
 			fn: testDto,
@@ -28,7 +30,7 @@ function testCases(): Array<{ fn: Function; test?: boolean }> {
 		},
 		{
 			fn: testParamDecorator,
-			// test: true,
+			test: true,
 		},
 	];
 }

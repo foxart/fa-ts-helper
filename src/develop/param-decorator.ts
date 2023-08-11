@@ -19,22 +19,22 @@ const Dec2 = (): ParameterDecorator => {
 
 class Test {
 	@ModelMethod()
-	create(@Dec1('CREATE') @Dec2() name: string, @Dec2() surname: string) {
+	public create(@Dec1('CREATE') @Dec2() name: string, @Dec2() surname: string): void {
 		console.info(`create -> ${name} ${surname}`);
 	}
 
 	@ModelMethod()
-	update(@Dec1('UPDATE1') name: string, @Dec2() @Dec1('UPDATE2') surname: string) {
+	public update(@Dec1('UPDATE1') name: string, @Dec2() @Dec1('UPDATE2') surname: string): void {
 		console.info(`update -> ${name} ${surname}`);
 	}
 
-	// @ModelMethod()
-	// delete(@ModelParamDto('DELETE') data: string) {
-	// 	console.info({ data });
-	// }
+	@ModelMethod()
+	public delete(@Dec1('DELETE') data: string): void {
+		console.info({ data });
+	}
 }
 
-export function testParamDecorator() {
+export function testParamDecorator(): void {
 	const test = new Test();
 	test.create('Name', 'Surname');
 	test.update('Ivan', 'Kosenko');
