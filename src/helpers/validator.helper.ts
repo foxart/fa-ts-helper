@@ -10,12 +10,12 @@ class ValidatorHelper {
 		return ValidatorHelper.self;
 	}
 
-	public async validateAsync(object: object, options?: ValidatorOptions): Promise<string[]> {
-		return this.extractErrors(await validate(object, options));
+	public async validateAsync<T>(object: T, options?: ValidatorOptions): Promise<string[]> {
+		return this.extractErrors(await validate(object as object, options));
 	}
 
-	public validateSync(object: object, options?: ValidatorOptions): string[] {
-		return this.extractErrors(validateSync(object, options));
+	public validateSync<T>(object: T, options?: ValidatorOptions): string[] {
+		return this.extractErrors(validateSync(object as object, options));
 	}
 
 	private extractErrors(data: ValidationError[], property?: string): string[] {
