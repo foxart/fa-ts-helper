@@ -1,24 +1,33 @@
 import { HelperData } from '../index';
+import { ObjectId } from 'mongodb';
 
-const data1 = {
-	a: [1, 2, 3, undefined, 5, 6, 7, undefined, 9],
-	b: undefined,
-	c: {
-		d: 1,
-		e: 2,
-		f: 3,
-		g: undefined,
-		h: 5,
-	},
+const fields = {
+	fieldNumber: 1,
+	fieldUndefined: undefined,
+	fieldNull: null,
+	fieldEmptyString: '',
+	fieldZeroValue: 0,
+	fieldObjectId: new ObjectId(),
+	fieldsDate: new Date(),
 };
-const data2: { name: string; age: number } = {
-	name: '<NAME>',
-	age: 30,
+const data = {
+	keyArray: Object.values(fields),
+	keyObject: fields,
+	keyUndefined: undefined,
+	keyNull: null,
+	keyEmptyString: '',
+	keyZeroNumber: 0,
 };
 
 export function testData(): void {
-	const result1 = HelperData.filterUndefined([data1, data1]);
-	console.log(result1[0].c);
-	const result2 = HelperData.filterUndefined(data2);
-	console.log(result2);
+	const options = {
+		undefined: true,
+		null: true,
+		zeroNumber: true,
+		emptyString: true,
+	};
+	const result1 = HelperData.filter(data, options);
+	const result2 = HelperData.filter([data, Object.values(fields)], options);
+	console.info('object', result1);
+	console.info('array', result2);
 }

@@ -11,7 +11,7 @@ function isPromise(value: unknown): boolean {
 
 void (async function (): Promise<void> {
 	console.clear();
-	Debug.config();
+	Debug.overwriteConsole();
 	for (const item of testCases()) {
 		if (item.test) {
 			if (isPromise(item.test)) {
@@ -27,11 +27,11 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 	return [
 		{
 			fn: testCrypt,
-			test: true,
+			// test: true,
 		},
 		{
 			fn: testData,
-			// test: true,
+			test: true,
 		},
 		{
 			fn: testDebug,

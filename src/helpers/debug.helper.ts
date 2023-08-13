@@ -38,7 +38,7 @@ enum ColorEnum {
 }
 
 interface OptionsInterface {
-	short?: boolean;
+	shortPath?: boolean;
 }
 
 interface TraceOptionsInterface extends OptionsInterface {
@@ -50,7 +50,7 @@ interface TraceOptionsInterface extends OptionsInterface {
 class DebugHelper {
 	private static self: DebugHelper;
 	private static options?: OptionsInterface = {
-		short: false,
+		shortPath: false,
 	};
 
 	public static getInstance(): DebugHelper {
@@ -60,7 +60,7 @@ class DebugHelper {
 		return DebugHelper.self;
 	}
 
-	public config(options?: OptionsInterface): void {
+	public overwriteConsole(options?: OptionsInterface): void {
 		DebugHelper.options = {
 			...DebugHelper.options,
 			...options,
@@ -114,7 +114,7 @@ class DebugHelper {
 				return !(options.omit as RegExp).test(item);
 			});
 		}
-		if (options?.short) {
+		if (options?.shortPath) {
 			matches = matches.map((item) => {
 				return path.relative(process.cwd(), item);
 			});

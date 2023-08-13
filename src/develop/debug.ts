@@ -6,13 +6,13 @@ export function testDebug(): void {
 	console.warn(
 		HelperDebug.trace(new Error(), {
 			omit: /node_modules/,
-			short: true,
+			shortPath: true,
 		}),
 	);
 	console.error(
 		HelperDebug.trace(new Error(), {
 			filter: /node_modules/,
-			short: true,
+			shortPath: true,
 		}),
 	);
 	console.debug('Hello World!');
