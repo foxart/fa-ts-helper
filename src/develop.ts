@@ -4,6 +4,7 @@ import { testDto } from './develop/dto';
 import { testParamDecorator } from './develop/param-decorator';
 import { testSystem } from './develop/system';
 import { FaDebug } from './helpers/debug.helper';
+import { testValidator } from './develop/validator';
 // import { testDto } from './develop/dto';
 // import { testDebug } from './develop/debug';
 // import { testParamDecorator } from './develop/param-decorator';
@@ -46,6 +47,10 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 		},
 		{
 			fn: testSystem,
+			// test: true,
+		},
+		{
+			fn: testValidator,
 			test: true,
 		},
 	];
