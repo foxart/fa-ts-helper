@@ -1,4 +1,4 @@
-import { FaData } from '../index';
+import { HelperData } from '../index';
 
 const data1 = {
 	a: [1, 2, 3, undefined, 5, 6, 7, undefined, 9],
@@ -17,8 +17,8 @@ const data2: { name: string; age: number } = {
 };
 
 export function testData(): void {
-	const result1 = FaData.filterUndefined([data1, data1]);
+	const result1 = HelperData.filterUndefined([data1, data1]);
 	console.log(result1[0].c);
-	const result2 = FaData.filterUndefined(data2);
+	const result2 = HelperData.filterUndefined(data2);
 	console.log(result2);
 }

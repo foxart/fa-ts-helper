@@ -52,4 +52,4 @@ class DataHelper {
 	}
 }
 
-export const FaData = DataHelper.getInstance();
+export const Data = DataHelper.getInstance();

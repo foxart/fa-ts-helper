@@ -11,17 +11,17 @@ class ValidatorHelper {
 	}
 
 	public async validateAsync<T>(object: T, options?: ValidatorOptions): Promise<string[]> {
-		return this.extractErrors(await validate(object as object, options));
+		return this.getValidationErrorList(await validate(object as object, options));
 	}
 
 	public validateSync<T>(object: T, options?: ValidatorOptions): string[] {
-		return this.extractErrors(validateSync(object as object, options));
+		return this.getValidationErrorList(validateSync(object as object, options));
 	}
 
-	private extractErrors(data: ValidationError[], property?: string): string[] {
+	private getValidationErrorList(data: ValidationError[], property?: string): string[] {
 		return data.reduce((prev: string[], error) => {
 			if (error.children?.length) {
-				prev.push(...this.extractErrors(error.children, error.property));
+				prev.push(...this.getValidationErrorList(error.children, error.property));
 			} else {
 				prev.push(
 					...Object.entries(error.constraints as object).reduce((acc: string[], [, value]) => {
@@ -39,4 +39,4 @@ class ValidatorHelper {
 	}
 }
 
-export const FaValidator = ValidatorHelper.getInstance();
+export const Validator = ValidatorHelper.getInstance();

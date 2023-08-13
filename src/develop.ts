@@ -1,21 +1,17 @@
 import { testData } from './develop/data';
 import { testDebug } from './develop/debug';
-import { testDto } from './develop/dto';
 import { testParamDecorator } from './develop/param-decorator';
 import { testSystem } from './develop/system';
-import { FaDebug } from './helpers/debug.helper';
+import { Debug } from './helpers/debug.helper';
 import { testValidator } from './develop/validator';
-// import { testDto } from './develop/dto';
-// import { testDebug } from './develop/debug';
-// import { testParamDecorator } from './develop/param-decorator';
-// import { testSystem } from './develop/system';
+import { testCrypt } from './develop/crypt';
 function isPromise(value: unknown): boolean {
 	return typeof value === 'object' && typeof (value as Promise<unknown>).then === 'function';
 }
 
 void (async function (): Promise<void> {
 	console.clear();
-	FaDebug.config();
+	Debug.config();
 	for (const item of testCases()) {
 		if (item.test) {
 			if (isPromise(item.test)) {
@@ -30,15 +26,15 @@ void (async function (): Promise<void> {
 function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> {
 	return [
 		{
+			fn: testCrypt,
+			test: true,
+		},
+		{
 			fn: testData,
 			// test: true,
 		},
 		{
 			fn: testDebug,
-			// test: true,
-		},
-		{
-			fn: testDto,
 			// test: true,
 		},
 		{
@@ -51,7 +47,7 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 		},
 		{
 			fn: testValidator,
-			test: true,
+			// test: true,
 		},
 	];
 }

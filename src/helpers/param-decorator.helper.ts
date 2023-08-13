@@ -89,4 +89,4 @@ class ParamDecoratorHelper {
 	}
 }
 
-export const FaParamDecorator = ParamDecoratorHelper.getInstance();
+export const ParamDecorator = ParamDecoratorHelper.getInstance();

@@ -167,4 +167,4 @@ class DebugHelper {
 	}
 }
 
-export const FaDebug = DebugHelper.getInstance();
+export const Debug = DebugHelper.getInstance();
