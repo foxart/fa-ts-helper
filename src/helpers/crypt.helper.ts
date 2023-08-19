@@ -1,5 +1,6 @@
 import CryptoJS from 'crypto-js';
 import { v4 } from 'uuid';
+import { HelperDebug } from '../index';
 
 type CipherParams = CryptoJS.lib.CipherParams;
 type WordArray = CryptoJS.lib.WordArray;
@@ -13,32 +14,39 @@ class CryptHelper {
 		return CryptHelper.self;
 	}
 
-	public encrypt<T>(data: T, secret: WordArray | string): T {
+	public encrypt<T>(data: T, secret: string, throws?: boolean): T {
 		if (!data) {
 			return data;
 		}
-		const result =
-			typeof data === 'string'
-				? (CryptoJS.AES.encrypt(data, secret).toString() as T)
-				: (CryptoJS.AES.encrypt(data as unknown as WordArray, secret) as T);
-		if (!result) {
-			console.error(`failed to encrypt: ${data.toString()}`);
+		try {
+			const encJson = CryptoJS.AES.encrypt(JSON.stringify(data), secret).toString();
+			return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(encJson)) as T;
+		} catch (e) {
+			if (!!throws) {
+				(e as Error).name = (e as Error).message;
+				(e as Error).message = `Encryption failed for: ${data as string}`;
+				throw e;
+			}
+			return data;
 		}
-		return result ? result : data;
 	}
 
-	public decrypt<T>(data: T, secret: WordArray | string): T {
+	public decrypt<T>(data: T, secret: string, throws?: boolean): T {
 		if (!data) {
 			return data;
 		}
-		const result =
-			typeof data === 'string'
-				? (CryptoJS.AES.decrypt(data, secret).toString(CryptoJS.enc.Utf8) as T)
-				: (CryptoJS.AES.decrypt(data as unknown as CipherParams, secret) as T);
-		if (!result) {
-			console.error(`failed to decrypt: ${data.toString()}`);
+		try {
+			const decData = CryptoJS.enc.Base64.parse(data as string).toString(CryptoJS.enc.Utf8);
+			const bytes = CryptoJS.AES.decrypt(decData, secret).toString(CryptoJS.enc.Utf8);
+			return JSON.parse(bytes) as T;
+		} catch (e) {
+			if (!!throws) {
+				(e as Error).name = (e as Error).message;
+				(e as Error).message = `Decryption failed for: ${data as string}`;
+				throw e;
+			}
+			return data;
 		}
-		return result ? result : data;
 	}
 
 	public md5(data: string): string {

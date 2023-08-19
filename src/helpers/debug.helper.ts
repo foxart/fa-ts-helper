@@ -168,11 +168,18 @@ class DebugHelper {
 				break;
 			default:
 				process.stdout.write(
-					`${ColorEnum.BG_BLACK}${ColorEnum.FG_WHITE} DEFAULT ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
+					`${ColorEnum.BG_WHITE}${ColorEnum.FG_BLACK} DEFAULT ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
 				);
 		}
 		data.forEach((item) => {
-			process.stdout.write(util.inspect(item, true, null, true));
+			if (item instanceof Error) {
+				process.stdout.write(
+					`\n${ColorEnum.BG_MAGENTA} ${item.name} ${ColorEnum.RESET} ${ColorEnum.BG_BLACK} ${item.message} ${ColorEnum.RESET} `,
+				);
+				process.stdout.write(util.inspect(this.trace(item), true, null, true));
+			} else {
+				process.stdout.write(util.inspect(item, true, null, true));
+			}
 			process.stdout.write(' ');
 		});
 		process.stdout.write('\n');
