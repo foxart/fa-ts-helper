@@ -1,4 +1,4 @@
-import { HelperValidator } from '../index';
+import { HelperValidator } from '../../src';
 import { plainToInstance } from 'class-transformer';
 import { IsString } from 'class-validator';
 
@@ -10,11 +10,13 @@ class ValidatorClass {
 export async function testValidator(): Promise<void> {
 	const dataPlain = { a: 1 };
 	const dataClass = plainToInstance(ValidatorClass, dataPlain);
-	const syncResult = HelperValidator.validateSync(dataClass);
-	const asyncResult = await HelperValidator.validateAsync(dataClass);
+	const validateSync = HelperValidator.validateSync(dataClass);
+	const validateAsync = await HelperValidator.validateAsync(dataClass);
+	const testUrl = HelperValidator.testUrl('http://localhost');
 	console.log({
+		// testUrl,
 		dataClass,
-		syncResult,
-		asyncResult,
+		validateSync,
+		validateAsync,
 	});
 }

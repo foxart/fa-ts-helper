@@ -1,4 +1,4 @@
-import { HelperData } from '../index';
+import { HelperData } from '../../src';
 import { ObjectId } from 'mongodb';
 
 const fields = {
@@ -22,7 +22,7 @@ const data = {
 export function testData(): void {
 	const options = {
 		undefined: true,
-		null: true,
+		// null: true,
 		zeroNumber: true,
 		emptyString: true,
 	};

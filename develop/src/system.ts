@@ -1,4 +1,4 @@
-import { HelperSystem } from '../index';
+import { HelperSystem } from '../../src';
 
 export async function testSystem(): Promise<void> {
 	const timeStart = performance.now();

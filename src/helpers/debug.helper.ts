@@ -1,5 +1,5 @@
+import path from 'path';
 import * as util from 'util';
-import * as path from 'path';
 
 enum LevelEnum {
 	LOG,
@@ -38,6 +38,8 @@ enum ColorEnum {
 }
 
 interface OptionsInterface {
+	modify?: { search: RegExp | string; replace: string };
+	strip?: RegExp | string;
 	shortPath?: boolean;
 }
 
@@ -49,7 +51,7 @@ interface TraceOptionsInterface extends OptionsInterface {
 
 class DebugHelper {
 	private static self: DebugHelper;
-	private static options?: OptionsInterface = {
+	private static options: OptionsInterface = {
 		shortPath: false,
 	};
 
@@ -114,9 +116,19 @@ class DebugHelper {
 				return !(options.omit as RegExp).test(item);
 			});
 		}
+		if (options?.modify) {
+			matches = matches.map((item) => {
+				return item.replace(options.modify?.search as RegExp, options.modify?.replace as string);
+			});
+		}
 		if (options?.shortPath) {
 			matches = matches.map((item) => {
 				return path.relative(process.cwd(), item);
+			});
+		}
+		if (options?.strip) {
+			matches = matches.map((item) => {
+				return item.replace(options.strip as RegExp, '');
 			});
 		}
 		if (options?.level) {

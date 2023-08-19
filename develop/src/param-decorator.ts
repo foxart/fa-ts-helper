@@ -1,4 +1,4 @@
-import { HelperParamDecorator } from '../index';
+import { HelperParamDecorator } from '../../src';
 
 function ModelMethod(): MethodDecorator {
 	return HelperParamDecorator.decorateMethod();

@@ -1,17 +1,20 @@
-import { testData } from './develop/data';
-import { testDebug } from './develop/debug';
-import { testParamDecorator } from './develop/param-decorator';
-import { testSystem } from './develop/system';
-import { Debug } from './helpers/debug.helper';
-import { testValidator } from './develop/validator';
-import { testCrypt } from './develop/crypt';
+import { testData } from './src/data';
+import { testDebug } from './src/debug';
+import { testParamDecorator } from './src/param-decorator';
+import { testSystem } from './src/system';
+import { Debug } from '../src/helpers/debug.helper';
+import { testValidator } from './src/validator';
+import { testCrypt } from './src/crypt';
 function isPromise(value: unknown): boolean {
 	return typeof value === 'object' && typeof (value as Promise<unknown>).then === 'function';
 }
 
 void (async function (): Promise<void> {
 	console.clear();
-	Debug.overwriteConsole();
+	Debug.overwriteConsole({
+		// strip: process.cwd(),
+		// shortPath: true,
+	});
 	for (const item of testCases()) {
 		if (item.test) {
 			if (isPromise(item.test)) {
@@ -27,11 +30,11 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 	return [
 		{
 			fn: testCrypt,
-			// test: true,
+			test: true,
 		},
 		{
 			fn: testData,
-			test: true,
+			// test: true,
 		},
 		{
 			fn: testDebug,
