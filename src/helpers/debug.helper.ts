@@ -1,5 +1,5 @@
-import path from 'path';
 import * as util from 'util';
+import { HelperConsoleColor, HelperParser } from '../index';
 
 enum LevelEnum {
 	LOG,
@@ -9,52 +9,31 @@ enum LevelEnum {
 	DEBUG,
 }
 
-enum ColorEnum {
-	RESET = '\x1b[0m',
-	BRIGHT = '\x1b[1m',
-	DIM = '\x1b[2m',
-	UNDERSCORE = '\x1b[4m',
-	BLINK = '\x1b[5m',
-	REVERSE = '\x1b[7m',
-	HIDDEN = '\x1b[8m',
-	FG_BLACK = '\x1b[30m',
-	FG_RED = '\x1b[31m',
-	FG_GREEN = '\x1b[32m',
-	FG_YELLOW = '\x1b[33m',
-	FG_BLUE = '\x1b[34m',
-	FG_MAGENTA = '\x1b[35m',
-	FG_CYAN = '\x1b[36m',
-	FG_WHITE = '\x1b[37m',
-	FG_GRAY = '\x1b[90m',
-	BG_BLACK = '\x1b[40m',
-	BG_RED = '\x1b[41m',
-	BG_GREEN = '\x1b[42m',
-	BG_YELLOW = '\x1b[43m',
-	BG_BLUE = '\x1b[44m',
-	BG_MAGENTA = '\x1b[45m',
-	BG_CYAN = '\x1b[46m',
-	BG_WHITE = '\x1b[47m',
-	BG_GRAY = '\x1b[100m',
-}
-
-interface OptionsInterface {
-	modify?: { search: RegExp | string; replace: string };
-	strip?: RegExp | string;
-	shortPath?: boolean;
-}
-
-interface TraceOptionsInterface extends OptionsInterface {
-	filter?: RegExp;
-	omit?: RegExp;
-	level?: number;
+interface DebugOptionsInterface {
+	path?: boolean;
+	short?: boolean;
+	hidden?: boolean;
+	depth?: null | number;
+	color?: boolean;
 }
 
 class DebugHelper {
 	private static self: DebugHelper;
-	private static options: OptionsInterface = {
-		shortPath: false,
-	};
+	public readonly console: Console;
+	private options: DebugOptionsInterface;
+	private readonly cc: typeof HelperConsoleColor;
 
+	private constructor() {
+		this.options = {
+			path: true,
+			short: false,
+			hidden: true,
+			depth: null,
+			color: true,
+		};
+		this.console = Object.assign({}, console);
+		this.cc = HelperConsoleColor;
+	}
 	public static getInstance(): DebugHelper {
 		if (!DebugHelper.self) {
 			DebugHelper.self = new DebugHelper();
@@ -62,127 +41,123 @@ class DebugHelper {
 		return DebugHelper.self;
 	}
 
-	public overwriteConsole(options?: OptionsInterface): void {
-		DebugHelper.options = {
-			...DebugHelper.options,
-			...options,
-		};
-		console.log = (...args: unknown[]): void => this.log(...args);
-		console.warn = (...args: unknown[]): void => this.warn(...args);
-		console.info = (...args: unknown[]): void => this.info(...args);
-		console.error = (...args: unknown[]): void => this.error(...args);
-		console.debug = (...args: unknown[]): void => this.debug(...args);
+	public overwriteConsole(options?: DebugOptionsInterface): void {
+		this.options = { ...this.options, ...options };
+		console.log = this.log.bind(this);
+		console.info = this.info.bind(this);
+		console.warn = this.warn.bind(this);
+		console.error = this.error.bind(this);
+		console.debug = this.debug.bind(this);
 	}
 
 	public log(...data: unknown[]): void {
-		this.stdout(LevelEnum.LOG, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+		this.beautify(LevelEnum.LOG, this.callerPath(new Error(), 1), data);
 	}
 
 	public info(...data: unknown[]): void {
-		this.stdout(LevelEnum.INFO, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+		this.beautify(LevelEnum.INFO, this.callerPath(new Error(), 1), data);
 	}
 
 	public warn(...data: unknown[]): void {
-		this.stdout(LevelEnum.WARN, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+		this.beautify(LevelEnum.WARN, this.callerPath(new Error(), 1), data);
 	}
 
 	public error(...data: unknown[]): void {
-		this.stdout(LevelEnum.ERROR, this.trace(new Error(), { ...DebugHelper.options, level: 2 }), data);
+		this.beautify(LevelEnum.ERROR, this.callerPath(new Error(), 1), data);
 	}
 
 	public debug(...data: unknown[]): void {
-		this.stdout(LevelEnum.DEBUG, this.trace(new Error(), { ...DebugHelper.options }), data);
+		this.beautify(LevelEnum.DEBUG, this.callerPath(new Error(), null, false), data);
 	}
 
-	public trace(error: Error, options?: TraceOptionsInterface): string[] {
-		const cwd = process.cwd();
-		let matches = [];
-		const myString = error.stack as string;
-		const myRegexp = /\/(.+:\d+:\d+)/gm;
-		let match = myRegexp.exec(myString);
-		while (match != null) {
-			if (match[0].indexOf(cwd) !== -1) {
-				matches.push(match[0]);
-			}
-			match = myRegexp.exec(myString);
-		}
-		if (options?.filter) {
-			matches = matches.filter((item) => {
-				return (options.filter as RegExp).test(item);
-			});
-		}
-		if (options?.omit) {
-			matches = matches.filter((item) => {
-				return !(options.omit as RegExp).test(item);
-			});
-		}
-		if (options?.modify) {
-			matches = matches.map((item) => {
-				return item.replace(options.modify?.search as RegExp, options.modify?.replace as string);
-			});
-		}
-		if (options?.shortPath) {
-			matches = matches.map((item) => {
-				return path.relative(process.cwd(), item);
-			});
-		}
-		if (options?.strip) {
-			matches = matches.map((item) => {
-				return item.replace(options.strip as RegExp, '');
-			});
-		}
-		if (options?.level) {
-			return [matches[options.level]];
-		} else {
-			return matches;
-		}
+	public inspect(object: unknown, hidden?: boolean, depth?: number | null, colors?: boolean): string {
+		return util.inspect(object, {
+			showHidden: hidden ?? this.options?.hidden,
+			depth: depth ?? this.options?.depth,
+			colors: colors ?? this.options?.color,
+		});
 	}
 
-	private stdout(key: LevelEnum, stack: string[], data: unknown[]): void {
-		const path = Array.isArray(stack) ? stack.join('\n') : stack;
+	private callerPath(error: Error, level: number | null, short?: boolean): string[] {
+		return HelperParser.errorStack(error.stack, {
+			level,
+			short: short ?? this.options?.short,
+		});
+	}
+
+	private beautify(key: LevelEnum, stack: string[], data: unknown[]): void {
 		switch (key) {
 			case LevelEnum.LOG:
-				process.stdout.write(
-					`${ColorEnum.BG_GREEN} LOG ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
-				);
+				this.print(this.cc.wrap(' LOG ', [this.cc.background.green]));
+				this.printPath(stack[0]);
+				this.printData(data);
 				break;
 			case LevelEnum.INFO:
-				process.stdout.write(
-					`${ColorEnum.BG_BLUE} INF ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
-				);
+				this.print(this.cc.wrap(' INF ', [this.cc.background.blue]));
+				this.printPath(stack[0]);
+				this.printData(data);
 				break;
 			case LevelEnum.WARN:
-				process.stdout.write(
-					`${ColorEnum.BG_YELLOW} WRN ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
-				);
+				this.print(this.cc.wrap(' WRN ', [this.cc.background.yellow]));
+				this.printPath(stack[0]);
+				this.printData(data);
 				break;
 			case LevelEnum.ERROR:
-				process.stdout.write(
-					`${ColorEnum.BG_RED} ERR ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
-				);
+				this.print(this.cc.wrap(' ERR ', [this.cc.background.red]));
+				this.printPath(stack[0]);
+				this.printData(data);
 				break;
 			case LevelEnum.DEBUG:
-				process.stdout.write(
-					`${ColorEnum.BG_WHITE} DEBUG ${ColorEnum.RESET}\n${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET}\n`,
-				);
+				this.print(this.cc.wrap([' >>> DEBUG '], [this.cc.background.magenta, this.cc.effect.bright]));
+				this.print('\n');
+				this.print(this.cc.wrap('DATA:', [this.cc.color.magenta, this.cc.effect.dim]));
+				this.printData(data);
+				this.print('\n');
+				this.print(this.cc.wrap('TRACE: ', [this.cc.color.magenta, this.cc.effect.dim]));
+				this.printStack(stack);
+				this.print('\n');
+				this.print(this.cc.wrap(' DEBUG <<< ', [this.cc.background.magenta, this.cc.effect.bright]));
 				break;
 			default:
-				process.stdout.write(
-					`${ColorEnum.BG_WHITE}${ColorEnum.FG_BLACK} DEFAULT ${ColorEnum.RESET} ${ColorEnum.FG_WHITE}${ColorEnum.UNDERSCORE}${path}${ColorEnum.RESET} `,
-				);
+				this.print(this.cc.wrap(' DEFAULT ', [this.cc.background.gray]));
+				this.printPath(stack[0]);
+				this.printData(data);
 		}
+		this.print('\n\n');
+	}
+
+	private print(data: string): void {
+		process.stdout.write(data);
+	}
+
+	private printData(data: unknown[]): void {
 		data.forEach((item) => {
 			if (item instanceof Error) {
-				process.stdout.write(
-					`\n${ColorEnum.BG_MAGENTA} ${item.name} ${ColorEnum.RESET} ${ColorEnum.BG_BLACK} ${item.message} ${ColorEnum.RESET} `,
-				);
-				process.stdout.write(util.inspect(this.trace(item), true, null, true));
+				this.print(this.cc.wrap(` ${item.name}:`, [this.cc.effect.bright]));
+				this.print(this.cc.wrap(` ${item.message} `, [this.cc.color.red, this.cc.effect.bright]));
+				this.printStack(this.callerPath(item, null, false));
 			} else {
-				process.stdout.write(util.inspect(item, true, null, true));
+				this.print(' ');
+				this.print(this.inspect(item));
 			}
-			process.stdout.write(' ');
 		});
-		process.stdout.write('\n');
+	}
+
+	private printPath(path: string): void {
+		if (this.options?.path) {
+			this.print(this.cc.wrap(' at ', [this.cc.color.cyan]));
+			this.print(this.cc.wrap(path, [this.cc.color.white, this.cc.effect.underscore]));
+		}
+	}
+
+	private printStack(stack: string[]): void {
+		this.print('{');
+		stack.forEach((item) => {
+			this.print('\n');
+			this.print(this.cc.wrap(' at ', [this.cc.color.white, this.cc.effect.dim]));
+			this.print(this.cc.wrap(item, [this.cc.color.white, this.cc.effect.dim, this.cc.effect.underscore]));
+		});
+		this.print('\n}');
 	}
 }
 

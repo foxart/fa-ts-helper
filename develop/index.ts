@@ -5,6 +5,7 @@ import { testSystem } from './src/system';
 import { Debug } from '../src/helpers/debug.helper';
 import { testValidator } from './src/validator';
 import { testCrypt } from './src/crypt';
+import { testTrace } from './src/trace';
 function isPromise(value: unknown): boolean {
 	return typeof value === 'object' && typeof (value as Promise<unknown>).then === 'function';
 }
@@ -12,8 +13,11 @@ function isPromise(value: unknown): boolean {
 void (async function (): Promise<void> {
 	console.clear();
 	Debug.overwriteConsole({
-		// strip: process.cwd(),
-		// shortPath: true,
+		// short: true,
+		// path: false,
+		// color: false,
+		// depth: 1,
+		// hidden: true,
 	});
 	for (const item of testCases()) {
 		if (item.test) {
@@ -30,7 +34,7 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 	return [
 		{
 			fn: testCrypt,
-			test: true,
+			// test: true,
 		},
 		{
 			fn: testData,
@@ -38,7 +42,7 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 		},
 		{
 			fn: testDebug,
-			// test: true,
+			test: true,
 		},
 		{
 			fn: testParamDecorator,
@@ -46,6 +50,10 @@ function testCases(): Array<{ fn: () => void | Promise<void>; test?: boolean }> 
 		},
 		{
 			fn: testSystem,
+			// test: true,
+		},
+		{
+			fn: testTrace,
 			// test: true,
 		},
 		{
