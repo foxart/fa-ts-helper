@@ -1,6 +1,5 @@
 import CryptoJS from 'crypto-js';
 import { v4 } from 'uuid';
-import { HelperDebug } from '../index';
 
 type CipherParams = CryptoJS.lib.CipherParams;
 type WordArray = CryptoJS.lib.WordArray;
@@ -49,23 +48,47 @@ class CryptHelper {
 		}
 	}
 
-	public md5(data: string): string {
-		return this.wordArrayToString(CryptoJS.MD5(data));
+	public md5(message: string): string {
+		return this.wordArrayToString(CryptoJS.MD5(message));
+	}
+
+	public md5Hmac(message: string, key: string): string {
+		return this.wordArrayToString(CryptoJS.HmacMD5(message, key));
+	}
+
+	public sha1Hmac(message: string, key: string): string {
+		return this.wordArrayToString(CryptoJS.HmacSHA1(message, key));
+	}
+
+	public sha256Hmac(password: string, key: string): string {
+		return this.wordArrayToString(CryptoJS.HmacSHA256(password, key));
+	}
+
+	public sha512Hmac(password: string, key: string): string {
+		return this.wordArrayToString(CryptoJS.HmacSHA512(password, key));
+	}
+
+	public randomBytes(bytes: number): WordArray {
+		return CryptoJS.lib.WordArray.random(bytes);
 	}
 
 	public password(password: string, salt: string): string {
-		return this.wordArrayToString(CryptoJS.HmacSHA256(password, salt));
+		return this.sha256Hmac(password, salt);
 	}
 
 	public salt(): string {
-		return this.wordArrayToString(CryptoJS.HmacMD5(v4(), process.hrtime().toString()));
+		return this.wordArrayToString(this.randomBytes(32));
+	}
+
+	public refreshToken(): string {
+		return this.wordArrayToString(this.randomBytes(16));
 	}
 
 	public v4(): string {
 		return v4();
 	}
 
-	private wordArrayToString(data: CryptoJS.lib.WordArray): string {
+	private wordArrayToString(data: WordArray): string {
 		return CryptoJS.enc.Base64.stringify(data);
 	}
 }

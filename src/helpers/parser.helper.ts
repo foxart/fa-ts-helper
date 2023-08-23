@@ -1,11 +1,9 @@
 import path from 'path';
 
-type TraceCallbackType = (item: string[]) => string[];
-
 interface TraceOptionsInterface {
 	short?: boolean;
 	level?: number | null;
-	callback?: TraceCallbackType | TraceCallbackType[];
+	callback?: (item: string[]) => string[];
 }
 
 class ParserHelper {
@@ -41,13 +39,7 @@ class ParserHelper {
 			result = result.map((item) => path.relative(this.cwd, item));
 		}
 		if (options?.callback) {
-			if (Array.isArray(options.callback)) {
-				options.callback.forEach((callback) => {
-					result = callback(result);
-				});
-			} else {
-				result = options.callback(result);
-			}
+			result = options.callback(result);
 		}
 		if (options?.level) {
 			return [result[options.level]];

@@ -10,6 +10,7 @@ enum LevelEnum {
 }
 
 interface DebugOptionsInterface {
+	link?: boolean;
 	path?: boolean;
 	short?: boolean;
 	hidden?: boolean;
@@ -22,17 +23,20 @@ class DebugHelper {
 	public readonly console: Console;
 	private options: DebugOptionsInterface;
 	private readonly cc: typeof HelperConsoleColor;
+	private readonly pathRegexp: RegExp;
 
 	private constructor() {
 		this.options = {
+			link: true,
 			path: true,
 			short: false,
 			hidden: true,
 			depth: null,
 			color: true,
 		};
-		this.console = Object.assign({}, console);
+		this.pathRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
 		this.cc = HelperConsoleColor;
+		this.console = Object.assign({}, console);
 	}
 	public static getInstance(): DebugHelper {
 		if (!DebugHelper.self) {
@@ -88,21 +92,25 @@ class DebugHelper {
 	private beautify(key: LevelEnum, stack: string[], data: unknown[]): void {
 		switch (key) {
 			case LevelEnum.LOG:
+				this.printLink(stack[0]);
 				this.print(this.cc.wrap(' LOG ', [this.cc.background.green]));
 				this.printPath(stack[0]);
 				this.printData(data);
 				break;
 			case LevelEnum.INFO:
+				this.printLink(stack[0]);
 				this.print(this.cc.wrap(' INF ', [this.cc.background.blue]));
 				this.printPath(stack[0]);
 				this.printData(data);
 				break;
 			case LevelEnum.WARN:
+				this.printLink(stack[0]);
 				this.print(this.cc.wrap(' WRN ', [this.cc.background.yellow]));
 				this.printPath(stack[0]);
 				this.printData(data);
 				break;
 			case LevelEnum.ERROR:
+				this.printLink(stack[0]);
 				this.print(this.cc.wrap(' ERR ', [this.cc.background.red]));
 				this.printPath(stack[0]);
 				this.printData(data);
@@ -114,11 +122,12 @@ class DebugHelper {
 				this.printData(data);
 				this.print('\n');
 				this.print(this.cc.wrap('TRACE: ', [this.cc.color.magenta, this.cc.effect.dim]));
-				this.printStack(stack);
+				this.printPathStack(stack);
 				this.print('\n');
 				this.print(this.cc.wrap(' DEBUG <<< ', [this.cc.background.magenta, this.cc.effect.bright]));
 				break;
 			default:
+				this.printLink(stack[0]);
 				this.print(this.cc.wrap(' DEFAULT ', [this.cc.background.gray]));
 				this.printPath(stack[0]);
 				this.printData(data);
@@ -135,7 +144,7 @@ class DebugHelper {
 			if (item instanceof Error) {
 				this.print(this.cc.wrap(` ${item.name}:`, [this.cc.effect.bright]));
 				this.print(this.cc.wrap(` ${item.message} `, [this.cc.color.red, this.cc.effect.bright]));
-				this.printStack(this.callerPath(item, null, false));
+				this.printPathStack(this.callerPath(item, null, false));
 			} else {
 				this.print(' ');
 				this.print(this.inspect(item));
@@ -143,14 +152,28 @@ class DebugHelper {
 		});
 	}
 
-	private printPath(path: string): void {
-		if (this.options?.path) {
-			this.print(this.cc.wrap(' at ', [this.cc.color.cyan]));
-			this.print(this.cc.wrap(path, [this.cc.color.white, this.cc.effect.underscore]));
+	private printLink(link: string): void {
+		if (this.options?.link) {
+			this.print(link);
+			this.print('\n');
 		}
 	}
 
-	private printStack(stack: string[]): void {
+	private printPath(path: string): void {
+		if (this.options?.path) {
+			const match = path.match(this.pathRegexp);
+			if (match) {
+				this.print(this.cc.wrap(' at ', [this.cc.color.cyan]));
+				this.print(this.cc.wrap(match[1], [this.cc.color.white]));
+				this.print(this.cc.wrap(':', [this.cc.color.white, this.cc.effect.dim]));
+				this.print(this.cc.wrap(match[2], [this.cc.color.cyan, this.cc.effect.dim]));
+			} else {
+				this.print(this.cc.wrap(path, [this.cc.color.white]));
+			}
+		}
+	}
+
+	private printPathStack(stack: string[]): void {
 		this.print('{');
 		stack.forEach((item) => {
 			this.print('\n');

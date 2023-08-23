@@ -13,7 +13,8 @@ function isPromise(value: unknown): boolean {
 void (async function (): Promise<void> {
 	console.clear();
 	Debug.overwriteConsole({
-		// short: true,
+		// short: false,
+		// link: false,
 		// path: false,
 		// color: false,
 		// depth: 1,

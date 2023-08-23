@@ -21,7 +21,7 @@ export function testTrace(): void {
 	console.warn(
 		HelperParser.errorStack(error.stack, {
 			short: true,
-			callback: [callbackFilter, callbackReplace],
+			callback: callbackFilter,
 		}),
 	);
 }
