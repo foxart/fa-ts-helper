@@ -5,15 +5,15 @@ interface OptionsInterface {
 	zeroNumber?: boolean;
 }
 
-class DataHelper {
-	private static self: DataHelper;
+class DataSingleton {
+	private static self: DataSingleton;
 	private readonly characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-	public static getInstance(): DataHelper {
-		if (!DataHelper.self) {
-			DataHelper.self = new DataHelper();
+	public static getInstance(): DataSingleton {
+		if (!DataSingleton.self) {
+			DataSingleton.self = new DataSingleton();
 		}
-		return DataHelper.self;
+		return DataSingleton.self;
 	}
 
 	public randomNumber(min: number, max: number, int = true): number {
@@ -86,4 +86,4 @@ class DataHelper {
 	}
 }
 
-export const Data = DataHelper.getInstance();
+export const DataHelper = DataSingleton.getInstance();

@@ -1,20 +1,21 @@
-import { HelperParamDecorator } from '../../src';
+import { ConsoleHelper } from '../helpers/console.helper';
+import { ParamDecoratorHelper } from '../helpers/param-decorator.helper';
 
 function ModelMethod(): MethodDecorator {
-	return HelperParamDecorator.decorateMethod();
+	return ParamDecoratorHelper.decorateMethod();
 }
 
 const Dec1 = (payload: string): ParameterDecorator => {
 	const handler: CallableFunction = function (data: string, payload: string): string {
 		return data.toUpperCase() + '<-' + payload;
 	};
-	return HelperParamDecorator.decorateParam(Dec1.name, handler, payload);
+	return ParamDecoratorHelper.decorateParam(Dec1.name, handler, payload);
 };
 const Dec2 = (): ParameterDecorator => {
 	const handler: CallableFunction = function (data: string): string {
 		return `${data}<-Dec2`;
 	};
-	return HelperParamDecorator.decorateParam(Dec2.name, handler);
+	return ParamDecoratorHelper.decorateParam(Dec2.name, handler);
 };
 
 class Test {
@@ -34,8 +35,14 @@ class Test {
 	}
 }
 
-export function testParamDecorator(): void {
+function testParamDecorator(): void {
 	const test = new Test();
 	test.create('Name', 'Surname');
 	test.update('Ivan', 'Kosenko');
 }
+
+void (function (): void {
+	console.clear();
+	ConsoleHelper.overwriteConsole();
+	testParamDecorator();
+})();

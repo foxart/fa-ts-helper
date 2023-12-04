@@ -1,6 +1,7 @@
-import { HelperParser } from '../../src';
+import { ParserHelper } from '../helpers/parser.helper';
+import { ConsoleHelper } from '../helpers/console.helper';
 
-export function testTrace(): void {
+function testTrace(): void {
 	const callbackReplace = (stack: string[]): string[] => {
 		return stack.map((item) => item.replace(/index.ts/, '<FILE>'));
 	};
@@ -8,20 +9,24 @@ export function testTrace(): void {
 		return stack.filter((item) => !/node_modules/.test(item));
 	};
 	const error = new Error();
-	console.log(HelperParser.errorStack(error.stack, { level: 1 }));
+	console.log(ParserHelper.stack(error.stack, { level: 1 }));
 	console.info(
-		HelperParser.errorStack(error.stack, {
+		ParserHelper.stack(error.stack, {
 			short: true,
 			callback: callbackFilter,
 		}),
 	);
-	/**
-	 *
-	 */
 	console.warn(
-		HelperParser.errorStack(error.stack, {
+		ParserHelper.stack(error.stack, {
 			short: true,
 			callback: callbackFilter,
 		}),
 	);
+	console.debug({ a: 1 });
 }
+
+void (function (): void {
+	console.clear();
+	ConsoleHelper.overwriteConsole();
+	testTrace();
+})();

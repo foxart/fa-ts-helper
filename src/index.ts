@@ -1,8 +1,9 @@
-export { ConsoleColor as HelperConsoleColor } from './helpers/console-color.helper';
-export { Crypt as HelperCrypt } from './helpers/crypt.helper';
-export { Data as HelperData } from './helpers/data.helper';
-export { Debug as HelperDebug } from './helpers/debug.helper';
-export { ParamDecorator as HelperParamDecorator } from './helpers/param-decorator.helper';
-export { System as HelperSystem } from './helpers/system.helper';
-export { Parser as HelperParser } from './helpers/parser.helper';
-export { Validator as HelperValidator } from './helpers/validator.helper';
+export { ConsoleHelper } from './helpers/console.helper';
+export { ConsoleColorHelper } from './helpers/console-color.helper';
+export { CryptHelper } from './helpers/crypt.helper';
+export { DataHelper } from './helpers/data.helper';
+export { ErrorHelper } from './helpers/error.helper';
+export { ParamDecoratorHelper } from './helpers/param-decorator.helper';
+export { ParserHelper } from './helpers/parser.helper';
+export { SystemHelper } from './helpers/system.helper';
+export { ValidatorHelper } from './helpers/validator.helper';

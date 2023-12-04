@@ -1,14 +1,14 @@
 import path from 'path';
 import fs, { WriteFileOptions } from 'fs';
 
-class SystemHelper {
-	private static self: SystemHelper;
+class SystemSingleton {
+	private static self: SystemSingleton;
 
-	public static getInstance(): SystemHelper {
-		if (!SystemHelper.self) {
-			SystemHelper.self = new SystemHelper();
+	public static getInstance(): SystemSingleton {
+		if (!SystemSingleton.self) {
+			SystemSingleton.self = new SystemSingleton();
 		}
-		return SystemHelper.self;
+		return SystemSingleton.self;
 	}
 
 	public sleep(ms: number): Promise<void> {
@@ -36,4 +36,4 @@ class SystemHelper {
 	}
 }
 
-export const System = SystemHelper.getInstance();
+export const SystemHelper = SystemSingleton.getInstance();

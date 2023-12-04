@@ -1,4 +1,5 @@
-import { HelperData } from '../../src';
+import { ConsoleHelper } from '../helpers/console.helper';
+import { DataHelper } from '../helpers/data.helper';
 import { ObjectId } from 'mongodb';
 
 const fields = {
@@ -19,15 +20,21 @@ const data = {
 	keyZeroNumber: 0,
 };
 
-export function testData(): void {
+function testData(): void {
 	const options = {
 		undefined: true,
 		// null: true,
 		zeroNumber: true,
 		emptyString: true,
 	};
-	const result1 = HelperData.filter(data, options);
-	const result2 = HelperData.filter([data, Object.values(fields)], options);
+	const result1 = DataHelper.filter(data, options);
+	const result2 = DataHelper.filter([data, Object.values(fields)], options);
 	console.info('object', result1);
 	console.info('array', result2);
 }
+
+void (function (): void {
+	console.clear();
+	ConsoleHelper.overwriteConsole();
+	testData();
+})();

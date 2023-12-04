@@ -1,39 +1,61 @@
 import path from 'path';
 
-interface TraceOptionsInterface {
+interface StackInterface {
 	short?: boolean;
 	level?: number | null;
 	callback?: (item: string[]) => string[];
 }
 
-class ParserHelper {
-	private static self: ParserHelper;
+interface UrlInterface {
+	href: string;
+	protocol?: string;
+	host?: string;
+	hostname?: string;
+	port?: string;
+	pathname?: string;
+	search?: string;
+	hash?: string;
+}
+
+class ParserSingleton {
+	private static self: ParserSingleton;
 	private readonly cwd: string;
-	private readonly errorStackRegexp: RegExp;
+	private readonly stackRegexp: RegExp;
+	private readonly urlRegexp: RegExp;
 
 	private constructor() {
+		// this.cwd = __dirname;
 		this.cwd = process.cwd();
-		this.errorStackRegexp = /\/(.+:\d+:\d+)/gm;
+		this.stackRegexp = /\/(.+:\d+:\d+)/gm;
+		this.urlRegexp = new RegExp(
+			[
+				'^(https?:)//', // protocol
+				'(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
+				'(/{0,1}[^?#]*)', // pathname
+				'(\\?[^#]*|)', // search
+				'(#.*|)$', // hash
+			].join(''),
+		);
 	}
 
-	public static getInstance(): ParserHelper {
-		if (!ParserHelper.self) {
-			ParserHelper.self = new ParserHelper();
+	public static getInstance(): ParserSingleton {
+		if (!ParserSingleton.self) {
+			ParserSingleton.self = new ParserSingleton();
 		}
-		return ParserHelper.self;
+		return ParserSingleton.self;
 	}
 
-	public errorStack(stack?: string, options?: TraceOptionsInterface): string[] {
-		if (!stack) {
-			return [];
-		}
+	public stack(stack: string | undefined, options?: StackInterface): string[] {
 		let result: string[] = [];
-		let match = this.errorStackRegexp.exec(stack);
-		while (match != null) {
+		let match = this.stackRegexp.exec(stack || '');
+		while (match) {
 			if (match[0].indexOf(this.cwd) !== -1) {
 				result.push(match[0]);
 			}
-			match = this.errorStackRegexp.exec(stack);
+			match = this.stackRegexp.exec(stack || '');
+		}
+		if (options?.level) {
+			result = [result[options.level]];
 		}
 		if (options?.short) {
 			result = result.map((item) => path.relative(this.cwd, item));
@@ -41,12 +63,24 @@ class ParserHelper {
 		if (options?.callback) {
 			result = options.callback(result);
 		}
-		if (options?.level) {
-			return [result[options.level]];
-		} else {
-			return result;
-		}
+		return result;
+	}
+
+	public url(url: string): UrlInterface | null {
+		const match = url.match(this.urlRegexp);
+		return (
+			match && {
+				href: url,
+				protocol: match[1],
+				host: match[2],
+				hostname: match[3],
+				port: match[4],
+				pathname: match[5],
+				search: match[6],
+				hash: match[7],
+			}
+		);
 	}
 }
 
-export const Parser = ParserHelper.getInstance();
+export const ParserHelper = ParserSingleton.getInstance();

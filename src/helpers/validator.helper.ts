@@ -1,81 +1,50 @@
 import { validate, validateSync, ValidationError, ValidatorOptions } from 'class-validator';
 
-interface UrlInterface {
-	href: string;
-	protocol: string;
-	host: string;
-	hostname: string;
-	port: string;
-	pathname: string;
-	search: string;
-	hash: string;
-}
+class ValidatorSingleton {
+	private static self: ValidatorSingleton;
 
-class ValidatorHelper {
-	private static self: ValidatorHelper;
-	private readonly urlRegexp: RegExp;
-
-	public constructor() {
-		this.urlRegexp = new RegExp(
-			[
-				'^(https?:)//', // protocol
-				'(([^:/?#]*)(?::([0-9]+))?)', // host (hostname and port)
-				'(/{0,1}[^?#]*)', // pathname
-				'(\\?[^#]*|)', // search
-				'(#.*|)$', // hash
-			].join(''),
-		);
-	}
-	public static getInstance(): ValidatorHelper {
-		if (!ValidatorHelper.self) {
-			ValidatorHelper.self = new ValidatorHelper();
+	public static getInstance(): ValidatorSingleton {
+		if (!ValidatorSingleton.self) {
+			ValidatorSingleton.self = new ValidatorSingleton();
 		}
-		return ValidatorHelper.self;
+		return ValidatorSingleton.self;
 	}
 
-	public testUrl(url: string): UrlInterface | null {
-		const match = url.match(this.urlRegexp);
-		return (
-			match && {
-				href: url,
-				protocol: match[1],
-				host: match[2],
-				hostname: match[3],
-				port: match[4],
-				pathname: match[5],
-				search: match[6],
-				hash: match[7],
-			}
-		);
+	public async validateAsync<T>(
+		object: T | string,
+		options?: ValidatorOptions,
+	): Promise<Record<string, unknown> | null> {
+		const result = this.getValidationErrorList(await validate(object as object, options));
+		return this.isObjectEmpty(result) ? null : result;
 	}
 
-	public async validateAsync<T>(object: T | string, options?: ValidatorOptions): Promise<string[]> {
-		return this.getValidationErrorList(await validate(object as object, options));
+	public validateSync<T>(object: T | string, options?: ValidatorOptions): Record<string, unknown> | null {
+		const result = this.getValidationErrorList(validateSync(object as object, options));
+		return this.isObjectEmpty(result) ? null : result;
 	}
 
-	public validateSync<T>(object: T | string, options?: ValidatorOptions): string[] {
-		return this.getValidationErrorList(validateSync(object as object, options));
-	}
-
-	private getValidationErrorList(data: ValidationError[], property?: string): string[] {
-		return data.reduce((prev: string[], error) => {
+	private getValidationErrorList(data: ValidationError[]): Record<string, unknown> {
+		return data.reduce((prev: Record<string, unknown>, error) => {
 			if (error.children?.length) {
-				prev.push(...this.getValidationErrorList(error.children, error.property));
+				prev[error.property] = this.getValidationErrorList(error.children);
 			} else {
-				prev.push(
+				if (!prev[error.property]) {
+					prev[error.property] = [];
+				}
+				(prev[error.property] as string[]).push(
 					...Object.entries(error.constraints as object).reduce((acc: string[], [, value]) => {
-						if (property) {
-							acc.push(`${property}.${value as string}`);
-						} else {
-							acc.push(value as string);
-						}
+						acc.push(value as string);
 						return acc;
 					}, []),
 				);
 			}
 			return prev;
-		}, []);
+		}, {});
+	}
+
+	private isObjectEmpty(object: object): boolean {
+		return object && Object.keys(object).length === 0 && object.constructor === Object;
 	}
 }
 
-export const Validator = ValidatorHelper.getInstance();
+export const ValidatorHelper = ValidatorSingleton.getInstance();

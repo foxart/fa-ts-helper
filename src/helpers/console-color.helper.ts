@@ -60,8 +60,8 @@ interface BackgroundInterface {
 	gray: ColorEnum.BG_GRAY;
 }
 
-class ConsoleColorHelper {
-	private static self: ConsoleColorHelper;
+class ConsoleColorSingleton {
+	private static self: ConsoleColorSingleton;
 	public readonly effect: EffectInterface;
 	public readonly color: ColorInterface;
 	public readonly background: BackgroundInterface;
@@ -100,11 +100,11 @@ class ConsoleColorHelper {
 		};
 	}
 
-	public static getInstance(): ConsoleColorHelper {
-		if (!ConsoleColorHelper.self) {
-			ConsoleColorHelper.self = new ConsoleColorHelper();
+	public static getInstance(): ConsoleColorSingleton {
+		if (!ConsoleColorSingleton.self) {
+			ConsoleColorSingleton.self = new ConsoleColorSingleton();
 		}
-		return ConsoleColorHelper.self;
+		return ConsoleColorSingleton.self;
 	}
 
 	public wrap(data: string | string[], effects: ColorEnum[]): string {
@@ -118,4 +118,4 @@ class ConsoleColorHelper {
 	}
 }
 
-export const ConsoleColor = ConsoleColorHelper.getInstance();
+export const ConsoleColorHelper = ConsoleColorSingleton.getInstance();

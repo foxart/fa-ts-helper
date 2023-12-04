@@ -3,14 +3,15 @@ import { v4 } from 'uuid';
 
 type CipherParams = CryptoJS.lib.CipherParams;
 type WordArray = CryptoJS.lib.WordArray;
-class CryptHelper {
-	private static self: CryptHelper;
 
-	public static getInstance(): CryptHelper {
-		if (!CryptHelper.self) {
-			CryptHelper.self = new CryptHelper();
+class CryptSingleton {
+	private static self: CryptSingleton;
+
+	public static getInstance(): CryptSingleton {
+		if (!CryptSingleton.self) {
+			CryptSingleton.self = new CryptSingleton();
 		}
-		return CryptHelper.self;
+		return CryptSingleton.self;
 	}
 
 	public encrypt<T>(data: T, secret: string, throws?: boolean): T {
@@ -93,4 +94,4 @@ class CryptHelper {
 	}
 }
 
-export const Crypt = CryptHelper.getInstance();
+export const CryptHelper = CryptSingleton.getInstance();
