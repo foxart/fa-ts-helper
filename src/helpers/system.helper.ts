@@ -32,7 +32,7 @@ class SystemSingleton {
 		} catch (e) {
 			data = (content as NodeJS.ArrayBufferView).toString();
 		}
-		fs.writeFileSync(filename, data, options ?? 'utf-8');
+		fs.writeFileSync(filename, data, options || 'utf-8');
 	}
 }
 

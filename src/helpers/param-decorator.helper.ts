@@ -31,7 +31,7 @@ class ParamDecoratorSingleton {
 							this,
 							args.map(function (value, key) {
 								return metadata.has(key)
-									? ParamDecoratorSingleton.self.applyCallback(metadata.get(key) ?? [], value)
+									? ParamDecoratorSingleton.self.applyCallback(metadata.get(key) || [], value)
 									: value;
 							}),
 						);
@@ -49,7 +49,7 @@ class ParamDecoratorSingleton {
 			(function (target, propertyKey, parameterIndex): void {
 				// process.stdout.write(`${index}->${String(propertyKey)}[${parameterIndex}]`);
 				const metadataMap = ParamDecoratorSingleton.self.getMetadata(target, propertyKey);
-				const metadata = (metadataMap.get(parameterIndex) ?? []).concat({
+				const metadata = (metadataMap.get(parameterIndex) || []).concat({
 					args,
 					callback: index,
 				});
@@ -63,7 +63,7 @@ class ParamDecoratorSingleton {
 		if (!propertyKey) {
 			throw new Error('propertyKey is required');
 		}
-		return (Reflect.getOwnMetadata(this.metadataKey, target, propertyKey) ?? new Map()) as MetadataMapType;
+		return (Reflect.getOwnMetadata(this.metadataKey, target, propertyKey) || new Map()) as MetadataMapType;
 	}
 
 	private setMetadata(target: object, propertyKey: PropertyKeyType, metadata: MetadataMapType): void {

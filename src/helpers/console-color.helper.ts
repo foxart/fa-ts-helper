@@ -1,4 +1,4 @@
-enum ColorEnum {
+export enum ColorHelperEnum {
 	RESET = '\x1b[0m',
 	BRIGHT = '\x1b[1m',
 	DIM = '\x1b[2m',
@@ -27,37 +27,37 @@ enum ColorEnum {
 }
 
 interface EffectInterface {
-	reset: ColorEnum.RESET;
-	bright: ColorEnum.BRIGHT;
-	dim: ColorEnum.DIM;
-	underscore: ColorEnum.UNDERSCORE;
-	blink: ColorEnum.BLINK;
-	reverse: ColorEnum.REVERSE;
-	hidden: ColorEnum.HIDDEN;
+	reset: ColorHelperEnum.RESET;
+	bright: ColorHelperEnum.BRIGHT;
+	dim: ColorHelperEnum.DIM;
+	underscore: ColorHelperEnum.UNDERSCORE;
+	blink: ColorHelperEnum.BLINK;
+	reverse: ColorHelperEnum.REVERSE;
+	hidden: ColorHelperEnum.HIDDEN;
 }
 
 interface ColorInterface {
-	black: ColorEnum.FG_BLACK;
-	red: ColorEnum.FG_RED;
-	green: ColorEnum.FG_GREEN;
-	yellow: ColorEnum.FG_YELLOW;
-	blue: ColorEnum.FG_BLUE;
-	magenta: ColorEnum.FG_MAGENTA;
-	cyan: ColorEnum.FG_CYAN;
-	white: ColorEnum.FG_WHITE;
-	gray: ColorEnum.FG_GRAY;
+	black: ColorHelperEnum.FG_BLACK;
+	red: ColorHelperEnum.FG_RED;
+	green: ColorHelperEnum.FG_GREEN;
+	yellow: ColorHelperEnum.FG_YELLOW;
+	blue: ColorHelperEnum.FG_BLUE;
+	magenta: ColorHelperEnum.FG_MAGENTA;
+	cyan: ColorHelperEnum.FG_CYAN;
+	white: ColorHelperEnum.FG_WHITE;
+	gray: ColorHelperEnum.FG_GRAY;
 }
 
 interface BackgroundInterface {
-	black: ColorEnum.BG_BLACK;
-	red: ColorEnum.BG_RED;
-	green: ColorEnum.BG_GREEN;
-	yellow: ColorEnum.BG_YELLOW;
-	blue: ColorEnum.BG_BLUE;
-	magenta: ColorEnum.BG_MAGENTA;
-	cyan: ColorEnum.BG_CYAN;
-	white: ColorEnum.BG_WHITE;
-	gray: ColorEnum.BG_GRAY;
+	black: ColorHelperEnum.BG_BLACK;
+	red: ColorHelperEnum.BG_RED;
+	green: ColorHelperEnum.BG_GREEN;
+	yellow: ColorHelperEnum.BG_YELLOW;
+	blue: ColorHelperEnum.BG_BLUE;
+	magenta: ColorHelperEnum.BG_MAGENTA;
+	cyan: ColorHelperEnum.BG_CYAN;
+	white: ColorHelperEnum.BG_WHITE;
+	gray: ColorHelperEnum.BG_GRAY;
 }
 
 class ConsoleColorSingleton {
@@ -68,35 +68,35 @@ class ConsoleColorSingleton {
 
 	private constructor() {
 		this.effect = {
-			reset: ColorEnum.RESET,
-			bright: ColorEnum.BRIGHT,
-			dim: ColorEnum.DIM,
-			underscore: ColorEnum.UNDERSCORE,
-			blink: ColorEnum.BLINK,
-			reverse: ColorEnum.REVERSE,
-			hidden: ColorEnum.HIDDEN,
+			reset: ColorHelperEnum.RESET,
+			bright: ColorHelperEnum.BRIGHT,
+			dim: ColorHelperEnum.DIM,
+			underscore: ColorHelperEnum.UNDERSCORE,
+			blink: ColorHelperEnum.BLINK,
+			reverse: ColorHelperEnum.REVERSE,
+			hidden: ColorHelperEnum.HIDDEN,
 		};
 		this.color = {
-			black: ColorEnum.FG_BLACK,
-			red: ColorEnum.FG_RED,
-			green: ColorEnum.FG_GREEN,
-			yellow: ColorEnum.FG_YELLOW,
-			blue: ColorEnum.FG_BLUE,
-			magenta: ColorEnum.FG_MAGENTA,
-			cyan: ColorEnum.FG_CYAN,
-			white: ColorEnum.FG_WHITE,
-			gray: ColorEnum.FG_GRAY,
+			black: ColorHelperEnum.FG_BLACK,
+			red: ColorHelperEnum.FG_RED,
+			green: ColorHelperEnum.FG_GREEN,
+			yellow: ColorHelperEnum.FG_YELLOW,
+			blue: ColorHelperEnum.FG_BLUE,
+			magenta: ColorHelperEnum.FG_MAGENTA,
+			cyan: ColorHelperEnum.FG_CYAN,
+			white: ColorHelperEnum.FG_WHITE,
+			gray: ColorHelperEnum.FG_GRAY,
 		};
 		this.background = {
-			black: ColorEnum.BG_BLACK,
-			red: ColorEnum.BG_RED,
-			green: ColorEnum.BG_GREEN,
-			yellow: ColorEnum.BG_YELLOW,
-			blue: ColorEnum.BG_BLUE,
-			magenta: ColorEnum.BG_MAGENTA,
-			cyan: ColorEnum.BG_CYAN,
-			white: ColorEnum.BG_WHITE,
-			gray: ColorEnum.BG_GRAY,
+			black: ColorHelperEnum.BG_BLACK,
+			red: ColorHelperEnum.BG_RED,
+			green: ColorHelperEnum.BG_GREEN,
+			yellow: ColorHelperEnum.BG_YELLOW,
+			blue: ColorHelperEnum.BG_BLUE,
+			magenta: ColorHelperEnum.BG_MAGENTA,
+			cyan: ColorHelperEnum.BG_CYAN,
+			white: ColorHelperEnum.BG_WHITE,
+			gray: ColorHelperEnum.BG_GRAY,
 		};
 	}
 
@@ -105,16 +105,6 @@ class ConsoleColorSingleton {
 			ConsoleColorSingleton.self = new ConsoleColorSingleton();
 		}
 		return ConsoleColorSingleton.self;
-	}
-
-	public wrap(data: string | string[], effects: ColorEnum[]): string {
-		const result = effects.reduce(
-			(acc, value) => {
-				return `${value}${acc}`;
-			},
-			Array.isArray(data) ? data.join('') : data,
-		);
-		return `${this.effect.reset}${result}${this.effect.reset}`;
 	}
 }
 

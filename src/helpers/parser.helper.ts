@@ -2,7 +2,7 @@ import path from 'path';
 
 interface StackInterface {
 	short?: boolean;
-	level?: number | null;
+	index?: number | null;
 	callback?: (item: string[]) => string[];
 }
 
@@ -20,6 +20,7 @@ interface UrlInterface {
 class ParserSingleton {
 	private static self: ParserSingleton;
 	private readonly cwd: string;
+
 	private readonly stackRegexp: RegExp;
 	private readonly urlRegexp: RegExp;
 
@@ -54,8 +55,8 @@ class ParserSingleton {
 			}
 			match = this.stackRegexp.exec(stack || '');
 		}
-		if (options?.level) {
-			result = [result[options.level]];
+		if (options?.index) {
+			result = [result[options.index]];
 		}
 		if (options?.short) {
 			result = result.map((item) => path.relative(this.cwd, item));
