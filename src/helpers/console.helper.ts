@@ -1,6 +1,6 @@
 import * as util from 'util';
 import * as process from 'process';
-import { ColorHelperEnum, ConsoleColorHelper } from './console-color.helper';
+import { ColorHelperEnum, ConsoleColorHelper as cch } from './console-color.helper';
 import { ParserHelper } from './parser.helper';
 
 enum LevelEnum {
@@ -12,8 +12,8 @@ enum LevelEnum {
 }
 
 interface OptionsInterface {
+	info?: boolean;
 	link?: boolean;
-	path?: boolean;
 	node_modules?: boolean;
 	depth?: null | number;
 	hidden?: boolean;
@@ -24,20 +24,17 @@ class ConsoleSingleton {
 	private static self: ConsoleSingleton;
 	public readonly console: Console;
 	private options: OptionsInterface;
-	private readonly consoleColor: typeof ConsoleColorHelper;
-	private readonly pathRegexp: RegExp;
 
 	private constructor() {
 		this.options = {
 			link: true,
-			path: true,
+			info: false,
 			node_modules: false,
 			depth: null,
 			hidden: true,
 			color: true,
 		};
-		this.pathRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
-		this.consoleColor = ConsoleColorHelper;
+		// this.pathRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
 		this.console = Object.assign({}, console);
 	}
 
@@ -48,13 +45,21 @@ class ConsoleSingleton {
 		return ConsoleSingleton.self;
 	}
 
-	public overwriteConsole(options?: OptionsInterface): void {
+	public override(options?: OptionsInterface): void {
 		this.options = { ...this.options, ...options };
 		console.log = this.log.bind(this);
 		console.info = this.info.bind(this);
 		console.warn = this.warn.bind(this);
 		console.error = this.error.bind(this);
 		console.debug = this.debug.bind(this);
+	}
+
+	public restore(): void {
+		console.log = this.console.log.bind(this);
+		console.info = this.console.info.bind(this);
+		console.warn = this.console.warn.bind(this);
+		console.error = this.console.error.bind(this);
+		console.debug = this.console.debug.bind(this);
 	}
 
 	public log(...data: unknown[]): void {
@@ -97,39 +102,14 @@ class ConsoleSingleton {
 		}
 	}
 
-	public inspect(object: unknown, hidden?: boolean, depth?: number | null, colors?: boolean): string {
-		return util.inspect(object, {
-			showHidden: hidden || this.options?.hidden,
-			depth: depth || this.options?.depth,
-			colors: colors || this.options?.color,
-		});
-	}
-
-	public colorize(data: string | string[], colors: ColorHelperEnum[]): string {
+	public colorize(data: string[], colors: ColorHelperEnum[]): string {
 		const result = colors.reduce(
 			(acc, value) => {
 				return `${value}${acc}`;
 			},
 			Array.isArray(data) ? data.join('') : data,
 		);
-		return `${this.consoleColor.effect.reset}${result}${this.consoleColor.effect.reset}`;
-	}
-
-	public levelColors(level?: LevelEnum): ColorHelperEnum[] {
-		switch (level) {
-			case LevelEnum.LOG:
-				return [this.consoleColor.background.green];
-			case LevelEnum.INFO:
-				return [this.consoleColor.background.blue];
-			case LevelEnum.WARN:
-				return [this.consoleColor.background.yellow];
-			case LevelEnum.ERROR:
-				return [this.consoleColor.background.red];
-			case LevelEnum.DEBUG:
-				return [this.consoleColor.background.magenta, this.consoleColor.effect.bright];
-			default:
-				return [];
-		}
+		return `${cch.effect.reset}${result}${cch.effect.reset}`;
 	}
 
 	private callerPath(error: Error, index: number | null, short?: boolean): string[] {
@@ -149,51 +129,40 @@ class ConsoleSingleton {
 	private print(level: LevelEnum, stack: string[], data: unknown[]): void {
 		switch (level) {
 			case LevelEnum.LOG:
-				this.stdout(this.colorize(' LOG ', this.levelColors(level)));
-				this.stdoutPath(stack[0]);
+				this.stdout(this.colorize([' LOG '], this.levelColors(level)));
 				this.stdoutData(data);
-				this.stdoutLink(stack[0], LevelEnum.LOG);
+				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			case LevelEnum.INFO:
-				this.stdout(this.colorize(' INF ', this.levelColors(level)));
-				this.stdoutPath(stack[0]);
+				this.stdout(this.colorize([' INF '], this.levelColors(level)));
 				this.stdoutData(data);
-				this.stdoutLink(stack[0], LevelEnum.INFO);
+				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			case LevelEnum.WARN:
-				this.stdout(this.colorize(' WRN ', this.levelColors(level)));
-				this.stdoutPath(stack[0]);
+				this.stdout(this.colorize([' WRN '], this.levelColors(level)));
 				this.stdoutData(data);
-				this.stdoutLink(stack[0], LevelEnum.WARN);
+				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			case LevelEnum.ERROR:
-				this.stdout(this.colorize(' ERR ', this.levelColors(level)));
-				this.stdoutPath(stack[0]);
+				this.stdout(this.colorize([' ERR '], this.levelColors(level)));
 				this.stdoutData(data);
-				this.stdoutLink(stack[0], LevelEnum.ERROR);
+				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			case LevelEnum.DEBUG:
-				this.stdout(this.colorize([' >>> DEBUG '], this.levelColors(level)));
+				this.stdout(this.colorize([' DEBUG '], this.levelColors(level)));
 				this.stdout('\n');
-				this.stdout(this.colorize('DATA:', [this.consoleColor.color.magenta, this.consoleColor.effect.dim]));
+				this.stdout(this.colorize(['DATA:'], [cch.color.magenta]));
 				this.stdoutData(data);
 				this.stdout('\n');
-				this.stdout(this.colorize('TRACE: ', [this.consoleColor.color.magenta, this.consoleColor.effect.dim]));
+				this.stdout(this.colorize(['TRACE: '], [cch.color.magenta]));
 				this.stdoutPathStack(stack);
 				this.stdout('\n');
-				this.stdout(
-					this.colorize(' DEBUG <<< ', [
-						this.consoleColor.background.magenta,
-						this.consoleColor.effect.bright,
-					]),
-				);
-				this.stdoutLink(stack[0], LevelEnum.DEBUG);
+				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			default:
-				this.stdoutLink(stack[0]);
-				this.stdout(this.colorize(' DEFAULT ', [this.consoleColor.background.gray]));
-				this.stdoutPath(stack[0]);
+				this.stdout(this.colorize([' DEFAULT '], this.levelColors(level)));
 				this.stdoutData(data);
+				this.stdoutLink(stack[0], this.levelColors(level));
 		}
 		this.stdout('\n');
 	}
@@ -205,51 +174,58 @@ class ConsoleSingleton {
 	private stdoutData(data: unknown[]): void {
 		data.forEach((item) => {
 			if (item instanceof Error) {
-				this.stdout(this.colorize(` ${item.name}`, [this.consoleColor.effect.bright]));
-				this.stdout(this.colorize(':', [this.consoleColor.effect.dim]));
-				this.stdout(
-					this.colorize(` ${item.message} `, [this.consoleColor.color.red, this.consoleColor.effect.bright]),
-				);
+				this.stdout(this.colorize([' ', item.name], [cch.effect.bright]));
+				this.stdout(this.colorize([':'], [cch.effect.dim]));
+				this.stdout(this.colorize([' ', item.message, ' '], [cch.color.red, cch.effect.bright]));
 				this.stdoutPathStack(this.callerPath(item, null, true));
 			} else {
 				this.stdout(' ');
-				this.stdout(this.inspect(item));
+				this.stdout(
+					util.inspect(item, {
+						showHidden: this.options?.hidden,
+						depth: this.options?.depth,
+						colors: this.options?.color,
+					}),
+				);
 			}
 		});
 	}
 
-	private stdoutLink(link: string, level?: LevelEnum): void {
+	private stdoutLink(link: string, colors?: ColorHelperEnum[]): void {
 		if (this.options?.link) {
 			this.stdout('\n');
-			this.stdout(this.colorize(' at ', this.levelColors(level)));
+			this.stdout(this.colorize([' at '], colors || []));
 			this.stdout(' ');
 			this.stdout(link);
 		}
 		this.stdout('\n');
 	}
 
-	private stdoutPath(path: string): void {
-		if (this.options?.path) {
-			const match = path.match(this.pathRegexp);
-			if (match) {
-				// this.stdout(this.consoleColor.wrap(' at ', [this.consoleColor.color.white]));
-				this.stdout(` ${match[1]}`);
-				this.stdout(this.colorize(':', [this.consoleColor.color.white]));
-				this.stdout(this.colorize(match[2], [this.consoleColor.color.cyan]));
-			} else {
-				this.stdout(this.colorize(path, [this.consoleColor.color.white]));
-			}
-		}
-	}
-
 	private stdoutPathStack(stack: string[]): void {
 		this.stdout('{');
 		stack.forEach((item) => {
 			this.stdout('\n');
-			this.stdout(this.colorize(' at ', [this.consoleColor.color.white]));
+			this.stdout(this.colorize([' at '], [cch.color.white]));
 			this.stdout(item);
 		});
 		this.stdout('\n}');
+	}
+
+	private levelColors(level?: LevelEnum): ColorHelperEnum[] {
+		switch (level) {
+			case LevelEnum.LOG:
+				return [cch.background.green];
+			case LevelEnum.INFO:
+				return [cch.background.blue];
+			case LevelEnum.WARN:
+				return [cch.background.yellow];
+			case LevelEnum.ERROR:
+				return [cch.background.red];
+			case LevelEnum.DEBUG:
+				return [cch.background.magenta, cch.effect.bright];
+			default:
+				return [cch.background.gray];
+		}
 	}
 }
 
