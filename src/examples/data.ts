@@ -1,6 +1,5 @@
 import { ConsoleHelper } from '../helpers/console.helper';
 import { DataHelper } from '../helpers/data.helper';
-import { ObjectId } from 'mongodb';
 
 const fields = {
 	fieldNumber: 1,
@@ -8,7 +7,7 @@ const fields = {
 	fieldNull: null,
 	fieldEmptyString: '',
 	fieldZeroValue: 0,
-	fieldObjectId: new ObjectId(),
+	// fieldObjectId: new ObjectId(),
 	fieldsDate: new Date(),
 };
 const data = {
@@ -35,6 +34,6 @@ function testData(): void {
 
 void (function (): void {
 	console.clear();
-	ConsoleHelper.overwriteConsole();
+	ConsoleHelper.override();
 	testData();
 })();

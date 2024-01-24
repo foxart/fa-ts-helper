@@ -22,7 +22,9 @@ interface OptionsInterface {
 
 class ConsoleSingleton {
 	private static self: ConsoleSingleton;
+
 	public readonly console: Console;
+
 	private options: OptionsInterface;
 
 	private constructor() {
@@ -102,16 +104,6 @@ class ConsoleSingleton {
 		}
 	}
 
-	public colorize(data: string[], colors: ColorHelperEnum[]): string {
-		const result = colors.reduce(
-			(acc, value) => {
-				return `${value}${acc}`;
-			},
-			Array.isArray(data) ? data.join('') : data,
-		);
-		return `${cch.effect.reset}${result}${cch.effect.reset}`;
-	}
-
 	private callerPath(error: Error, index: number | null, short?: boolean): string[] {
 		return ParserHelper.stack(error.stack, {
 			index,
@@ -155,7 +147,7 @@ class ConsoleSingleton {
 				this.stdoutData(data);
 				this.stdout('\n');
 				this.stdout(this.colorize(['TRACE: '], [cch.color.magenta]));
-				this.stdoutPathStack(stack);
+				this.stdoutStack(stack);
 				this.stdout('\n');
 				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
@@ -177,7 +169,7 @@ class ConsoleSingleton {
 				this.stdout(this.colorize([' ', item.name], [cch.effect.bright]));
 				this.stdout(this.colorize([':'], [cch.effect.dim]));
 				this.stdout(this.colorize([' ', item.message, ' '], [cch.color.red, cch.effect.bright]));
-				this.stdoutPathStack(this.callerPath(item, null, true));
+				this.stdoutStack(this.callerPath(item, null, true));
 			} else {
 				this.stdout(' ');
 				this.stdout(
@@ -201,7 +193,7 @@ class ConsoleSingleton {
 		this.stdout('\n');
 	}
 
-	private stdoutPathStack(stack: string[]): void {
+	private stdoutStack(stack: string[]): void {
 		this.stdout('{');
 		stack.forEach((item) => {
 			this.stdout('\n');
@@ -209,6 +201,16 @@ class ConsoleSingleton {
 			this.stdout(item);
 		});
 		this.stdout('\n}');
+	}
+
+	private colorize(data: string[], colors: ColorHelperEnum[]): string {
+		const result = colors.reduce(
+			(acc, value) => {
+				return `${value}${acc}`;
+			},
+			Array.isArray(data) ? data.join('') : data,
+		);
+		return `${cch.effect.reset}${result}${cch.effect.reset}`;
 	}
 
 	private levelColors(level?: LevelEnum): ColorHelperEnum[] {

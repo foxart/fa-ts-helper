@@ -1,5 +1,7 @@
 import { ParserHelper } from '../helpers/parser.helper';
 import { ConsoleHelper } from '../helpers/console.helper';
+import * as util from 'util';
+import * as process from 'process';
 
 function testTrace(): void {
 	const callbackReplace = (stack: string[]): string[] => {
@@ -9,7 +11,7 @@ function testTrace(): void {
 		return stack.filter((item) => !/node_modules/.test(item));
 	};
 	const error = new Error();
-	console.log(ParserHelper.stack(error.stack, { level: 1 }));
+	console.log(ParserHelper.stack(error.stack, { index: 1 }));
 	console.info(
 		ParserHelper.stack(error.stack, {
 			short: true,
@@ -23,10 +25,13 @@ function testTrace(): void {
 		}),
 	);
 	console.debug({ a: 1 });
+	// ConsoleHelper.restore();
+	// console.log({ a: 1, b: { c: 'string' } });
+	// process.stdout.write(util.inspect({ a: 1, b: { c: 'string' } }));
 }
 
 void (function (): void {
 	console.clear();
-	ConsoleHelper.overwriteConsole();
+	ConsoleHelper.override();
 	testTrace();
 })();

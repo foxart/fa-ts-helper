@@ -61,6 +61,20 @@ class DataSingleton {
 		return data;
 	}
 
+	public stringify(data: unknown, indent = 2): string {
+		const cache: unknown[] = [];
+		return JSON.stringify(
+			data,
+			(_key, value: unknown) =>
+				typeof value === 'object' && value !== null
+					? cache.includes(value)
+						? undefined
+						: cache.push(value) && value
+					: value,
+			indent,
+		);
+	}
+
 	private isValid(data: unknown, options: OptionsInterface): boolean {
 		if (options.undefined && data === undefined) {
 			return false;

@@ -86,6 +86,6 @@ async function testValidator(): Promise<void> {
 
 void (async function (): Promise<void> {
 	console.clear();
-	ConsoleHelper.overwriteConsole();
+	ConsoleHelper.override();
 	await testValidator();
 })();

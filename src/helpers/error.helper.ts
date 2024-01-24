@@ -1,34 +1,28 @@
+import { DataHelper } from './data.helper';
+
 export interface ErrorHelperInterface {
 	name: string;
-	message: string;
-	response?: string | object;
+	message: unknown;
 	status?: number;
 }
 
 export class ErrorHelper extends Error {
-	private readonly response: string | object;
-	private readonly status: number;
+	public readonly status: number;
 
-	public constructor(error: string | ErrorHelperInterface) {
+	public constructor(error: string | Error | ErrorHelperInterface) {
 		super();
 		if (typeof error === 'string') {
 			this.name = ErrorHelper.name;
 			this.message = error;
-			this.response = {};
+			this.status = 500;
+		} else if (error instanceof Error) {
+			this.name = error.name;
+			this.message = error.message;
 			this.status = 500;
 		} else {
 			this.name = error.name;
-			this.message = error.message;
-			this.response = error.response || {};
+			this.message = typeof error.message === 'string' ? error.message : DataHelper.stringify(error.message);
 			this.status = error.status || 500;
 		}
-	}
-
-	public getResponse(): string | object {
-		return this.response;
-	}
-
-	public getStatus(): number {
-		return this.status;
 	}
 }
