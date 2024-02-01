@@ -1,8 +1,9 @@
-interface OptionsInterface {
+interface FilterOptionsInterface {
 	undefined?: boolean;
 	null?: boolean;
 	emptyString?: boolean;
 	zeroNumber?: boolean;
+	exclude?: string[];
 }
 
 class DataSingleton {
@@ -31,11 +32,11 @@ class DataSingleton {
 		return result;
 	}
 
-	public filter<T>(data: T, options: OptionsInterface): T {
+	public filter<T>(data: T, options: FilterOptionsInterface): T {
 		if (Array.isArray(data)) {
 			return data
 				.filter((item) => {
-					return this.isValid(item, options);
+					return this.isEmpty(item, options);
 				})
 				.map((item: T) => {
 					return this.filter(item, options);
@@ -43,18 +44,12 @@ class DataSingleton {
 		}
 		if (this.isObject(data)) {
 			return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
-				if (this.isObject(value)) {
-					return {
-						...acc,
-						[key]: this.filter(value, options),
-					};
+				if (options.exclude?.includes(key)) {
+					return acc;
+				} else if (this.isObject(value)) {
+					return { ...acc, [key]: this.filter(value, options) };
 				} else {
-					return this.isValid(value, options)
-						? {
-								...acc,
-								[key]: value,
-						  }
-						: acc;
+					return this.isEmpty(value, options) ? { ...acc, [key]: value } : acc;
 				}
 			}, {} as T);
 		}
@@ -75,7 +70,7 @@ class DataSingleton {
 		);
 	}
 
-	private isValid(data: unknown, options: OptionsInterface): boolean {
+	private isEmpty(data: unknown, options: FilterOptionsInterface): boolean {
 		if (options.undefined && data === undefined) {
 			return false;
 		} else if (options.null && data === null) {
@@ -89,9 +84,7 @@ class DataSingleton {
 		if (data instanceof Date) {
 			return false;
 		} else if (data instanceof Object) {
-			/**
-			 * Check for mongoId instance
-			 */
+			/** Check for mongoId instance */
 			return !data.toString().match(/^[0-9a-fA-F]{24}$/);
 		} else if (data === null) {
 			return false;

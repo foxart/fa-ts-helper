@@ -1,35 +1,57 @@
 import { ConsoleHelper } from '../helpers/console.helper';
 import { DataHelper } from '../helpers/data.helper';
 
+class ObjectId {
+	private readonly id: string;
+
+	public constructor(id: string) {
+		this.id = id;
+	}
+
+	public toString(): string {
+		return this.id;
+	}
+}
+
 const fields = {
-	fieldNumber: 1,
 	fieldUndefined: undefined,
 	fieldNull: null,
+	fieldNumber: 1,
+	fieldZeroNumber: 0,
+	fieldString: 'string',
 	fieldEmptyString: '',
-	fieldZeroValue: 0,
-	// fieldObjectId: new ObjectId(),
-	fieldsDate: new Date(),
+	fieldObjectId: new ObjectId('65aa4ceac632b427f4311ad3'),
+	fieldDate: new Date(),
+	test: {
+		a: {
+			body: { a: 1 },
+		},
+	},
 };
-const data = {
-	keyArray: Object.values(fields),
-	keyObject: fields,
+const keys = {
 	keyUndefined: undefined,
 	keyNull: null,
-	keyEmptyString: '',
+	keyNumber: 1,
 	keyZeroNumber: 0,
+	keyString: 'string',
+	keyEmptyString: '',
+	keyObjectId: new ObjectId('65aa4ceac632b427f4311ad3'),
+	keyDate: new Date(),
+	keyArray: Object.values(fields),
+	keyObject: { ...fields, keyFields: fields },
 };
 
 function testData(): void {
 	const options = {
 		undefined: true,
-		// null: true,
+		null: true,
 		zeroNumber: true,
 		emptyString: true,
+		exclude: ['fieldDate', 'keyDate', 'body'],
 	};
-	const result1 = DataHelper.filter(data, options);
-	const result2 = DataHelper.filter([data, Object.values(fields)], options);
-	console.info('object', result1);
-	console.info('array', result2);
+	console.info('OBJECT', DataHelper.filter(keys, options));
+	// console.info('ARRAY', DataHelper.filter([...Object.values(fields), { sub: Object.values(fields) }], options));
+	//
 }
 
 void (function (): void {
