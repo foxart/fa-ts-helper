@@ -1,7 +1,7 @@
+import bcrypt from 'bcryptjs';
 import CryptoJS from 'crypto-js';
-import { v4 } from 'uuid';
+import { v1, v3, v4, v5 } from 'uuid';
 
-type CipherParams = CryptoJS.lib.CipherParams;
 type WordArray = CryptoJS.lib.WordArray;
 
 class CryptSingleton {
@@ -49,40 +49,65 @@ class CryptSingleton {
 		}
 	}
 
-	public md5(message: string): string {
+	public md5(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacMD5(message, key));
+		}
 		return this.wordArrayToString(CryptoJS.MD5(message));
 	}
 
-	public md5Hmac(message: string, key: string): string {
-		return this.wordArrayToString(CryptoJS.HmacMD5(message, key));
+	public sha1(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA1(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA1(message));
 	}
 
-	public sha1Hmac(message: string, key: string): string {
-		return this.wordArrayToString(CryptoJS.HmacSHA1(message, key));
+	public sha224(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA224(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA224(message));
 	}
 
-	public sha256Hmac(password: string, key: string): string {
-		return this.wordArrayToString(CryptoJS.HmacSHA256(password, key));
+	public sha256(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA256(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA256(message));
 	}
 
-	public sha512Hmac(password: string, key: string): string {
-		return this.wordArrayToString(CryptoJS.HmacSHA512(password, key));
+	public sha3(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA3(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA3(message));
 	}
 
-	public randomBytes(bytes: number): WordArray {
-		return CryptoJS.lib.WordArray.random(bytes);
+	public sha384(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA384(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA384(message));
 	}
 
-	public password(password: string, salt: string): string {
-		return this.sha256Hmac(password, salt);
+	public sha512(message: string, key?: string): string {
+		if (key) {
+			return this.wordArrayToString(CryptoJS.HmacSHA512(message, key));
+		}
+		return this.wordArrayToString(CryptoJS.SHA512(message));
 	}
 
-	public salt(): string {
-		return this.wordArrayToString(this.randomBytes(32));
+	public password(password: string, rounds?: number | string): string {
+		return bcrypt.hashSync(password, rounds);
 	}
 
-	public refreshToken(): string {
-		return this.wordArrayToString(this.randomBytes(16));
+	public compare(password: string, hash: string): boolean {
+		return bcrypt.compareSync(password, hash);
+	}
+
+	public salt(rounds?: number): string {
+		return bcrypt.genSaltSync(rounds ? rounds : 10);
 	}
 
 	public v4(): string {

@@ -32,7 +32,7 @@ class DataSingleton {
 		return result;
 	}
 
-	public filter<T>(data: T, options: FilterOptionsInterface): T {
+	public filter<T>(data: T, options?: FilterOptionsInterface): T {
 		if (Array.isArray(data)) {
 			return data
 				.filter((item) => {
@@ -44,7 +44,7 @@ class DataSingleton {
 		}
 		if (this.isObject(data)) {
 			return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
-				if (options.exclude?.includes(key)) {
+				if (options?.exclude?.includes(key)) {
 					return acc;
 				} else if (this.isObject(value)) {
 					return { ...acc, [key]: this.filter(value, options) };
@@ -70,14 +70,16 @@ class DataSingleton {
 		);
 	}
 
-	private isEmpty(data: unknown, options: FilterOptionsInterface): boolean {
-		if (options.undefined && data === undefined) {
+	private isEmpty(data: unknown, options?: FilterOptionsInterface): boolean {
+		if (options?.undefined && data === undefined) {
 			return false;
-		} else if (options.null && data === null) {
+		} else if (options?.null && data === null) {
 			return false;
-		} else if (options.emptyString && data === '') {
+		} else if (options?.emptyString && data === '') {
 			return false;
-		} else return !(options.zeroNumber && data === 0);
+		} else {
+			return !(options?.zeroNumber && data === 0);
+		}
 	}
 
 	private isObject(data: unknown): boolean {
@@ -88,8 +90,9 @@ class DataSingleton {
 			return !data.toString().match(/^[0-9a-fA-F]{24}$/);
 		} else if (data === null) {
 			return false;
+		} else {
+			return typeof data === 'object';
 		}
-		return typeof data === 'object';
 	}
 }
 

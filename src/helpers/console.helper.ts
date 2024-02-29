@@ -183,14 +183,16 @@ class ConsoleSingleton {
 		});
 	}
 
-	private stdoutLink(link: string, colors?: ColorHelperEnum[]): void {
-		if (this.options?.link) {
+	private stdoutLink(link?: string, colors?: ColorHelperEnum[]): void {
+		if (link) {
+			if (this.options?.link) {
+				this.stdout('\n');
+				this.stdout(this.colorize([' at '], colors || []));
+				this.stdout(' ');
+				this.stdout(link);
+			}
 			this.stdout('\n');
-			this.stdout(this.colorize([' at '], colors || []));
-			this.stdout(' ');
-			this.stdout(link);
 		}
-		this.stdout('\n');
 	}
 
 	private stdoutStack(stack: string[]): void {
