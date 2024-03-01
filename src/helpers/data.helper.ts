@@ -1,6 +1,7 @@
 interface FilterOptionsInterface {
 	undefined?: boolean;
 	null?: boolean;
+	emptyObject?: boolean;
 	emptyString?: boolean;
 	zeroNumber?: boolean;
 	exclude?: string[];
@@ -15,6 +16,20 @@ class DataSingleton {
 			DataSingleton.self = new DataSingleton();
 		}
 		return DataSingleton.self;
+	}
+
+	public stringify(data: unknown, indent = 2): string {
+		const cache: unknown[] = [];
+		return JSON.stringify(
+			data,
+			(_key, value: unknown) =>
+				typeof value === 'object' && value !== null
+					? cache.includes(value)
+						? undefined
+						: cache.push(value) && value
+					: value,
+			indent,
+		);
 	}
 
 	public randomNumber(min: number, max: number, int = true): number {
@@ -36,50 +51,42 @@ class DataSingleton {
 		if (Array.isArray(data)) {
 			return data
 				.filter((item) => {
-					return this.isEmpty(item, options);
+					return !this.isEmpty(item, options);
 				})
 				.map((item: T) => {
 					return this.filter(item, options);
 				}) as T;
-		}
-		if (this.isObject(data)) {
+		} else if (this.isObject(data)) {
 			return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
 				if (options?.exclude?.includes(key)) {
 					return acc;
 				} else if (this.isObject(value)) {
+					if (this.isEmpty(value, options)) {
+						return acc;
+					}
 					return { ...acc, [key]: this.filter(value, options) };
 				} else {
-					return this.isEmpty(value, options) ? { ...acc, [key]: value } : acc;
+					return this.isEmpty(value, options) ? acc : { ...acc, [key]: value };
 				}
 			}, {} as T);
+		} else {
+			return data;
 		}
-		return data;
-	}
-
-	public stringify(data: unknown, indent = 2): string {
-		const cache: unknown[] = [];
-		return JSON.stringify(
-			data,
-			(_key, value: unknown) =>
-				typeof value === 'object' && value !== null
-					? cache.includes(value)
-						? undefined
-						: cache.push(value) && value
-					: value,
-			indent,
-		);
 	}
 
 	private isEmpty(data: unknown, options?: FilterOptionsInterface): boolean {
 		if (options?.undefined && data === undefined) {
-			return false;
+			return true;
 		} else if (options?.null && data === null) {
-			return false;
+			return true;
+		} else if (options?.emptyObject && this.isObject(data)) {
+			return Object.keys(data as object).length === 0;
 		} else if (options?.emptyString && data === '') {
-			return false;
-		} else {
-			return !(options?.zeroNumber && data === 0);
+			return true;
+		} else if (options?.zeroNumber && data === 0) {
+			return true;
 		}
+		return false;
 	}
 
 	private isObject(data: unknown): boolean {
@@ -91,7 +98,7 @@ class DataSingleton {
 		} else if (data === null) {
 			return false;
 		} else {
-			return typeof data === 'object';
+			return typeof data === 'object' && data.constructor === Object;
 		}
 	}
 }
