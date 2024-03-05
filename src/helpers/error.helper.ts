@@ -1,6 +1,6 @@
 import { DataHelper } from './data.helper';
 
-export interface ErrorHelperInterface {
+interface ErrorHelperInterface {
 	name: string;
 	message: unknown;
 	status?: number;

@@ -61,10 +61,7 @@ class DataSingleton {
 				if (options?.exclude?.includes(key)) {
 					return acc;
 				} else if (this.isObject(value)) {
-					if (this.isEmpty(value, options)) {
-						return acc;
-					}
-					return { ...acc, [key]: this.filter(value, options) };
+					return this.isEmpty(value, options) ? acc : { ...acc, [key]: this.filter(value, options) };
 				} else {
 					return this.isEmpty(value, options) ? acc : { ...acc, [key]: value };
 				}
