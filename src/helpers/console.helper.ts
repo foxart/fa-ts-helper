@@ -1,7 +1,7 @@
 import * as util from 'util';
 import * as process from 'process';
 import { ColorHelperEnum, ConsoleColorHelper as cch } from './console-color.helper';
-import { ParserHelper } from './parser.helper';
+import path from 'path';
 
 enum LevelEnum {
 	LOG,
@@ -20,12 +20,21 @@ interface OptionsInterface {
 	color?: boolean;
 }
 
+interface StackOptionInterface {
+	index?: number;
+	short?: boolean;
+	callback?: StackOptionCallbackType;
+}
+
+type StackOptionCallbackType = (stack: string[]) => string[];
+
 class ConsoleSingleton {
 	private static self: ConsoleSingleton;
-
 	public readonly console: Console;
-
 	private options: OptionsInterface;
+	private readonly cwd: string;
+	private readonly stackRegexp: RegExp;
+	private callback?: StackOptionCallbackType;
 
 	private constructor() {
 		this.options = {
@@ -37,6 +46,8 @@ class ConsoleSingleton {
 			color: true,
 		};
 		// this.pathRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
+		this.cwd = process.cwd();
+		this.stackRegexp = /\/(.+:\d+:\d+)/gm;
 		this.console = Object.assign({}, console);
 	}
 
@@ -49,6 +60,13 @@ class ConsoleSingleton {
 
 	public override(options?: OptionsInterface): void {
 		this.options = { ...this.options, ...options };
+		if (this.options?.node_modules) {
+			this.callback = (stack: string[]) => {
+				return stack.filter((item) => {
+					return !/node_modules/.test(item);
+				});
+			};
+		}
 		console.log = this.log.bind(this);
 		console.info = this.info.bind(this);
 		console.warn = this.warn.bind(this);
@@ -66,7 +84,15 @@ class ConsoleSingleton {
 
 	public log(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.LOG, this.callerPath(new Error(), 1, true), data);
+			this.print(
+				LevelEnum.LOG,
+				this.stack(new Error(), {
+					index: 1,
+					short: true,
+					callback: this.callback,
+				}),
+				data,
+			);
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -74,7 +100,15 @@ class ConsoleSingleton {
 
 	public info(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.INFO, this.callerPath(new Error(), 1, true), data);
+			this.print(
+				LevelEnum.INFO,
+				this.stack(new Error(), {
+					index: 1,
+					short: true,
+					callback: this.callback,
+				}),
+				data,
+			);
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -82,7 +116,15 @@ class ConsoleSingleton {
 
 	public warn(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.WARN, this.callerPath(new Error(), 1, true), data);
+			this.print(
+				LevelEnum.WARN,
+				this.stack(new Error(), {
+					index: 1,
+					short: true,
+					callback: this.callback,
+				}),
+				data,
+			);
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -90,7 +132,15 @@ class ConsoleSingleton {
 
 	public error(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.ERROR, this.callerPath(new Error(), 1, true), data);
+			this.print(
+				LevelEnum.ERROR,
+				this.stack(new Error(), {
+					index: 1,
+					short: true,
+					callback: this.callback,
+				}),
+				data,
+			);
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -98,24 +148,32 @@ class ConsoleSingleton {
 
 	public debug(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.DEBUG, this.callerPath(new Error(), null, false), data);
+			this.print(LevelEnum.DEBUG, this.stack(new Error()), data);
 		} catch (e) {
 			this.console.error(e);
 		}
 	}
 
-	private callerPath(error: Error, index: number | null, short?: boolean): string[] {
-		return ParserHelper.stack(error.stack, {
-			index,
-			short,
-			callback: this.options?.node_modules
-				? undefined
-				: (stack): string[] => {
-						return stack.filter((item) => {
-							return item.indexOf('node_modules') === -1;
-						});
-				  },
-		});
+	public stack(error: Error, options?: StackOptionInterface): string[] {
+		let result: string[] = [];
+		const stack = error.stack || '';
+		let match = this.stackRegexp.exec(stack);
+		while (match) {
+			if (match[0].indexOf(this.cwd) !== -1) {
+				result.push(match[0]);
+			}
+			match = this.stackRegexp.exec(stack);
+		}
+		if (options?.index !== undefined) {
+			result = [result[options.index]];
+		}
+		if (options?.short) {
+			result = result.map((item) => path.relative(this.cwd, item));
+		}
+		if (options?.callback) {
+			result = options.callback(result);
+		}
+		return result;
 	}
 
 	private print(level: LevelEnum, stack: string[], data: unknown[]): void {
@@ -169,7 +227,12 @@ class ConsoleSingleton {
 				this.stdout(this.colorize([' ', item.name], [cch.effect.bright]));
 				this.stdout(this.colorize([':'], [cch.effect.dim]));
 				this.stdout(this.colorize([' ', item.message, ' '], [cch.color.red, cch.effect.bright]));
-				this.stdoutStack(this.callerPath(item, null, true));
+				this.stdoutStack(
+					this.stack(item, {
+						short: true,
+						callback: this.callback,
+					}),
+				);
 			} else {
 				this.stdout(' ');
 				this.stdout(
