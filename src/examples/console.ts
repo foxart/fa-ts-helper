@@ -1,33 +1,34 @@
 import { ConsoleHelper } from '../helpers/console.helper';
+import * as util from 'util';
 
 function testTrace(): void {
-	const callbackReplace = (stack: string[]): string[] => {
-		return stack.map((item) => item.replace(/index.ts/, '<FILE>'));
+	const callbackReplace = (): void => {
+		ConsoleHelper.stdout('XXX');
 	};
-	const callbackFilter = (stack: string[]): string[] => {
-		return stack.filter((item) => !/node_modules/.test(item));
+	const callbackFilter = (): void => {
+		ConsoleHelper.stdout('YYY');
 	};
-	const error = new Error('My Error');
-	console.log(error);
-	console.log(
-		ConsoleHelper.stack(error, {
-			short: true,
-			callback: callbackReplace,
-		}),
-	);
-	console.log(
-		ConsoleHelper.stack(error, {
-			short: true,
-			callback: callbackFilter,
-		}),
-	);
-	console.debug({ a: 1 });
-	// console.log({ a: 1, b: { c: 'string' } });
+	// const Console = new ConsoleHelper();
+	ConsoleHelper.override({
+		// link: false,
+		callback: {
+			log: callbackReplace,
+			info: callbackFilter,
+		},
+	});
+	const data = new Error('My Error');
+	// const data = { a: 1 };
+	/** */
+	console.log(data);
+	console.info(data);
+	// console.warn(data);
+	// console.debug(data);
+	// console.error(data);
 	// process.stdout.write(util.inspect({ a: 1, b: { c: 'string' } }));
 }
 
 void ((): void => {
-	console.clear();
-	ConsoleHelper.override();
+	// console.clear();
+	// ConsoleHelper.override();
 	testTrace();
 })();

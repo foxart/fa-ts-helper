@@ -1,9 +1,8 @@
 import path from 'path';
 
-interface StackInterface {
+interface StackOptionInterface {
 	short?: boolean;
-	index?: number | null;
-	callback?: (item: string[]) => string[];
+	index?: number;
 }
 
 interface UrlInterface {
@@ -20,13 +19,13 @@ interface UrlInterface {
 class ParserSingleton {
 	private static self: ParserSingleton;
 	private readonly cwd: string;
-
 	private readonly stackRegexp: RegExp;
 	private readonly urlRegexp: RegExp;
 
 	private constructor() {
 		// this.cwd = __dirname;
 		this.cwd = process.cwd();
+		// this.stackRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
 		this.stackRegexp = /\/(.+:\d+:\d+)/gm;
 		this.urlRegexp = new RegExp(
 			[
@@ -46,7 +45,7 @@ class ParserSingleton {
 		return ParserSingleton.self;
 	}
 
-	public stack(stack: string | undefined, options?: StackInterface): string[] {
+	public stack(stack: string | undefined, options?: StackOptionInterface): string[] {
 		let result: string[] = [];
 		let match = this.stackRegexp.exec(stack || '');
 		while (match) {
@@ -60,9 +59,6 @@ class ParserSingleton {
 		}
 		if (options?.short) {
 			result = result.map((item) => path.relative(this.cwd, item));
-		}
-		if (options?.callback) {
-			result = options.callback(result);
 		}
 		return result;
 	}

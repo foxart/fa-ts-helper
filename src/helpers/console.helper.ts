@@ -1,7 +1,7 @@
 import * as util from 'util';
 import * as process from 'process';
 import { ColorHelperEnum, ConsoleColorHelper as cch } from './console-color.helper';
-import path from 'path';
+import { ParserHelper } from './parser.helper';
 
 enum LevelEnum {
 	LOG,
@@ -11,43 +11,34 @@ enum LevelEnum {
 	DEBUG,
 }
 
+type OptionsCallbackType = (data: unknown[]) => void;
+
 interface OptionsInterface {
-	info?: boolean;
 	link?: boolean;
-	node_modules?: boolean;
 	depth?: null | number;
 	hidden?: boolean;
 	color?: boolean;
+	callback?: {
+		log?: OptionsCallbackType;
+		info?: OptionsCallbackType;
+		warn?: OptionsCallbackType;
+		error?: OptionsCallbackType;
+		debug?: OptionsCallbackType;
+	};
 }
-
-interface StackOptionInterface {
-	index?: number;
-	short?: boolean;
-	callback?: StackOptionCallbackType;
-}
-
-type StackOptionCallbackType = (stack: string[]) => string[];
 
 class ConsoleSingleton {
 	private static self: ConsoleSingleton;
 	public readonly console: Console;
 	private options: OptionsInterface;
-	private readonly cwd: string;
-	private readonly stackRegexp: RegExp;
-	private callback?: StackOptionCallbackType;
 
-	private constructor() {
+	public constructor() {
 		this.options = {
 			link: true,
-			info: false,
-			node_modules: false,
 			depth: null,
 			hidden: true,
 			color: true,
 		};
-		// this.pathRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
-		this.cwd = process.cwd();
-		this.stackRegexp = /\/(.+:\d+:\d+)/gm;
 		this.console = Object.assign({}, console);
 	}
 
@@ -60,13 +51,6 @@ class ConsoleSingleton {
 
 	public override(options?: OptionsInterface): void {
 		this.options = { ...this.options, ...options };
-		if (this.options?.node_modules) {
-			this.callback = (stack: string[]) => {
-				return stack.filter((item) => {
-					return !/node_modules/.test(item);
-				});
-			};
-		}
 		console.log = this.log.bind(this);
 		console.info = this.info.bind(this);
 		console.warn = this.warn.bind(this);
@@ -84,15 +68,11 @@ class ConsoleSingleton {
 
 	public log(...data: unknown[]): void {
 		try {
-			this.print(
-				LevelEnum.LOG,
-				this.stack(new Error(), {
-					index: 1,
-					short: true,
-					callback: this.callback,
-				}),
-				data,
-			);
+			const stack = ParserHelper.stack(new Error().stack, { index: 1, short: true });
+			this.print(LevelEnum.LOG, stack, data);
+			if (this.options.callback?.log) {
+				this.options.callback?.log.call(this, data);
+			}
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -100,15 +80,11 @@ class ConsoleSingleton {
 
 	public info(...data: unknown[]): void {
 		try {
-			this.print(
-				LevelEnum.INFO,
-				this.stack(new Error(), {
-					index: 1,
-					short: true,
-					callback: this.callback,
-				}),
-				data,
-			);
+			const stack = ParserHelper.stack(new Error().stack, { index: 1, short: true });
+			this.print(LevelEnum.INFO, stack, data);
+			if (this.options.callback?.info) {
+				this.options.callback?.info.call(this, data);
+			}
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -116,15 +92,11 @@ class ConsoleSingleton {
 
 	public warn(...data: unknown[]): void {
 		try {
-			this.print(
-				LevelEnum.WARN,
-				this.stack(new Error(), {
-					index: 1,
-					short: true,
-					callback: this.callback,
-				}),
-				data,
-			);
+			const stack = ParserHelper.stack(new Error().stack, { index: 1, short: true });
+			this.print(LevelEnum.WARN, stack, data);
+			if (this.options.callback?.warn) {
+				this.options.callback?.warn.call(this, data);
+			}
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -132,15 +104,11 @@ class ConsoleSingleton {
 
 	public error(...data: unknown[]): void {
 		try {
-			this.print(
-				LevelEnum.ERROR,
-				this.stack(new Error(), {
-					index: 1,
-					short: true,
-					callback: this.callback,
-				}),
-				data,
-			);
+			const stack = ParserHelper.stack(new Error().stack, { index: 1, short: true });
+			this.print(LevelEnum.ERROR, stack, data);
+			if (this.options.callback?.error) {
+				this.options.callback?.error.call(this, data);
+			}
 		} catch (e) {
 			this.console.error(e);
 		}
@@ -148,32 +116,18 @@ class ConsoleSingleton {
 
 	public debug(...data: unknown[]): void {
 		try {
-			this.print(LevelEnum.DEBUG, this.stack(new Error()), data);
+			const [, ...stack] = ParserHelper.stack(new Error().stack);
+			this.print(LevelEnum.DEBUG, stack, data);
+			if (this.options.callback?.debug) {
+				this.options.callback?.debug.call(this, data);
+			}
 		} catch (e) {
 			this.console.error(e);
 		}
 	}
 
-	public stack(error: Error, options?: StackOptionInterface): string[] {
-		let result: string[] = [];
-		const stack = error.stack || '';
-		let match = this.stackRegexp.exec(stack);
-		while (match) {
-			if (match[0].indexOf(this.cwd) !== -1) {
-				result.push(match[0]);
-			}
-			match = this.stackRegexp.exec(stack);
-		}
-		if (options?.index !== undefined) {
-			result = [result[options.index]];
-		}
-		if (options?.short) {
-			result = result.map((item) => path.relative(this.cwd, item));
-		}
-		if (options?.callback) {
-			result = options.callback(result);
-		}
-		return result;
+	public stdout(data: string): void {
+		process.stdout.write(data);
 	}
 
 	private print(level: LevelEnum, stack: string[], data: unknown[]): void {
@@ -206,7 +160,6 @@ class ConsoleSingleton {
 				this.stdout('\n');
 				this.stdout(this.colorize(['TRACE: '], [cch.color.magenta]));
 				this.stdoutStack(stack);
-				this.stdout('\n');
 				this.stdoutLink(stack[0], this.levelColors(level));
 				break;
 			default:
@@ -217,22 +170,13 @@ class ConsoleSingleton {
 		this.stdout('\n');
 	}
 
-	private stdout(data: string): void {
-		process.stdout.write(data);
-	}
-
 	private stdoutData(data: unknown[]): void {
 		data.forEach((item) => {
 			if (item instanceof Error) {
 				this.stdout(this.colorize([' ', item.name], [cch.effect.bright]));
 				this.stdout(this.colorize([':'], [cch.effect.dim]));
 				this.stdout(this.colorize([' ', item.message, ' '], [cch.color.red, cch.effect.bright]));
-				this.stdoutStack(
-					this.stack(item, {
-						short: true,
-						callback: this.callback,
-					}),
-				);
+				this.stdoutStack(ParserHelper.stack(item.stack, { short: true }));
 			} else {
 				this.stdout(' ');
 				this.stdout(
@@ -254,7 +198,6 @@ class ConsoleSingleton {
 				this.stdout(' ');
 				this.stdout(link);
 			}
-			this.stdout('\n');
 		}
 	}
 
@@ -269,6 +212,9 @@ class ConsoleSingleton {
 	}
 
 	private colorize(data: string[], colors: ColorHelperEnum[]): string {
+		if (!this.options.color) {
+			return Array.isArray(data) ? data.join('') : data;
+		}
 		const result = colors.reduce(
 			(acc, value) => {
 				return `${value}${acc}`;
