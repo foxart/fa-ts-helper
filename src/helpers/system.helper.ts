@@ -19,22 +19,39 @@ class SystemSingleton {
     });
   }
 
-  public scanDirectorySync(directory: string, filter?: RegExp): string[] {
+  public scanForFilesSync(directory: string, recursive: boolean, filter?: RegExp[]): string[] {
     const result = [];
     if (!fs.existsSync(directory)) {
       return [];
     }
-    const files = fs.readdirSync(directory);
-    for (let i = 0; i < files.length; i++) {
-      const filename = path.join(directory, files[i]);
-      if (fs.lstatSync(filename).isDirectory()) {
-        result.push(...this.scanDirectorySync(filename, filter));
-        // } else if (filename.endsWith(filter)) {
-      } else {
-        if (!filter) {
-          result.push(filename);
-        } else if (filter.test(filename)) {
-          result.push(filename);
+    const entries = fs.readdirSync(directory);
+    for (const entry of entries) {
+      const fullPath = path.join(directory, entry);
+      if (fs.lstatSync(fullPath).isDirectory()) {
+        if (recursive) {
+          result.push(...this.scanForFilesSync(fullPath, recursive, filter));
+        }
+      } else if (!filter || filter?.some((item) => item.test(fullPath))) {
+        result.push(fullPath);
+      }
+    }
+    return result;
+  }
+
+  public scanForDirectoriesSync(directory: string, recursive: boolean, filter?: RegExp[]): string[] {
+    const result: string[] = [];
+    if (!fs.existsSync(directory)) {
+      return result;
+    }
+    const entries = fs.readdirSync(directory);
+    for (const entry of entries) {
+      const fullPath = path.join(directory, entry);
+      if (fs.lstatSync(fullPath).isDirectory()) {
+        if (recursive) {
+          result.push(...this.scanForDirectoriesSync(fullPath, recursive, filter));
+        }
+        if (!filter || filter?.some((item) => item.test(fullPath))) {
+          result.push(fullPath);
         }
       }
     }

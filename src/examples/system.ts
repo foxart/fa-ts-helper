@@ -12,14 +12,20 @@ function testWriteFile(): void {
   SystemHelper.writeFileSync('./temp/system.json', JSON.stringify(data));
 }
 
-function testScanDirectory(filter?: RegExp): void {
-  const result = SystemHelper.scanDirectorySync('./temp', filter);
+function testForFiles(filter: RegExp): void {
+  const result = SystemHelper.scanForFilesSync('./temp', true, [filter]);
+  console.log(result);
+}
+
+function testForDirectories(filter: RegExp): void {
+  const result = SystemHelper.scanForDirectoriesSync('./temp', true, [filter]);
   console.log(result);
 }
 
 void (async function (): Promise<void> {
   console.clear();
-  await testSleep();
-  testWriteFile();
-  testScanDirectory(/.+-1\.txt/);
+  // await testSleep();
+  // testWriteFile();
+  // testForFiles(/.+-1\.txt$/);
+  testForDirectories(/.+-2$/);
 })();

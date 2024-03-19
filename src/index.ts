@@ -1,4 +1,3 @@
-// export type { ErrorHelperInterface } from './helpers/error.helper';
 export { ConsoleHelper } from './helpers/console.helper';
 export { ConsoleColorHelper } from './helpers/console-color.helper';
 export { CryptHelper } from './helpers/crypt.helper';
