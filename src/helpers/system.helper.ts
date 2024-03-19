@@ -59,19 +59,17 @@ class SystemSingleton {
   }
 
   public writeFileSync(filename: string, content: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
-    const directory = path.dirname(filename);
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory, {
-        recursive: true,
-      });
+    try {
+      const directory = path.dirname(filename);
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory, {
+          recursive: true,
+        });
+      }
+      fs.writeFileSync(filename, content, options || { encoding: 'utf-8' });
+    } catch (e) {
+      console.error(e);
     }
-    // let data: string;
-    // try {
-    // 	data = JSON.stringify(content, null, 4);
-    // } catch (e) {
-    // 	data = (content as NodeJS.ArrayBufferView).toString();
-    // }
-    fs.writeFileSync(filename, content, options || { encoding: 'utf-8' });
   }
 }
 
