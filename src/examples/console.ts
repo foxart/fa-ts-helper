@@ -2,9 +2,9 @@ import { ConsoleHelper } from '../helpers/console.helper';
 
 function test(): void {
   /** */
-  // const data = new Error('My Error');
-  const data = { a: 1 };
+  const data = { a: 1, b: 'lorem ipsum', c: new Date() };
   /** */
+  console.log(new Error('Custom error'));
   console.log(data);
   console.info(data);
   console.warn(data);
@@ -14,7 +14,9 @@ function test(): void {
 
 void ((): void => {
   console.clear();
-  const Console = new ConsoleHelper({ level: 1 });
+  const Console = new ConsoleHelper({
+    index: 1,
+  });
   console.log = Console.log.bind(Console);
   console.info = Console.info.bind(Console);
   console.warn = Console.warn.bind(Console);
