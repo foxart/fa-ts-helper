@@ -17,7 +17,7 @@
 		"build": "rm -rf ./lib && npm run build:esm && npm run build:cjs",
 		"build:esm": "tsc -p config/tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
 		"build:cjs": "tsc -p config/tsconfig.cjs.json",
-		"link": "npm link",
+    "lint": "eslint -c .eslintrc.js \"{src,apps,libs,test}/**/*.ts\" --fix",
 		"prepack": "npm run build",
 		"export": "npm pack --pack-destination packages --omit=dev",
 		"publish:public": "npm publish --access=public",
