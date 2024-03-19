@@ -1,34 +1,24 @@
 import { ConsoleHelper } from '../helpers/console.helper';
-import * as util from 'util';
 
-function testTrace(): void {
-	const callbackReplace = (): void => {
-		ConsoleHelper.stdout('XXX');
-	};
-	const callbackFilter = (): void => {
-		ConsoleHelper.stdout('YYY');
-	};
-	// const Console = new ConsoleHelper();
-	ConsoleHelper.override({
-		// link: false,
-		callback: {
-			log: callbackReplace,
-			info: callbackFilter,
-		},
-	});
-	const data = new Error('My Error');
-	// const data = { a: 1 };
-	/** */
-	console.log(data);
-	console.info(data);
-	// console.warn(data);
-	// console.debug(data);
-	// console.error(data);
-	// process.stdout.write(util.inspect({ a: 1, b: { c: 'string' } }));
+function test(): void {
+  /** */
+  // const data = new Error('My Error');
+  const data = { a: 1 };
+  /** */
+  console.log(data);
+  console.info(data);
+  console.warn(data);
+  console.error(data);
+  console.debug(data);
 }
 
 void ((): void => {
-	// console.clear();
-	// ConsoleHelper.override();
-	testTrace();
+  console.clear();
+  const Console = new ConsoleHelper({ level: 1 });
+  console.log = Console.log.bind(Console);
+  console.info = Console.info.bind(Console);
+  console.warn = Console.warn.bind(Console);
+  console.error = Console.error.bind(Console);
+  console.debug = Console.debug.bind(Console);
+  test();
 })();
