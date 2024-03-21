@@ -1,4 +1,4 @@
-import { SystemHelper } from '../helpers/system.helper';
+import { SystemHelper } from '../src/helpers/system.helper';
 
 async function testSleep(): Promise<void> {
   const timeStart = performance.now();

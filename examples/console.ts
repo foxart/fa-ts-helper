@@ -1,15 +1,15 @@
-import { ConsoleHelper } from '../helpers/console.helper';
+import { ConsoleHelper } from '../src/helpers/console.helper';
 
 function test(): void {
   /** */
   const data = { a: 1, b: 'lorem ipsum', c: new Date() };
   /** */
   console.log(new Error('Custom error'));
-  console.log(data);
-  console.info(data);
-  console.warn(data);
-  console.error(data);
-  console.debug(data);
+  // console.log(data);
+  // console.info(data);
+  // console.warn(data);
+  // console.error(data);
+  // console.debug(data);
 }
 
 void ((): void => {

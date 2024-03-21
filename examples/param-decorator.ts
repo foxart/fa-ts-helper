@@ -1,4 +1,4 @@
-import { ParamDecoratorHelper } from '../helpers/param-decorator.helper';
+import { ParamDecoratorHelper } from '../src/helpers/param-decorator.helper';
 
 function ModelMethod(): MethodDecorator {
   return ParamDecoratorHelper.decorateMethod();

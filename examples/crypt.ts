@@ -1,4 +1,4 @@
-import { CryptHelper } from '../helpers/crypt.helper';
+import { CryptHelper } from '../src/helpers/crypt.helper';
 import bcrypt from 'bcryptjs';
 
 function testCrypt(): void {

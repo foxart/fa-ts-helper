@@ -1,4 +1,4 @@
-import { DataHelper } from '../helpers/data.helper';
+import { DataHelper } from '../src/helpers/data.helper';
 
 class ObjectId {
   private readonly id: string;
