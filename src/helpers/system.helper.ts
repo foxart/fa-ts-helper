@@ -1,5 +1,5 @@
 import path from 'path';
-import fs, { WriteFileOptions } from 'fs';
+import fs, { RmOptions, WriteFileOptions } from 'fs';
 
 class SystemSingleton {
   private static self: SystemSingleton;
@@ -58,15 +58,25 @@ class SystemSingleton {
     return result;
   }
 
-  public writeFileSync(filename: string, content: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
+  public removeSync(path: string | string[], options?: RmOptions): void {
+    (Array.isArray(path) ? path : [path]).forEach((item) => {
+      fs.rm(item, options || {}, (e) => {
+        if (e) {
+          console.error(e);
+        }
+      });
+    });
+  }
+
+  public writeFileSync(file: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
     try {
-      const directory = path.dirname(filename);
+      const directory = path.dirname(file);
       if (!fs.existsSync(directory)) {
         fs.mkdirSync(directory, {
           recursive: true,
         });
       }
-      fs.writeFileSync(filename, content, options || { encoding: 'utf-8' });
+      fs.writeFileSync(file, data, options || { encoding: 'utf-8' });
     } catch (e) {
       console.error(e);
     }
