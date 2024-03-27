@@ -1,8 +1,12 @@
 {
 	"compilerOptions": {
 		"baseUrl": "./",
-		"module": "commonjs",
-		"target": "es2022",
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
 		"allowJs": true,
 		"allowSyntheticDefaultImports": true,
 		"checkJs": true,
