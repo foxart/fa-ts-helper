@@ -89,4 +89,4 @@ class ParamDecoratorSingleton {
   }
 }
 
-export const ParamDecoratorHelper = ParamDecoratorSingleton.getInstance();
+export const ParamDecorator = ParamDecoratorSingleton.getInstance();

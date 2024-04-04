@@ -1,20 +1,20 @@
-import { ParamDecoratorHelper } from '../src/helpers/param-decorator.helper';
+import { ParamDecorator } from '../src/decorator/param.decorator';
 
 function ModelMethod(): MethodDecorator {
-  return ParamDecoratorHelper.decorateMethod();
+  return ParamDecorator.decorateMethod();
 }
 
 const Dec1 = (payload: string): ParameterDecorator => {
   const handler: CallableFunction = function (data: string, payload: string): string {
     return data.toUpperCase() + '<-' + payload;
   };
-  return ParamDecoratorHelper.decorateParam(Dec1.name, handler, payload);
+  return ParamDecorator.decorateParam(Dec1.name, handler, payload);
 };
 const Dec2 = (): ParameterDecorator => {
   const handler: CallableFunction = function (data: string): string {
     return `${data}<-Dec2`;
   };
-  return ParamDecoratorHelper.decorateParam(Dec2.name, handler);
+  return ParamDecorator.decorateParam(Dec2.name, handler);
 };
 
 class Test {

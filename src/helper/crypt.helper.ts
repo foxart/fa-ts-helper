@@ -98,18 +98,29 @@ class CryptSingleton {
     return this.wordArrayToString(CryptoJS.SHA512(message));
   }
 
-  public password(password: string, rounds?: number | string): string {
+  public bcryptPassword(password: string, rounds?: number | string): string {
     return bcrypt.hashSync(password, rounds);
   }
 
-  public compare(password: string, hash: string): boolean {
+  public bcryptCompare(password: string, hash: string): boolean {
     return bcrypt.compareSync(password, hash);
   }
 
-  public salt(rounds?: number): string {
+  public bcryptSalt(rounds?: number): string {
     return bcrypt.genSaltSync(rounds ? rounds : 10);
   }
 
+  public bcryptInput(input: string): { algorithm: string; cost: string; salt: string; hash: string } {
+    const [, algorithm, cost, saltHash] = input.split('$');
+    const salt = saltHash.substring(0, 22);
+    const hash = saltHash.substring(22, 22 + 31);
+    return {
+      algorithm,
+      cost,
+      salt,
+      hash,
+    };
+  }
   public v4(): string {
     return v4();
   }

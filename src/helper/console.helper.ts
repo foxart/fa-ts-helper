@@ -18,7 +18,7 @@ interface OptionsInterface {
   color?: boolean;
 }
 
-class ConsoleSingleton {
+export class ConsoleHelper {
   // private static self: ConsoleSingleton;
   public readonly console: Console;
   private readonly options: OptionsInterface;
@@ -234,6 +234,3 @@ class ConsoleSingleton {
     }
   }
 }
-
-// export const ConsoleHelper = ConsoleSingleton.getInstance();
-export { ConsoleSingleton as ConsoleHelper };

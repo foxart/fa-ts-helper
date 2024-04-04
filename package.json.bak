@@ -4,32 +4,42 @@
 	"description": "",
 	"author": "Ivan Kosenko",
 	"license": "MIT",
-  "homepage": "https://github.com/foxart/fa-node",
 	"private": false,
+	"homepage": "https://github.com/foxart/fa-node",
 	"scripts": {
-    "start": "nodemon -e ts --watch ../ -x ts-node examples/index.ts",
+    "start:console": "nodemon -e ts --watch ../ -x ts-node examples/test-console-helper.ts",
+    "start:crypt": "nodemon -e ts --watch ../ -x ts-node examples/test-crypt-helper.ts",
+    "start:data": "nodemon -e ts --watch ../ -x ts-node examples/data.ts",
+    "start:param-decorator": "nodemon -e ts --watch ../ -x ts-node examples/param-decorator.ts",
+    "start:parser": "nodemon -e ts --watch ../ -x ts-node examples/parser.ts",
+    "start:system": "nodemon -e ts --watch ../ -x ts-node examples/test-system-helper.ts",
+    "start:validator": "nodemon -e ts --watch ../ -x ts-node examples/validator.ts",
+    "build": "rm -rf ./lib && npm run build:esm && npm run build:cjs",
+    "build_": "npm run build:dist",
     "prebuild": "rimraf dist",
-    "build": "tsc -p tsconfig.build.json",
+    "build:dist": "tsc -p tsconfig.dist.json",
+    "build:esm": "tsc -p tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
     "lint": "eslint -c .eslintrc.js \"{src,apps,libs,test}/**/*.ts\" --fix",
 		"prepack": "npm run build",
 		"publish:public": "npm publish --access=public",
 		"publish:dry": "npm publish --dry-run",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+	"main": "./lib/cjs/index.js",
+	"types": "./lib/cjs/types/index.d.ts",
 	"files": [
-    "dist/**/*"
+		"lib/**/*"
 	],
 	"exports": {
 		".": {
 			"import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+				"types": "./lib/esm/types/index.d.ts",
+				"default": "./lib/esm/index.mjs"
 			},
 			"require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+				"types": "./lib/cjs/types/index.d.ts",
+				"default": "./lib/cjs/index.js"
 			}
 		}
 	},

@@ -16,4 +16,4 @@
 - [x] wrap all helpers with singleton classes
 - [x] add debug with full trace path
 - [x] extend debug with path default shor or full path
-- [x] extend debug with pretty log errors
+- [x] extend debug with pretty logger errors

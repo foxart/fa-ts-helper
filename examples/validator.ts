@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
-import { ValidatorHelper } from '../src/helpers/validator.helper';
+import { ValidatorHelper } from '../src/helper/validator.helper';
 import 'reflect-metadata';
 
 class dataNestedEntity {
