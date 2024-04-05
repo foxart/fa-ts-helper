@@ -1,34 +1,32 @@
-export class MiddlewareHelper {
-  private readonly middleware: [(next: (...nextArgs: unknown[]) => void, ...args: any[]) => void];
+type MiddlewareNextType<T> = (payload: T) => void;
+type MiddlewareType<T> = (payload: T, next: MiddlewareNextType<T>) => void;
+
+export class MiddlewareHelper<PAYLOAD> {
+  private readonly middleware: MiddlewareType<PAYLOAD>[];
 
   public constructor() {
-    this.middleware = [(next) => next()];
+    this.middleware = [];
   }
 
-  public add(middleware: (next: (...nextArgs: unknown[]) => void, ...args: any[]) => void) {
+  public add(middleware: MiddlewareType<PAYLOAD>): void {
     this.middleware.push(middleware);
   }
 
-  public use(next: (...nextArgs: unknown[]) => void, ...args: any[]): void {
-    const runner = (func: Function, curr: number, funcArgs: any[]) => {
-      if (curr <= prev) {
-        throw new Error('multiple calls');
-      }
-      prev = curr;
-      if (curr === this.middleware.length) {
-        func(...funcArgs);
-      } else {
-        this.middleware[curr](
-          (...data) => {
-            funcArgs.splice(0, data.length);
-            data.push(...funcArgs);
-            runner(func, curr + 1, data);
-          },
-          ...funcArgs,
-        );
-      }
-    };
-    let prev = 0;
-    runner(next, 1, args);
+  public use(payload: PAYLOAD, next: MiddlewareNextType<PAYLOAD>): void {
+    this.executor(payload, next, 0, 0);
+  }
+
+  private executor(payload: PAYLOAD, next: MiddlewareNextType<PAYLOAD>, current: number, previous: number): void {
+    if (current < previous) {
+      throw new Error('multiple calls');
+    }
+    previous = current;
+    if (current === this.middleware.length) {
+      next(payload);
+    } else {
+      this.middleware[current](payload, (data) => {
+        this.executor(data, next, current + 1, previous);
+      });
+    }
   }
 }

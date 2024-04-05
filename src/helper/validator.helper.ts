@@ -10,15 +10,12 @@ class ValidatorSingleton {
     return ValidatorSingleton.self;
   }
 
-  public async validateAsync<T>(
-    object: T | string,
-    options?: ValidatorOptions,
-  ): Promise<Record<string, unknown> | null> {
+  public async validateAsync<T>(object: T, options?: ValidatorOptions): Promise<Record<string, unknown> | null> {
     const result = this.getValidationErrorList(await validate(object as object, options));
     return this.isObjectEmpty(result) ? null : result;
   }
 
-  public validateSync<T>(object: T | string, options?: ValidatorOptions): Record<string, unknown> | null {
+  public validateSync<T>(object: T, options?: ValidatorOptions): Record<string, unknown> | null {
     const result = this.getValidationErrorList(validateSync(object as object, options));
     return this.isObjectEmpty(result) ? null : result;
   }

@@ -20,3 +20,7 @@ export function logNameData(name: string, ...data: unknown[]) {
     ConsoleLog.log(...data);
   }
 }
+
+export function logData(...data: unknown[]) {
+  ConsoleLog.log(...data);
+}
