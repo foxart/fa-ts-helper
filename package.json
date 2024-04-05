@@ -7,7 +7,7 @@
   "homepage": "https://github.com/foxart/fa-node",
 	"private": false,
 	"scripts": {
-    "start": "nodemon -e ts --watch ../ -x ts-node examples/index.ts",
+    "start": "nodemon -e ts --watch ../ -x ts-node example/index.ts",
     "prebuild": "rimraf dist",
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint -c .eslintrc.js \"{src,apps,libs,test}/**/*.ts\" --fix",

@@ -51,7 +51,7 @@ class MockClass {
   private readonly console: ConsoleHelper;
 
   public constructor() {
-    this.console = new ConsoleHelper({ link: false });
+    this.console = new ConsoleHelper({ date: false, info: true, link: false, color: true });
   }
 
   @Method()

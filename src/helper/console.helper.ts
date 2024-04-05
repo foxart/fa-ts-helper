@@ -13,32 +13,29 @@ enum LevelEnum {
 
 interface OptionsInterface {
   index?: number;
+  date?: boolean;
+  info?: boolean;
   link?: boolean;
-  hidden?: boolean;
   color?: boolean;
+  hidden?: boolean;
 }
 
 export class ConsoleHelper {
-  // private static self: ConsoleSingleton;
   public readonly console: Console;
   private readonly options: OptionsInterface;
 
   public constructor(options?: OptionsInterface) {
     this.options = {
       index: options?.index ?? 1,
+      date: options?.date ?? true,
+      info: options?.info ?? true,
       link: options?.link ?? true,
-      hidden: options?.hidden ?? false,
       color: options?.color ?? true,
+      hidden: options?.hidden ?? false,
     };
     this.console = Object.assign({}, console);
   }
 
-  // public static getInstance(): ConsoleSingleton {
-  //   if (!ConsoleSingleton.self) {
-  //     ConsoleSingleton.self = new ConsoleSingleton();
-  //   }
-  //   return ConsoleSingleton.self;
-  // }
   public log(...data: unknown[]): void {
     try {
       const stack = ParserHelper.stack(new Error().stack, { index: this.options.index, short: true });
@@ -89,60 +86,57 @@ export class ConsoleHelper {
   }
 
   private print(level: LevelEnum, stack: string[], data: unknown[]): void {
-    switch (level) {
-      case LevelEnum.LOG:
-        this.stdout(this.colorize(' LOG ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdoutData(data);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
-        break;
-      case LevelEnum.INFO:
-        this.stdout(this.colorize(' INF ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdoutData(data);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
-        break;
-      case LevelEnum.WARN:
-        this.stdout(this.colorize(' WRN ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdoutData(data);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
-        break;
-      case LevelEnum.ERROR:
-        this.stdout(this.colorize(' ERR ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdoutData(data);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
-        break;
-      case LevelEnum.DEBUG:
-        this.stdout(this.colorize(' DEBUG ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdout('\n');
-        this.stdout(this.colorize('DATA:', this.foregroundColor(level)));
-        this.stdoutData(data);
-        this.stdout('\n');
-        this.stdout(this.colorize('TRACE: ', this.foregroundColor(level)));
-        this.stdoutStack(stack);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
-        break;
-      default:
-        this.stdout(this.colorize(' DEFAULT ', this.backgroundColor(level)));
-        this.stdout(this.colorize([' ', this.date()], [cch.foreground.cyan]));
-        this.stdoutData(data);
-        this.stdoutLink(stack[0], this.backgroundColor(level));
+    if (level === LevelEnum.DEBUG) {
+      this.stdoutInfo(level);
+      this.stdoutDate();
+      this.stdout('\n');
+      this.stdout(this.colorize('DATA: ', this.foregroundColor(level)));
+      this.stdoutData(data);
+      this.stdout('\n');
+      this.stdout(this.colorize('TRACE: ', this.foregroundColor(level)));
+      this.stdoutStack(stack);
+      this.stdoutLink(stack[0], this.backgroundColor(level));
+    } else {
+      this.stdoutInfo(level);
+      this.stdoutDate();
+      this.stdoutData(data);
+      this.stdoutLink(stack[0], this.backgroundColor(level));
     }
     this.stdout('\n');
+  }
+
+  private stdoutInfo(level: LevelEnum): void {
+    if (this.options?.info) {
+      const key = Object.keys(LevelEnum as object)[Object.values(LevelEnum as object).indexOf(level)];
+      this.stdout(this.colorize([' ', key, ' '], this.backgroundColor(level)));
+      this.stdout(' ');
+    }
+  }
+
+  private stdoutDate(): void {
+    if (this.options?.date) {
+      const date = new Date().toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      });
+      this.stdout(this.colorize(date, [cch.foreground.cyan]));
+      this.stdout(' ');
+    }
   }
 
   private stdoutData(data: unknown[]): void {
     data.forEach((item) => {
       if (item instanceof Error) {
-        this.stdout(this.colorize([' ', item.name], [cch.effect.bright]));
+        this.stdout(this.colorize(item.name, [cch.effect.bright]));
         this.stdout(this.colorize(':', [cch.effect.dim]));
         this.stdout(this.colorize([' ', item.message, ' '], [cch.foreground.red, cch.effect.bright]));
         this.stdoutStack(ParserHelper.stack(item.stack, { short: true }));
       } else {
-        this.stdout(' ');
         this.stdout(
           util.inspect(item, {
             showHidden: this.options?.hidden,
@@ -155,13 +149,13 @@ export class ConsoleHelper {
   }
 
   private stdoutLink(link?: string, colors?: ColorHelperEnum[]): void {
-    if (link) {
-      if (this.options?.link) {
-        this.stdout('\n');
+    if (this.options?.link && link) {
+      this.stdout('\n');
+      if (this.options.info) {
         this.stdout(this.colorize(' at ', colors ?? []));
         this.stdout(' ');
-        this.stdout(link);
       }
+      this.stdout(link);
     }
   }
 
@@ -186,18 +180,6 @@ export class ConsoleHelper {
       Array.isArray(data) ? data.join('') : data,
     );
     return `${cch.effect.reset}${result}${cch.effect.reset}`;
-  }
-
-  private date(): string {
-    return new Date().toLocaleString('en-GB', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    });
   }
 
   private backgroundColor(level?: LevelEnum): ColorHelperEnum[] {
