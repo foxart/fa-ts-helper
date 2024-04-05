@@ -1,16 +1,17 @@
 //todo loosing context
 import { DecoratorNew } from './decorator';
 
-export const ParamDecoratorNew = (name: string, callback: CallableFunction, ...args: unknown[]): ParameterDecorator => {
-  return (target, propertyKey, parameterIndex): void => {
+export const ParamDecoratorNew = (name: string, callback: CallableFunction, data: unknown): ParameterDecorator => {
+  return function (target, propertyKey, parameterIndex): void {
+    // @ts-ignore
+    console.log(this, '<<<');
     if (!DecoratorNew.getCallback(name)) {
       DecoratorNew.setCallback(name, callback);
     }
     const metadataMap = DecoratorNew.getMetadata(target, propertyKey);
-    console.info({ args });
     const metadata = (metadataMap.get(parameterIndex) || []).concat({
-      name,
-      args,
+      decoratorName: name,
+      decoratorData: data,
     });
     metadataMap.set(parameterIndex, metadata);
     DecoratorNew.setMetadata(target, propertyKey, metadataMap);

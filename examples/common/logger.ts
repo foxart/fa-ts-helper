@@ -3,13 +3,13 @@ import { ConsoleColorHelper, ConsoleHelper } from '../../src';
 
 const ConsoleLog = new ConsoleHelper({ index: 2 });
 
-export function logNameData(name: string, ...data: unknown[]) {
+export function logNameData(name: string, ...data: unknown[]): void {
   [
     '\n',
     '[',
     ConsoleColorHelper.effect.bright,
     ConsoleColorHelper.foreground.yellow,
-    name,
+    name.toUpperCase(),
     ConsoleColorHelper.effect.reset,
     ']',
     ' ',
@@ -21,6 +21,7 @@ export function logNameData(name: string, ...data: unknown[]) {
   }
 }
 
-export function logData(...data: unknown[]) {
+export function logData(...data: unknown[]): void {
+  process.stdout.write('\n');
   ConsoleLog.log(...data);
 }

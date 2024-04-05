@@ -8,6 +8,5 @@ function testParser(): void {
 }
 
 void (function (): void {
-  console.clear();
   testParser();
 })();

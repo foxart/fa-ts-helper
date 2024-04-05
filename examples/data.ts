@@ -56,6 +56,5 @@ function testData(): void {
 }
 
 void (function (): void {
-  console.clear();
   testData();
 })();

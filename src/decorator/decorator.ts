@@ -2,8 +2,8 @@ import 'reflect-metadata';
 
 type PropertyKeyType = string | symbol | undefined;
 type MetadataMapValueType = {
-  name: string;
-  args: unknown[];
+  decoratorName: string;
+  decoratorData: unknown;
 };
 export type MetadataMapType = Map<number, MetadataMapValueType[]>;
 
