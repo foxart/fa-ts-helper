@@ -1,7 +1,6 @@
-import { logNameData } from './common/logger';
 import { ConsoleHelper } from '../src';
 
-const Console = new ConsoleHelper();
+const Console = new ConsoleHelper({ link: false });
 
 function setConsole(): void {
   console.log = Console.log.bind(Console);
@@ -20,27 +19,27 @@ function resetConsole(): void {
 }
 
 function consoleLog(data: unknown): void {
-  logNameData(consoleLog.name);
+  Console.info(consoleLog.name);
   console.log(data);
 }
 
 function consoleInfo(data: unknown): void {
-  logNameData(consoleInfo.name);
+  Console.info(consoleInfo.name);
   console.info(data);
 }
 
 function consoleWarn(data: unknown): void {
-  logNameData(consoleWarn.name);
+  Console.info(consoleWarn.name);
   console.warn(data);
 }
 
 function consoleError(data: unknown): void {
-  logNameData(consoleError.name);
+  Console.info(consoleError.name);
   console.error(data);
 }
 
 function consoleDebug(data: unknown): void {
-  logNameData(consoleDebug.name);
+  Console.info(consoleDebug.name);
   console.debug(data);
 }
 

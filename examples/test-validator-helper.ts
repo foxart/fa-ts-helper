@@ -2,7 +2,6 @@ import { plainToInstance, Type } from 'class-transformer';
 import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
 import { ValidatorHelper } from '../src';
 import 'reflect-metadata';
-import { logNameData } from './common/logger';
 
 class PayloadObjectArrayEntity {
   @IsString()
@@ -50,7 +49,7 @@ class PayloadEntity {
   // }
 }
 
-async function validate(payload: unknown): Promise<void> {
+function validateSync(payload: unknown): void {
   const data = plainToInstance(PayloadEntity, payload, {
     enableImplicitConversion: false,
     exposeDefaultValues: false,
@@ -64,13 +63,13 @@ async function validate(payload: unknown): Promise<void> {
   if (errors) {
     console.error(errors);
   }
-  logNameData(validate.name, {
+  console.log(validateSync.name, {
     data,
     errors,
   });
 }
 
-export async function testValidatorHelper(): Promise<void> {
+export function testValidatorHelper(): void {
   const payload = {
     id: '660bba44fe631e9f9f30e043',
     object: {
@@ -79,5 +78,5 @@ export async function testValidatorHelper(): Promise<void> {
       array: [{ number: 1, string: 'test' }],
     },
   };
-  await validate(payload);
+  validateSync(payload);
 }

@@ -7,23 +7,27 @@ type MetadataMapValueType = {
 };
 type MetadataMapType = Map<number, MetadataMapValueType[]>;
 
-class ParamDecoratorSingleton {
-  private static self: ParamDecoratorSingleton;
-  private readonly metadataKey = Symbol(ParamDecoratorSingleton.name);
+/**
+ * @deprecated
+ */
+class DecoratorSingleton {
+  private static self: DecoratorSingleton;
+
+  private readonly metadataKey = Symbol(DecoratorSingleton.name);
   private readonly decoratorList: {
     [key: string]: CallableFunction;
   } = {};
 
-  public static getInstance(): ParamDecoratorSingleton {
-    if (!ParamDecoratorSingleton.self) {
-      ParamDecoratorSingleton.self = new ParamDecoratorSingleton();
+  public static getInstance(): DecoratorSingleton {
+    if (!DecoratorSingleton.self) {
+      DecoratorSingleton.self = new DecoratorSingleton();
     }
-    return ParamDecoratorSingleton.self;
+    return DecoratorSingleton.self;
   }
 
   public decorateMethod(): MethodDecorator {
     return function (target, propertyKey, descriptor: PropertyDescriptor): PropertyDescriptor {
-      const metadata = ParamDecoratorSingleton.self.getMetadata(target, propertyKey);
+      const metadata = DecoratorSingleton.self.getMetadata(target, propertyKey);
       return {
         get() {
           return (...args: unknown[]) => {
@@ -31,7 +35,7 @@ class ParamDecoratorSingleton {
               this,
               args.map(function (value, key) {
                 return metadata.has(key)
-                  ? ParamDecoratorSingleton.self.applyCallback(metadata.get(key) || [], value)
+                  ? DecoratorSingleton.self.applyCallback(metadata.get(key) || [], value)
                   : value;
               }),
             );
@@ -43,18 +47,18 @@ class ParamDecoratorSingleton {
 
   public decorateParam(index: string, callback: CallableFunction, ...args: unknown[]): ParameterDecorator {
     return function (target, propertyKey, parameterIndex): void {
-      if (!ParamDecoratorSingleton.self.getCallback(index)) {
-        ParamDecoratorSingleton.self.setCallback(index, callback);
+      if (!DecoratorSingleton.self.getCallback(index)) {
+        DecoratorSingleton.self.setCallback(index, callback);
       }
       (function (target, propertyKey, parameterIndex): void {
         // process.stdout.write(`${index}->${String(propertyKey)}[${parameterIndex}]`);
-        const metadataMap = ParamDecoratorSingleton.self.getMetadata(target, propertyKey);
+        const metadataMap = DecoratorSingleton.self.getMetadata(target, propertyKey);
         const metadata = (metadataMap.get(parameterIndex) || []).concat({
           args,
           callback: index,
         });
         metadataMap.set(parameterIndex, metadata);
-        ParamDecoratorSingleton.self.setMetadata(target, propertyKey, metadataMap);
+        DecoratorSingleton.self.setMetadata(target, propertyKey, metadataMap);
       })(target, propertyKey, parameterIndex);
     };
   }
@@ -84,9 +88,12 @@ class ParamDecoratorSingleton {
   private applyCallback(metadata: MetadataMapValueType[], propertyValue: unknown): unknown {
     /** handle multiple decorators */
     return [...metadata].reverse().reduce(function (prev, curr) {
-      return ParamDecoratorSingleton.self.getCallback(curr.callback)(prev, ...curr.args);
+      return DecoratorSingleton.self.getCallback(curr.callback)(prev, ...curr.args);
     }, propertyValue);
   }
 }
 
-export const ParamDecorator = ParamDecoratorSingleton.getInstance();
+/**
+ * @deprecated
+ */
+export const Decorator = DecoratorSingleton.getInstance();

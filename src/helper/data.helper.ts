@@ -32,9 +32,12 @@ class DataSingleton {
     );
   }
 
-  public randomNumber(min: number, max: number, int = true): number {
-    const random = Math.random() * (max - min + 1) + min;
-    return int ? Math.floor(random) : random;
+  public randomFloat(min: number, max: number): number {
+    return Math.random() * (max - min + 1) + min;
+  }
+
+  public randomInteger(min: number, max: number, int?: boolean): number {
+    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
   public randomString(length: number): string {

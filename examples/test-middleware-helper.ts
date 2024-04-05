@@ -1,5 +1,4 @@
 import { MiddlewareHelper } from '../src/helper/middleware.helper';
-import { logNameData } from './common/logger';
 
 function middlewareAddUse(): void {
   const payload1 = { name: 'case 1', data: 1 };
@@ -18,10 +17,10 @@ function middlewareAddUse(): void {
     });
   });
   middleware.use(payload1, (payload) => {
-    logNameData(`${middlewareAddUse.name} 1`, payload);
+    console.log(`${middlewareAddUse.name} 1`, payload);
   });
   middleware.use(payload2, (payload) => {
-    logNameData(`${middlewareAddUse.name} 2`, payload);
+    console.log(`${middlewareAddUse.name} 2`, payload);
   });
 }
 

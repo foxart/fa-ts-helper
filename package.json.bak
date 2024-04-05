@@ -10,7 +10,7 @@
     "start:console": "nodemon -e ts --watch ../ -x ts-node examples/test-console-helper.ts",
     "start:crypt": "nodemon -e ts --watch ../ -x ts-node examples/test-crypt-helper.ts",
     "start:data": "nodemon -e ts --watch ../ -x ts-node examples/data.ts",
-    "start:param-decorator": "nodemon -e ts --watch ../ -x ts-node examples/test-param-decorator.ts",
+    "start:param-decorator": "nodemon -e ts --watch ../ -x ts-node examples/test-param-decorator.helper.ts",
     "start:parser": "nodemon -e ts --watch ../ -x ts-node examples/parser.ts",
     "start:system": "nodemon -e ts --watch ../ -x ts-node examples/test-system-helper.ts",
     "start:validator": "nodemon -e ts --watch ../ -x ts-node examples/test-validator-helper.ts",

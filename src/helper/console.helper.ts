@@ -84,7 +84,7 @@ export class ConsoleHelper {
     }
   }
 
-  private stdout(data: string): void {
+  public stdout(data: string): void {
     process.stdout.write(data);
   }
 

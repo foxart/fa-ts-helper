@@ -1,12 +1,11 @@
 import { CryptHelper } from '../src';
-import { logNameData } from './common/logger';
 
 function encryptDecrypt(): void {
   const data = { name: 'Иван123' };
   const secret = CryptHelper.bcryptSalt();
   const encrypted = CryptHelper.encrypt(data, secret);
   const decrypted = CryptHelper.decrypt(encrypted, secret);
-  logNameData(encryptDecrypt.name, {
+  console.log(encryptDecrypt.name, {
     data,
     secret,
     encrypted,
@@ -17,7 +16,7 @@ function encryptDecrypt(): void {
 function bcryptCompare(): void {
   const password = 'Иван123';
   const input = CryptHelper.bcryptPassword(password);
-  logNameData(bcryptCompare.name, {
+  console.log(bcryptCompare.name, {
     password,
     input,
     valid: CryptHelper.bcryptCompare(password, input),
@@ -27,7 +26,7 @@ function bcryptCompare(): void {
 function bcryptInput(): void {
   const password = 'Иван123';
   const input = CryptHelper.bcryptPassword(password);
-  logNameData(bcryptInput.name, CryptHelper.bcryptInput(input));
+  console.log(bcryptInput.name, CryptHelper.bcryptInput(input));
 }
 
 export function testCryptHelper(): void {

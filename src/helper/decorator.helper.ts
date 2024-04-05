@@ -1,13 +1,15 @@
-type CallbackType = (...args: unknown[]) => unknown;
-type MetadataType = {
+import 'reflect-metadata';
+
+declare type ConstructorType<T> = {
+  new (...args: unknown[]): T;
+};
+type CallbackType = (data: unknown, constructor: ConstructorType<unknown>, type: string) => unknown;
+type MetadataInterface = {
   callback: CallbackType;
-  type: unknown;
+  constructor: ConstructorType<unknown>;
+  type: string;
 };
-type MetadataMapType = Map<number, MetadataType[]>;
-export type DecoratorPayloadType = {
-  data: unknown;
-  type: { new (...args: unknown[]): unknown };
-};
+type MetadataMapType = Map<number, MetadataInterface[]>;
 
 export class DecoratorHelper {
   protected readonly symbol: symbol;
@@ -24,8 +26,12 @@ export class DecoratorHelper {
     Reflect.defineMetadata(this.symbol, metadata, target, propertyKey);
   }
 
-  public getParameterType(target: object, propertyKey: string | symbol, parameterIndex: number): CallbackType {
-    const paramTypeList = Reflect.getMetadata('design:paramtypes', target, propertyKey) as CallbackType[];
+  public getParameterType(
+    target: object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+  ): ConstructorType<unknown> {
+    const paramTypeList = Reflect.getMetadata('design:paramtypes', target, propertyKey) as ConstructorType<unknown>[];
     return paramTypeList[parameterIndex];
   }
 
@@ -35,8 +41,8 @@ export class DecoratorHelper {
       const original = descriptor.value as CallbackType;
       descriptor.value = function (...args: unknown[]): unknown {
         metadata.forEach((item, index) => {
-          args[index] = item.reverse().reduce((acc, { callback, type }) => {
-            return callback({ data: acc, type });
+          args[index] = item.reverse().reduce((acc, { callback, constructor, type }) => {
+            return callback(acc, constructor, type);
           }, args[index]);
         });
         return original.apply(this, args);
@@ -51,7 +57,14 @@ export class DecoratorHelper {
     return (target: object, propertyKey: string | symbol, parameterIndex: number): void => {
       const paramType = this.getParameterType(target, propertyKey, parameterIndex);
       const metadata = this.getPropertyMetadata(target, propertyKey);
-      metadata.set(parameterIndex, [...(metadata.get(parameterIndex) || []), { callback, type: paramType }]);
+      metadata.set(parameterIndex, [
+        ...(metadata.get(parameterIndex) || []),
+        {
+          callback,
+          constructor: paramType,
+          type: paramType.name,
+        },
+      ]);
       this.setPropertyMetadata(target, propertyKey, metadata);
     };
   }

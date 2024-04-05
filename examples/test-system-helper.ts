@@ -1,11 +1,10 @@
 import { CryptHelper, SystemHelper } from '../src';
-import { logNameData } from './common/logger';
 
 async function sleep(milliseconds: number): Promise<void> {
   const timeStart = performance.now();
   await SystemHelper.sleep(milliseconds);
   const timeEnd = performance.now();
-  logNameData(sleep.name, {
+  console.log(sleep.name, {
     start: timeStart,
     end: timeEnd,
     duration: timeEnd - timeStart,
@@ -14,17 +13,17 @@ async function sleep(milliseconds: number): Promise<void> {
 
 function writeFile(filePath: string, data: string): void {
   SystemHelper.createFileSync(filePath, data);
-  logNameData(writeFile.name, { filePath, data });
+  console.log(writeFile.name, { filePath, data });
 }
 
 function scanFiles(directory: string, filter?: RegExp[]): void {
   const result = SystemHelper.scanFilesSync(directory, filter);
-  logNameData(scanFiles.name, { filter, result });
+  console.log(scanFiles.name, { filter, result });
 }
 
 function scanDirectories(directory: string, filter?: RegExp[]): void {
   const result = SystemHelper.scanDirectoriesSync(directory, filter);
-  logNameData(scanDirectories.name, { filter, result });
+  console.log(scanDirectories.name, { filter, result });
 }
 
 export async function testSystemHelper(): Promise<void> {
