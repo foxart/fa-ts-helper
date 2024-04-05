@@ -2,8 +2,6 @@
  * Decorators
  */
 export * from './decorator/param.decorator';
-export * from './decorator/method.decorator.new';
-export * from './decorator/param.decorator.new';
 /**
  * Helpers
  */

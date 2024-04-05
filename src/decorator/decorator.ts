@@ -1,52 +1,58 @@
-import 'reflect-metadata';
-
-type PropertyKeyType = string | symbol | undefined;
-type MetadataMapValueType = {
-  decoratorName: string;
-  decoratorData: unknown;
+type CallbackType = (...args: unknown[]) => unknown;
+type MetadataType = {
+  callback: CallbackType;
+  type: unknown;
 };
-export type MetadataMapType = Map<number, MetadataMapValueType[]>;
+type MetadataMapType = Map<number, MetadataType[]>;
+export type DecoratorPayloadType = {
+  data: unknown;
+  type: { new (...args: unknown[]): unknown };
+};
 
-class DecoratorSingleton {
-  private static self: DecoratorSingleton;
+export class DecoratorHelper {
+  protected readonly symbol: symbol;
 
-  protected readonly metadataKey: symbol;
-
-  protected readonly callbackList: { [key: string]: CallableFunction };
-
-  public constructor() {
-    this.metadataKey = Symbol('__FA_DECORATOR__');
-    this.callbackList = {};
+  public constructor(symbol: string) {
+    this.symbol = Symbol(symbol);
   }
 
-  public static getInstance(): DecoratorSingleton {
-    if (!DecoratorSingleton.self) {
-      DecoratorSingleton.self = new DecoratorSingleton();
-    }
-    return DecoratorSingleton.self;
+  public getPropertyMetadata(target: object, propertyKey: string | symbol): MetadataMapType {
+    return (Reflect.getOwnMetadata(this.symbol, target, propertyKey) || new Map()) as MetadataMapType;
   }
 
-  public setCallback(index: string, callback: CallableFunction): void {
-    this.callbackList[index] = callback;
+  public setPropertyMetadata(target: object, propertyKey: string | symbol, metadata: MetadataMapType): void {
+    Reflect.defineMetadata(this.symbol, metadata, target, propertyKey);
   }
 
-  public getCallback(index: string): CallableFunction {
-    return this.callbackList[index];
+  public getParameterType(target: object, propertyKey: string | symbol, parameterIndex: number): CallbackType {
+    const paramTypeList = Reflect.getMetadata('design:paramtypes', target, propertyKey) as CallbackType[];
+    return paramTypeList[parameterIndex];
   }
 
-  public getMetadata(target: object, propertyKey: PropertyKeyType): MetadataMapType {
-    if (!propertyKey) {
-      throw new Error('propertyKey is required');
-    }
-    return (Reflect.getOwnMetadata(this.metadataKey, target, propertyKey) || new Map()) as MetadataMapType;
+  public decorateMethod(): MethodDecorator {
+    return (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): void => {
+      const metadata = this.getPropertyMetadata(target, propertyKey);
+      const original = descriptor.value as CallbackType;
+      descriptor.value = function (...args: unknown[]): unknown {
+        metadata.forEach((item, index) => {
+          args[index] = item.reverse().reduce((acc, { callback, type }) => {
+            return callback({ data: acc, type });
+          }, args[index]);
+        });
+        return original.apply(this, args);
+      };
+      Object.getOwnPropertyNames(original).forEach((property) => {
+        Object.defineProperty(descriptor.value, property, { value: propertyKey });
+      });
+    };
   }
 
-  public setMetadata(target: object, propertyKey: PropertyKeyType, metadata: MetadataMapType): void {
-    if (!propertyKey) {
-      throw new Error('propertyKey is required');
-    }
-    Reflect.defineMetadata(this.metadataKey, metadata, target, propertyKey);
+  public decorateParameter(callback: CallbackType): ParameterDecorator {
+    return (target: object, propertyKey: string | symbol, parameterIndex: number): void => {
+      const paramType = this.getParameterType(target, propertyKey, parameterIndex);
+      const metadata = this.getPropertyMetadata(target, propertyKey);
+      metadata.set(parameterIndex, [...(metadata.get(parameterIndex) || []), { callback, type: paramType }]);
+      this.setPropertyMetadata(target, propertyKey, metadata);
+    };
   }
 }
-
-export const DecoratorNew = DecoratorSingleton.getInstance();

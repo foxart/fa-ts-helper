@@ -1,5 +1,5 @@
 import { plainToInstance, Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
 import { ValidatorHelper } from '../src';
 import 'reflect-metadata';
 import { logNameData } from './common/logger';
