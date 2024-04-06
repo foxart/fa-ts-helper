@@ -85,6 +85,10 @@ export class ConsoleHelper {
     process.stdout.write(data);
   }
 
+  public inspect(data: unknown): string {
+    return util.inspect(data, { showHidden: this.options.hidden, depth: null, colors: this.options.color });
+  }
+
   private print(level: LevelEnum, stack: string[], data: unknown[]): void {
     if (level === LevelEnum.DEBUG) {
       this.stdoutInfo(level);
@@ -130,7 +134,7 @@ export class ConsoleHelper {
         this.stdout(' ');
         this.stdoutStack(ParserHelper.stack(item.stack, { short: true }));
       } else {
-        this.stdout(util.inspect(item, { showHidden: this.options.hidden, depth: null, colors: this.options.color }));
+        this.stdout(this.inspect(item));
         this.stdout(' ');
       }
     });
