@@ -1,18 +1,28 @@
 import 'reflect-metadata';
+import { ClassConstructor } from 'class-transformer';
 
-declare type ConstructorType<T> = {
+type ConstructorType<T> = {
   new (...args: unknown[]): T;
 };
-type CallbackType = (data: unknown, constructor: ConstructorType<unknown>, type: string) => unknown;
-type MetadataInterface = {
+
+interface MetadataInterface {
+  classConstructor: ConstructorType<unknown>;
+  classData: unknown;
+  paramConstructor: ConstructorType<unknown>;
+  paramType: string;
+}
+
+type CallbackType = (value: unknown, metadata: MetadataInterface) => unknown;
+// type CallbackType = (value: unknown, constructor: ConstructorType<unknown>, type: string) => unknown;
+type ParamMetadataInterface = {
   callback: CallbackType;
-  constructor: ConstructorType<unknown>;
-  type: string;
+  paramConstructor: ConstructorType<unknown>;
+  paramType: string;
 };
-type MetadataMapType = Map<number, MetadataInterface[]>;
+type MetadataMapType = Map<number, ParamMetadataInterface[]>;
 
 export class DecoratorHelper {
-  protected readonly symbol: symbol;
+  public readonly symbol: symbol;
 
   public constructor(symbol: string) {
     this.symbol = Symbol(symbol);
@@ -35,18 +45,28 @@ export class DecoratorHelper {
     return paramTypeList[parameterIndex];
   }
 
+  public decorateClass(value: unknown): ClassDecorator {
+    return Reflect.metadata(this.symbol, value);
+  }
   public decorateMethod(): MethodDecorator {
     return (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor): void => {
-      const metadata = this.getPropertyMetadata(target, propertyKey);
+      const symbol = this.symbol;
+      const paramMetadata = this.getPropertyMetadata(target, propertyKey);
       const original = descriptor.value as CallbackType;
       descriptor.value = function (...args: unknown[]): unknown {
-        metadata.forEach((item, index) => {
-          args[index] = item.reverse().reduce((acc, { callback, constructor, type }) => {
-            return callback(acc, constructor, type);
+        paramMetadata.forEach((item, index) => {
+          args[index] = item.reverse().reduce((acc, { callback, paramConstructor, paramType }) => {
+            return callback(acc, {
+              classConstructor: target.constructor as ClassConstructor<unknown>,
+              classData: Reflect.getMetadata(symbol, target.constructor),
+              paramConstructor,
+              paramType,
+            });
           }, args[index]);
         });
         return original.apply(this, args);
       };
+      // console.log(target.constructor);
       Object.getOwnPropertyNames(original).forEach((property) => {
         Object.defineProperty(descriptor.value, property, { value: propertyKey });
       });
@@ -61,11 +81,12 @@ export class DecoratorHelper {
         ...(metadata.get(parameterIndex) || []),
         {
           callback,
-          constructor: paramType,
-          type: paramType.name,
+          paramConstructor: paramType,
+          paramType: paramType.name,
         },
       ]);
       this.setPropertyMetadata(target, propertyKey, metadata);
+      // console.info(target.constructor);
     };
   }
 }

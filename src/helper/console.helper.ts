@@ -89,11 +89,12 @@ export class ConsoleHelper {
     if (level === LevelEnum.DEBUG) {
       this.stdoutInfo(level);
       this.stdoutDate();
-      this.stdout('\n');
-      this.stdout(this.colorize('DATA: ', this.foregroundColor(level)));
       this.stdoutData(data);
       this.stdout('\n');
-      this.stdout(this.colorize('TRACE: ', this.foregroundColor(level)));
+      if (this.options.info) {
+        this.stdout(this.colorize(['stack'], [cch.foreground.white]));
+        this.stdout(' ');
+      }
       this.stdoutStack(stack);
       this.stdoutLink(stack[0], this.backgroundColor(level));
     } else {
@@ -106,7 +107,7 @@ export class ConsoleHelper {
   }
 
   private stdoutInfo(level: LevelEnum): void {
-    if (this.options?.info) {
+    if (this.options.info) {
       const key = Object.keys(LevelEnum as object)[Object.values(LevelEnum as object).indexOf(level)];
       this.stdout(this.colorize([' ', key, ' '], this.backgroundColor(level)));
       this.stdout(' ');
@@ -114,17 +115,8 @@ export class ConsoleHelper {
   }
 
   private stdoutDate(): void {
-    if (this.options?.date) {
-      const date = new Date().toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
-      this.stdout(this.colorize(date, [cch.foreground.cyan]));
+    if (this.options.date) {
+      this.stdout(this.colorize(this.date(), [cch.foreground.cyan]));
       this.stdout(' ');
     }
   }
@@ -133,23 +125,19 @@ export class ConsoleHelper {
     data.forEach((item) => {
       if (item instanceof Error) {
         this.stdout(this.colorize(item.name, [cch.effect.bright]));
-        this.stdout(this.colorize(':', [cch.effect.dim]));
-        this.stdout(this.colorize([' ', item.message, ' '], [cch.foreground.red, cch.effect.bright]));
+        this.stdout(this.colorize(': ', [cch.effect.dim]));
+        this.stdout(this.colorize(item.message, [cch.foreground.red, cch.effect.bright]));
+        this.stdout(' ');
         this.stdoutStack(ParserHelper.stack(item.stack, { short: true }));
       } else {
-        this.stdout(
-          util.inspect(item, {
-            showHidden: this.options?.hidden,
-            depth: null,
-            colors: this.options?.color,
-          }),
-        );
+        this.stdout(util.inspect(item, { showHidden: this.options.hidden, depth: null, colors: this.options.color }));
+        this.stdout(' ');
       }
     });
   }
 
   private stdoutLink(link?: string, colors?: ColorHelperEnum[]): void {
-    if (this.options?.link && link) {
+    if (this.options.link && link) {
       this.stdout('\n');
       if (this.options.info) {
         this.stdout(this.colorize(' at ', colors ?? []));
@@ -180,6 +168,19 @@ export class ConsoleHelper {
       Array.isArray(data) ? data.join('') : data,
     );
     return `${cch.effect.reset}${result}${cch.effect.reset}`;
+  }
+
+  private date() {
+    // return new Date().toLocaleString('en-GB', {
+    //   year: 'numeric',
+    //   month: '2-digit',
+    //   day: '2-digit',
+    //   hour: '2-digit',
+    //   minute: '2-digit',
+    //   second: '2-digit',
+    //   hour12: false,
+    // });
+    return new Date().toISOString().replace(/T/, ' ').replace(/Z/, '');
   }
 
   private backgroundColor(level?: LevelEnum): ColorHelperEnum[] {

@@ -1,24 +1,25 @@
-import { ConsoleHelper, DataHelper, DecoratorHelper, ValidatorHelper } from '../src';
+import { ConsoleHelper, DecoratorHelper, ValidatorHelper } from '../src';
 import { IsNumber, IsString } from 'class-validator';
-import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
+
+class Entity {
+  @IsString()
+  public key: string;
+
+  @IsNumber()
+  public value: number;
+}
 
 const Decorator = new DecoratorHelper('__FA_DECORATOR__');
-const Method = (): MethodDecorator => {
+const ClassDecorator = (value: unknown): ClassDecorator => {
+  return Decorator.decorateClass(value);
+};
+const MethodDecorator = (): MethodDecorator => {
   return Decorator.decorateMethod();
 };
-const ParamArray = (name: string[]): ParameterDecorator => {
-  return Decorator.decorateParameter((data: string): string => {
-    return `${data}-[${name.join(', ')}]`;
-  });
-};
-const ParamString = (name: string): ParameterDecorator => {
-  return Decorator.decorateParameter((data: string): string => {
-    return `${data}-${name}`;
-  });
-};
-const ParamEntity = (): ParameterDecorator => {
-  return Decorator.decorateParameter((data: unknown, constructor: ClassConstructor<unknown>): unknown => {
-    const dto = plainToInstance(constructor, data, {
+const ParamDecoratorEntity = (): ParameterDecorator => {
+  return Decorator.decorateParameter((value, metadata): unknown => {
+    const dto = plainToInstance(metadata.paramConstructor, value, {
       enableImplicitConversion: false,
       exposeDefaultValues: false,
       exposeUnsetFields: true,
@@ -35,50 +36,84 @@ const ParamEntity = (): ParameterDecorator => {
     return dto;
   });
 };
+const ParamDecoratorArray = (data: string[]): ParameterDecorator => {
+  return Decorator.decorateParameter((value): string => {
+    return `${value}-[${data.join(', ')}]`;
+  });
+};
+const ParamDecoratorString = (data: string): ParameterDecorator => {
+  return Decorator.decorateParameter((value, metadata): string => {
+    return `${value}-${data}`;
+  });
+};
+const ParamDecorator = (data: number): ParameterDecorator => {
+  return Decorator.decorateParameter((value, metadata): unknown => {
+    const tmp = metadata.classData as Record<string, number>;
+    console.warn(data, tmp[data]);
+    return value;
+  });
+};
 
-class Entity {
-  @IsString()
-  public key: string;
-
-  @IsNumber()
-  public value: number;
+enum Enum {
+  METHOD_1,
+  METHOD_2,
 }
 
 /**
  *
  */
+@ClassDecorator('YYY')
+class MockClass1 {
+  private readonly console: ConsoleHelper;
+}
+
+@ClassDecorator(Enum)
 class MockClass {
   private readonly console: ConsoleHelper;
 
   public constructor() {
-    this.console = new ConsoleHelper({ date: false, info: true, link: false, color: true });
+    this.console = new ConsoleHelper({ info: false, link: false });
   }
 
-  @Method()
-  public testEntity(@ParamEntity() entity: Entity): void {
+  @MethodDecorator()
+  public testEntity(@ParamDecoratorEntity() entity: Entity): void {
     this.console.log(this.constructor.name, this.testEntity.name);
     console.info({ entity });
     this.console.stdout('\n');
   }
 
-  @Method()
-  public testMultiple(@ParamString('1') @ParamString('a') data: string): void {
+  @MethodDecorator()
+  public testSingle(@ParamDecoratorString('lorem') data: string): void {
+    this.console.log(this.constructor.name, this.testSingle.name);
+    console.info({ data });
+    this.console.stdout('\n');
+  }
+
+  @MethodDecorator()
+  public testMultiple(@ParamDecoratorString('1') @ParamDecoratorString('a') data: string): void {
     this.console.log(this.constructor.name, this.testMultiple.name);
     console.info({ data });
     this.console.stdout('\n');
   }
 
-  @Method()
-  public testChain(@ParamString('1') data: string): void {
+  @MethodDecorator()
+  public testChain(@ParamDecoratorString('1') data: string): void {
     this.console.log(this.constructor.name, this.testChain.name);
     console.info({ data });
     this.console.stdout('\n');
     this.testChainCallback(data);
   }
 
-  @Method()
-  public testChainCallback(@ParamArray(['a', 'b', 'c']) data: string): void {
+  @MethodDecorator()
+  public testChainCallback(@ParamDecoratorArray(['a', 'b', 'c']) data: string): void {
     this.console.log(this.constructor.name, this.testChainCallback.name);
+    console.info({ data });
+    this.console.stdout('\n');
+  }
+
+  @MethodDecorator()
+  public test(@ParamDecorator(Enum.METHOD_2) data: unknown): void {
+    this.console.log(this.constructor.name, this.test.name);
     console.info({ data });
     this.console.stdout('\n');
   }
@@ -86,10 +121,12 @@ class MockClass {
 
 export function testParamDecorator(): void {
   const mock = new MockClass();
+  // mock.testEntity({ key: '65fc5f5e08570267e7a5f292', value: DataHelper.randomFloat(1, 10) });
+  // mock.testSingle('single');
+  // mock.testMultiple('multiple');
+  // mock.testChain('chain');
+  mock.test({ a: 1 });
   /**
    *
    */
-  mock.testEntity({ key: '65fc5f5e08570267e7a5f292', value: DataHelper.randomFloat(1, 10) });
-  mock.testMultiple('multiple');
-  mock.testChain('chain');
 }

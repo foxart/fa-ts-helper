@@ -1,6 +1,6 @@
 import { ConsoleHelper } from '../src';
 
-const Console = new ConsoleHelper({ date: false, info: false, link: false });
+const Console = new ConsoleHelper({ date: true, info: false, link: false });
 
 function consoleLog(data: unknown): void {
   Console.info(consoleLog.name);
