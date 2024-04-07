@@ -1,4 +1,5 @@
 import { ConsoleHelper } from '../src';
+import { testDecoratorHelper } from './test-decorator-helper';
 
 const Console = new ConsoleHelper({ date: false, info: true });
 console.log = Console.log.bind(Console);
@@ -15,7 +16,7 @@ void ((): void => {
   // testCryptHelper();
   // testMiddlewareHelper();
   // testParamDecorator();
-  import('../example/test-param-decorator').then((module) => module.testParamDecorator());
+  testDecoratorHelper();
   // void testSystemHelper();
   // void testValidatorHelper();
 })();
