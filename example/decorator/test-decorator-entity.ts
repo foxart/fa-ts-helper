@@ -45,14 +45,21 @@ const MethodDecorator = (metadata?: unknown): MethodDecorator => {
 };
 const ParamDecorator = (data?: unknown): ParameterDecorator => {
   // return Decorator.decorateParameter();
-  return Decorator.decorateParameter((value: Entity1, metadata) => {
+  return Decorator.decorateParameter(data, (value: Entity1, metadata) => {
     console.warn(metadata);
-    // Console.stdout('\n');
+    Console.stdout('\n');
     const dto = plainToInstance(metadata.parameterConstructor as ClassConstructor<unknown>, value);
     const errors = ValidatorHelper.validateSync(dto);
     return errors ? errors : dto;
-  }, data);
+  });
 };
+
+export function testDecoratorEntity(): void {
+  const mock = new MockClass();
+  const entity1 = { key: DataHelper.randomFloat(1, 10) };
+  const entity2 = { key: DataHelper.randomString(10) };
+  console.info(mock.testEntityMethod(entity1, entity2));
+}
 
 @ClassDecorator('ClassMetadata1')
 class MockClass {
@@ -66,11 +73,4 @@ class MockClass {
     Console.stdout('\n');
     return [entity1, entity2 as Entity2];
   }
-}
-
-export function testDecoratorEntity(): void {
-  const mock = new MockClass();
-  const entity1 = { key: DataHelper.randomFloat(1, 10) };
-  const entity2 = { key: DataHelper.randomString(10) };
-  console.info(mock.testEntityMethod(entity1, entity2));
 }
