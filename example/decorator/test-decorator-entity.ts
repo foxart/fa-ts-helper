@@ -1,7 +1,18 @@
-import { IsNumber, IsString } from 'class-validator';
-import { ClassConstructor, plainToInstance } from 'class-transformer';
-import { ConsoleHelper, DataHelper, DecoratorHelper, ValidatorHelper } from '../../src';
+import { IsNumber, IsString, ValidatorOptions } from 'class-validator';
+import { ClassTransformOptions, plainToInstance } from 'class-transformer';
+import { DataHelper, DecoratorHelper, ValidatorHelper } from '../../src';
 import { applyDecorators, Controller, Param } from '@nestjs/common';
+
+const TRANSFORMER_CONFIG: ClassTransformOptions = {
+  enableImplicitConversion: false,
+  exposeDefaultValues: false,
+  exposeUnsetFields: true,
+};
+const VALIDATOR_CONFIG: ValidatorOptions = {
+  forbidNonWhitelisted: true,
+  forbidUnknownValues: true,
+  whitelist: true,
+};
 
 class Entity1 {
   @IsNumber()
@@ -13,64 +24,68 @@ class Entity2 {
   public key: string;
 }
 
-const Console = new ConsoleHelper({ info: false, link: false });
 const Decorator = new DecoratorHelper('__FA_DECORATOR__');
 /**
  *
  */
 const ClassDecorator = (metadata?: unknown): ClassDecorator => {
-  // return Decorator.decorateClass(metadata);
-  return Decorator.decorateClass(metadata, (target: object) => {
-    // return applyDecorators(Controller())(target);
-    return ((target: object): void => {
-      return applyDecorators(Controller())(target);
-    })(target);
+  // return Decorator.decorateClass();
+  // return applyDecorators(Controller());
+  return Decorator.decorateClass((target: object) => {
+    DecoratorHelper.setClassMetadata(Decorator.symbol, target, {
+      data: metadata,
+    });
+    return applyDecorators(Controller())(target);
   });
 };
 const MethodDecorator = (metadata?: unknown): MethodDecorator => {
-  // return Decorator.decorateMethod(null);
+  // return Decorator.decorateMethod();
   // return applyDecorators(Get('path'));
-  return Decorator.decorateMethod(
-    metadata,
-    (target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-      // return ((target: object, propertyKey: string | symbol, descriptor: PropertyDescriptor) => {
-      console.warn('decorateMethod', target, propertyKey, descriptor);
-      Console.stdout('\n');
-      //   console.error(propertyKey);
-      // })(target, propertyKey, descriptor);
-      return applyDecorators(Param)(target);
-      // return '';
-    },
-  );
+  return Decorator.decorateMethod((target: object, propertyKey: string | symbol) => {
+    DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
+      data: metadata,
+      before: (value, metadata) => {
+        // console.warn(value, metadata.classData);
+      },
+    });
+    return applyDecorators(Param)(target);
+  });
 };
-const ParamDecorator = (data?: unknown): ParameterDecorator => {
-  // return Decorator.decorateParameter();
-  return Decorator.decorateParameter(data, (value: Entity1, metadata) => {
-    console.warn(metadata);
-    Console.stdout('\n');
-    const dto = plainToInstance(metadata.parameterConstructor as ClassConstructor<unknown>, value);
-    const errors = ValidatorHelper.validateSync(dto);
-    return errors ? errors : dto;
+const ParamDecorator = (metadata?: unknown): ParameterDecorator => {
+  return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
+    DecoratorHelper.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
+      data: metadata,
+      callback: (value, metadata) => {
+        const dto = plainToInstance(metadata.parameterType, value, TRANSFORMER_CONFIG);
+        const errors = ValidatorHelper.validateSync(dto, VALIDATOR_CONFIG);
+        return errors ? errors : dto;
+      },
+    });
   });
 };
 
 export function testDecoratorEntity(): void {
-  const mock = new MockClass();
-  const entity1 = { key: DataHelper.randomFloat(1, 10) };
-  const entity2 = { key: DataHelper.randomString(10) };
-  console.info(mock.testEntityMethod(entity1, entity2));
+  const mock = new TestEntityClass();
+  const data = {
+    entity1: { key: DataHelper.randomFloat(1, 10) },
+    entity2: { key: DataHelper.randomString(10) },
+    // entity2: { key: 123 },
+  };
+  // @ts-ignore
+  const result = mock.testEntityMethod(data.entity1, data.entity2);
+  console.log({ data, result });
 }
 
-@ClassDecorator('ClassMetadata1')
-class MockClass {
-  @MethodDecorator('MethodMetadata1')
+@ClassDecorator('Class1')
+class TestEntityClass {
+  @MethodDecorator('Method1')
   public testEntityMethod(
-    @ParamDecorator('ParameterMetadata1') entity1: Entity1,
-    entity2: unknown,
-    // @Param() entity2: unknown,
-  ): (Entity1 | Entity2)[] {
-    console.log(`${this.constructor.name}.${this.testEntityMethod.name}`);
-    Console.stdout('\n');
-    return [entity1, entity2 as Entity2];
+    @ParamDecorator('Parameter1') entity1: Entity1,
+    // entity2: Entity2,
+    @ParamDecorator() entity2: Entity2,
+  ): unknown[] {
+    const result = [entity1, entity2];
+    console.info(`${this.constructor.name}->${this.testEntityMethod.name}()`);
+    return result;
   }
 }

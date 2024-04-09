@@ -13,23 +13,38 @@ function initCatch(): void {
 
 function initConsole(): void {
   console.clear();
-  const Console = new ConsoleHelper({ date: false, info: true });
-  console.log = Console.log.bind(Console);
-  console.info = Console.info.bind(Console);
-  console.warn = Console.warn.bind(Console);
-  console.error = Console.error.bind(Console);
-  console.debug = Console.debug.bind(Console);
+  const Console = new ConsoleHelper({ date: false, info: true, index: 2 });
+  console.log = (...args: unknown[]): void => {
+    Console.log(...args);
+    Console.stdout('\n');
+  };
+  console.info = (...args: unknown[]): void => {
+    Console.info(...args);
+    Console.stdout('\n');
+  };
+  console.warn = (...args: unknown[]): void => {
+    Console.warn(...args);
+    Console.stdout('\n');
+  };
+  console.error = (...args: unknown[]): void => {
+    Console.error(...args);
+    Console.stdout('\n');
+  };
+  console.debug = (...args: unknown[]): void => {
+    Console.debug(...args);
+    Console.stdout('\n');
+  };
 }
+
 /**
  *
  * */
 void ((): void => {
-  initCatch();
   initConsole();
+  initCatch();
   // ConsoleHelperExample();
   // testCryptHelper();
   // testMiddlewareHelper();
-  // testParamDecorator();
   testDecoratorHelper();
   // void testSystemHelper();
   // void testValidatorHelper();

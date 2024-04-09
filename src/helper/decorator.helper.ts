@@ -9,28 +9,68 @@ interface DesignMetadataInterface {
   returntype: ConstructableType;
 }
 
-type ClassMetadataType = unknown;
+/**
+ *
+ */
+type ClassMetadataGetType = {
+  type: object;
+  data: unknown;
+};
+type ClassMetadataSetType = {
+  data: unknown;
+};
 type ClassCallbackType = <T extends FunctionType>(target: object) => T | void;
-type MethodMetadataType = unknown;
+/**
+ *
+ */
+type MethodMetadataGetType = {
+  type: ConstructableType;
+  data: unknown;
+  before?: MethodMetadataCallbackType;
+  after?: MethodMetadataCallbackType;
+};
+type MethodMetadataSetType = {
+  data: unknown;
+  before?: MethodMetadataCallbackType;
+  after?: MethodMetadataCallbackType;
+};
 type MethodCallbackType = <T>(
   target: object,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<T>,
-) => T | void;
-type ParameterMetadataType = Map<
-  number,
-  {
-    callback?: ParameterCallbackType | null;
-    constructor: ConstructableType;
-    data: unknown;
-  }[]
->;
-type ParameterCallbackType = (
+  // ...args: unknown[]
+) => unknown | void;
+type MethodMetadataCallbackType = (
+  metadata: {
+    classType: object;
+    classData: unknown;
+    methodType: ConstructableType;
+    methodData: unknown;
+  },
+  ...args: unknown[]
+) => unknown[];
+/**
+ *
+ */
+type ParameterMetadataGetTypeMap = Map<number, ParameterMetadataGetType[]>;
+type ParameterMetadataGetType = {
+  type: ConstructableType;
+  data: unknown;
+  callback?: ParameterMetadataCallbackType;
+};
+type ParameterMetadataSetType = {
+  data: unknown;
+  callback?: ParameterMetadataCallbackType;
+};
+type ParameterCallbackType = (target: object, propertyKey: string | symbol, parameterIndex: number) => unknown | void;
+type ParameterMetadataCallbackType = (
   value: unknown,
   metadata: {
+    classType: object;
     classData: unknown;
+    methodType: ConstructableType;
     methodData: unknown;
-    parameterConstructor: ConstructableType;
+    parameterType: ConstructableType;
     parameterData: unknown;
   },
 ) => unknown;
@@ -42,39 +82,62 @@ export class DecoratorHelper {
     this.symbol = Symbol(symbol);
   }
 
-  public static getClassMetadata(symbol: symbol, target: object): ClassMetadataType {
-    return Reflect.getOwnMetadata(symbol, target.constructor) as ClassMetadataType;
+  public static getClassMetadata(symbol: symbol, target: object): ClassMetadataGetType {
+    return (Reflect.getOwnMetadata(symbol, target.constructor) || {}) as ClassMetadataGetType;
   }
 
-  public static setClassMetadata(symbol: symbol, target: object, metadata: ClassMetadataType): void {
-    Reflect.defineMetadata(symbol, metadata, target);
+  public static setClassMetadata(symbol: symbol, target: object, metadata: ClassMetadataSetType): void {
+    const classMetadata: ClassMetadataGetType = {
+      type: target.constructor,
+      data: metadata.data,
+    };
+    Reflect.defineMetadata(symbol, classMetadata, target);
   }
 
-  public static getMethodMetadata(symbol: symbol, target: object, propertyKey: string | symbol): MethodMetadataType {
-    return Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) as MethodMetadataType;
+  public static getMethodMetadata(symbol: symbol, target: object, propertyKey: string | symbol): MethodMetadataGetType {
+    return (Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) || {}) as MethodMetadataGetType;
   }
 
   public static setMethodMetadata(
     symbol: symbol,
     target: object,
     propertyKey: string | symbol,
-    metadata: MethodMetadataType,
+    metadata: MethodMetadataSetType,
   ): void {
-    Reflect.defineMetadata(symbol, metadata, target.constructor, propertyKey);
+    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey);
+    const methodMetadata: MethodMetadataGetType = {
+      type: designMetadata.type,
+      data: metadata.data,
+      before: metadata.before,
+      after: metadata.after,
+    };
+    Reflect.defineMetadata(symbol, methodMetadata, target.constructor, propertyKey);
   }
 
   public static getParameterMetadata(
     symbol: symbol,
     target: object,
     propertyKey: string | symbol,
-  ): ParameterMetadataType {
-    return (Reflect.getOwnMetadata(symbol, target, propertyKey) || new Map()) as ParameterMetadataType;
+  ): ParameterMetadataGetTypeMap {
+    return (Reflect.getOwnMetadata(symbol, target, propertyKey) || new Map()) as ParameterMetadataGetTypeMap;
   }
 
-  private static fromToProperty(from: FunctionType, to: FunctionType, propertyKey: string | symbol): void {
-    Object.getOwnPropertyNames(from).forEach((property) => {
-      Object.defineProperty(to, property, { value: propertyKey });
-    });
+  public static setParameterMetadata(
+    symbol: symbol,
+    target: object,
+    propertyKey: string | symbol,
+    parameterIndex: number,
+    metadata: ParameterMetadataSetType,
+  ): void {
+    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey);
+    const parameterMetadata: ParameterMetadataGetType = {
+      type: designMetadata.paramtypes[parameterIndex],
+      data: metadata.data,
+      callback: metadata.callback,
+    };
+    const current = DecoratorHelper.getParameterMetadata(symbol, target, propertyKey);
+    current.set(parameterIndex, [parameterMetadata, ...(current.get(parameterIndex) || [])]);
+    Reflect.defineMetadata(symbol, current, target, propertyKey);
   }
 
   private static getDesignMetadata(target: object, propertyKey: string | symbol): DesignMetadataInterface {
@@ -85,48 +148,47 @@ export class DecoratorHelper {
     };
   }
 
-  private static setParameterMetadata(
-    symbol: symbol,
-    metadata: ParameterMetadataType,
-    target: object,
-    propertyKey: string | symbol,
-  ): void {
-    Reflect.defineMetadata(symbol, metadata, target, propertyKey);
+  private static copyProperties(from: FunctionType, to: FunctionType, propertyKey: string | symbol): void {
+    Object.getOwnPropertyNames(from).forEach((property) => {
+      Object.defineProperty(to, property, { value: propertyKey });
+    });
   }
 
-  private static decorateArguments(
-    args: unknown[],
+  private static applyParameterDecorator(
     symbol: symbol,
     target: ConstructableType,
     propertyKey: string | symbol,
-    // callback?: MethodCallbackType | null,
-    // data?: unknown,
+    ...args: unknown[]
   ): unknown[] {
     const classMetadata = DecoratorHelper.getClassMetadata(symbol, target);
     const methodMetadata = DecoratorHelper.getMethodMetadata(symbol, target, propertyKey);
     const parameterMetadata = DecoratorHelper.getParameterMetadata(symbol, target, propertyKey);
-    // return (
-    //   callback
-    //     ? args.map((arg) => {
-    //         return callback(arg, data);
-    //       })
-    //     : args
-    // )
-    return args.map((value, index) => {
+    const metadata = {
+      classType: classMetadata.type,
+      classData: classMetadata.data,
+      methodType: methodMetadata.type,
+      methodData: methodMetadata.data,
+    };
+    const before = methodMetadata.before ? methodMetadata.before(metadata, ...args) : args;
+    const result = before.map((value, index) => {
       const item = parameterMetadata.get(index);
       return !item
         ? value
-        : item.reverse().reduce((acc, { callback, constructor, data }) => {
+        : item.reduce((acc, { callback, data, type }) => {
             return callback
               ? callback(acc, {
-                  classData: classMetadata,
-                  methodData: methodMetadata,
-                  parameterConstructor: constructor,
+                  classType: classMetadata.type,
+                  classData: classMetadata.data,
+                  methodType: methodMetadata.type,
+                  methodData: methodMetadata.data,
+                  parameterType: type,
                   parameterData: data,
                 })
               : acc;
           }, value);
     });
+    // @ts-ignore
+    return methodMetadata.after ? methodMetadata.after(metadata, ...result) : result;
   }
 
   public decorateClass(callback?: ClassCallbackType): ClassDecorator {
@@ -141,39 +203,32 @@ export class DecoratorHelper {
   }
 
   public decorateMethod(callback?: MethodCallbackType): MethodDecorator {
-    //todo make before/after callbacks to transform req/res
     return <T>(target: ConstructableType, propertyKey: string | symbol, descriptor: PropertyDescriptor): T | void => {
-      // DecoratorHelper.setMethodMetadata(this.symbol, target, propertyKey, metadata);
-      /**/
       const symbol = this.symbol;
-      const originalDescriptorValue = descriptor.value as FunctionType;
-      let result: unknown[];
-      if (callback) {
-        result = callback(target, propertyKey, descriptor) as unknown[];
-      }
+      const descriptorValue = descriptor.value as FunctionType;
       descriptor.value = function (...args: unknown[]): FunctionType {
-        return originalDescriptorValue.apply(
+        // const result = callback ? (callback(target, propertyKey, descriptor, ...args) as unknown[]) : undefined;
+        // const result = callback ? (callback(target, propertyKey, descriptor) as unknown[]) : undefined;
+        if (callback) {
+          callback(target, propertyKey, descriptor);
+        }
+        return descriptorValue.apply(
           this,
-          DecoratorHelper.decorateArguments(result ? result : args, symbol, target, propertyKey),
+          DecoratorHelper.applyParameterDecorator(symbol, target, propertyKey, ...args),
         ) as FunctionType;
       };
-      DecoratorHelper.fromToProperty(originalDescriptorValue, descriptor.value as FunctionType, propertyKey);
+      DecoratorHelper.copyProperties(descriptorValue, descriptor.value as FunctionType, propertyKey);
     };
   }
 
-  public decorateParameter(metadata?: unknown, callback?: ParameterCallbackType): ParameterDecorator {
-    return (target: object, propertyKey: string | symbol, parameterIndex: number): void => {
-      const typeMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey);
-      const parameterMetadata = DecoratorHelper.getParameterMetadata(this.symbol, target, propertyKey);
-      parameterMetadata.set(parameterIndex, [
-        ...(parameterMetadata.get(parameterIndex) || []),
-        {
-          constructor: typeMetadata.paramtypes[parameterIndex],
-          data: metadata,
-          callback,
-        },
-      ]);
-      DecoratorHelper.setParameterMetadata(this.symbol, parameterMetadata, target, propertyKey);
+  public decorateParameter(callback?: ParameterCallbackType): ParameterDecorator {
+    return <T>(target: ConstructableType, propertyKey: string | symbol, parameterIndex: number): T | void => {
+      if (callback) {
+        const result = callback(target, propertyKey, parameterIndex) as T;
+        if (result) {
+          return result;
+        }
+      }
     };
   }
 }

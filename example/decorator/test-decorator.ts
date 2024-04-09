@@ -1,56 +1,83 @@
-import { ConsoleHelper, DecoratorHelper } from '../../src';
+import { DecoratorHelper } from '../../src';
+import { applyDecorators, Controller } from '@nestjs/common';
 
-const Console = new ConsoleHelper({ info: false, link: false });
 const Decorator = new DecoratorHelper('__FA_DECORATOR__');
 /**
  *
  */
 const ClassDecorator = (metadata: string): ClassDecorator => {
   return Decorator.decorateClass((target) => {
-    DecoratorHelper.setClassMetadata(Decorator.symbol, target, metadata);
-    // console.warn('ClassDecorator', { data, classMetadata });
+    DecoratorHelper.setClassMetadata(Decorator.symbol, target, {
+      data: metadata,
+    });
+    // console.warn('ClassDecorator', metadata);
     // Console.stdout('\n');
   });
 };
 const MethodDecorator = (metadata: string): MethodDecorator => {
-  return Decorator.decorateMethod((target, propertyKey) => {
-    DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, metadata);
-    const classMetadata = DecoratorHelper.getClassMetadata(Decorator.symbol, target);
-    console.warn('MethodDecorator', { data: metadata, classMetadata });
-    Console.stdout('\n');
-    // console.log({ value, metadata: metadata.classData });
-    // return [`${value} method`];
-    // return [`${value}-method`];
+  return Decorator.decorateMethod((target, propertyKey, descriptor) => {
+    DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
+      data: metadata,
+      before: (metadata, ...args) => {
+        console.warn('BEFORE', args);
+        return args.map((item) => {
+          return (item as number) + 1;
+        });
+      },
+      after: (metadata, ...args) => {
+        console.warn('AFTER');
+        return args.map((item) => {
+          return `${item as string}<---`;
+        });
+      },
+    });
+    // return ['MethodDecorator', 'MethodDecorator'];
+    // return applyDecorators(Controller())(target);
   });
 };
-const ParamDecorator = (data: string): ParameterDecorator => {
-  return Decorator.decorateParameter(data, (value: string, metadata): unknown => {
-    // const classMetadata = DecoratorHelper.getClassMetadata(Decorator.symbol, target);
-    console.warn('ParamDecorator', metadata.classData, metadata.methodData, data);
-    Console.stdout('\n');
-    return `${data}-${value}`;
+const ParamDecorator = (metadata: string): ParameterDecorator => {
+  return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
+    DecoratorHelper.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
+      data: metadata,
+      callback: (value, metadata) => {
+        // console.warn(metadata);
+        // const classMetadata = DecoratorHelper.getClassMetadata(Decorator.symbol, target);
+        // const methodMetadata = DecoratorHelper.getMethodMetadata(Decorator.symbol, target, propertyKey);
+        // const parameterMetadata = DecoratorHelper.getParameterMetadata(Decorator.symbol, target, propertyKey);
+        // console.warn('ParamDecorator', classMetadata, methodMetadata, parameterMetadata.get(parameterIndex));
+        // console.warn('ParamDecorator', metadata);
+        return `${value as string}/${metadata.parameterData as string}`;
+      },
+    });
   });
 };
 
 export function testDecorator(): void {
-  const mock = new MockClass();
-  const result = mock.testParam('value1', 'value2');
-  console.log(result);
-  Console.stdout('\n');
+  const mock = new TestClass();
+  const data = {
+    param1: 1,
+    param2: 2,
+  };
+  const result = mock.testMethod(data.param1, data.param2);
+  /**/
+  // const data = 'A/B';
+  // const result = mock.testMethod(data, 'XXX');
+  /**/
+  console.log({ result });
 }
 
-@ClassDecorator('ClassData')
-class MockClass {
-  @MethodDecorator('MethodData')
-  public testParam(
-    // @ParamDecorator('param1Data') @ParamDecorator('param2Data')
-    param1: string,
-    @ParamDecorator('param2Data') param2?: string,
+@ClassDecorator('Class1')
+class TestClass {
+  @MethodDecorator('Method1')
+  public testMethod(
+    @ParamDecorator('Param1')
+    @ParamDecorator('Param2')
+    param1: unknown,
+    @ParamDecorator('Param3') param2?: unknown,
     // param2: string,
-  ): { param1: string; param2: unknown } {
+  ): { param1: unknown; param2: unknown } {
     const result = { param1, param2 };
-    console.info(`${this.constructor.name}->${this.testParam.name}(${param1}, ${param2})`);
-    Console.stdout('\n');
+    console.info(`${this.constructor.name}->${this.testMethod.name}()`, { param1, param2 });
     return result;
   }
 }
