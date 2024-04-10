@@ -44,9 +44,9 @@ const MethodDecorator = (metadata?: unknown): MethodDecorator => {
   return Decorator.decorateMethod((target: object, propertyKey: string | symbol) => {
     DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: metadata,
-      before: (value, metadata) => {
-        // console.warn(value, metadata.classData);
-      },
+      // before: (value, metadata) => {
+      // console.warn(value, metadata.classData);
+      // },
     });
     return applyDecorators(Param)(target);
   });

@@ -1,5 +1,4 @@
 import { DecoratorHelper } from '../../src';
-import { applyDecorators, Controller } from '@nestjs/common';
 
 const Decorator = new DecoratorHelper('__FA_DECORATOR__');
 /**
@@ -15,24 +14,22 @@ const ClassDecorator = (metadata: string): ClassDecorator => {
   });
 };
 const MethodDecorator = (metadata: string): MethodDecorator => {
-  return Decorator.decorateMethod((target, propertyKey, descriptor) => {
+  return Decorator.decorateMethod((target, propertyKey) => {
     DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: metadata,
-      before: (metadata, ...args) => {
-        console.warn('BEFORE', args);
-        return args.map((item) => {
-          return (item as number) + 1;
-        });
-      },
-      after: (metadata, ...args) => {
-        console.warn('AFTER');
-        return args.map((item) => {
-          return `${item as string}<---`;
-        });
-      },
+      // before: (metadata, ...args) => {
+      //   console.warn('BEFORE', args);
+      //   return args.map((item) => {
+      //     return (item as number) + 1;
+      //   });
+      // },
+      // after: (metadata, ...args) => {
+      //   console.warn('AFTER', args);
+      //   return args.map((item) => {
+      //     return `${item as string}<---`;
+      //   });
+      // },
     });
-    // return ['MethodDecorator', 'MethodDecorator'];
-    // return applyDecorators(Controller())(target);
   });
 };
 const ParamDecorator = (metadata: string): ParameterDecorator => {
@@ -58,23 +55,21 @@ export function testDecorator(): void {
     param1: 1,
     param2: 2,
   };
+  mock.testMethod(data.param1, data.param2);
   const result = mock.testMethod(data.param1, data.param2);
-  /**/
-  // const data = 'A/B';
-  // const result = mock.testMethod(data, 'XXX');
-  /**/
   console.log({ result });
 }
 
-@ClassDecorator('Class1')
+// @ClassDecorator('Class1')
 class TestClass {
   @MethodDecorator('Method1')
   public testMethod(
     @ParamDecorator('Param1')
     @ParamDecorator('Param2')
     param1: unknown,
-    @ParamDecorator('Param3') param2?: unknown,
-    // param2: string,
+    @ParamDecorator('Param3')
+    param2?: unknown,
+    // param2: unknown,
   ): { param1: unknown; param2: unknown } {
     const result = { param1, param2 };
     console.info(`${this.constructor.name}->${this.testMethod.name}()`, { param1, param2 });

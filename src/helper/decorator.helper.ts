@@ -17,7 +17,7 @@ type ClassMetadataGetType = {
   data: unknown;
 };
 type ClassMetadataSetType = {
-  data: unknown;
+  data?: unknown;
 };
 type ClassCallbackType = <T extends FunctionType>(target: object) => T | void;
 /**
@@ -30,14 +30,14 @@ type MethodMetadataGetType = {
   after?: MethodMetadataCallbackType;
 };
 type MethodMetadataSetType = {
-  data: unknown;
+  data?: unknown;
   before?: MethodMetadataCallbackType;
   after?: MethodMetadataCallbackType;
 };
-type MethodCallbackType = <T>(
+type MethodCallbackType = (
   target: object,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<T>,
+  // descriptor: TypedPropertyDescriptor<T>,
   // ...args: unknown[]
 ) => unknown | void;
 type MethodMetadataCallbackType = (
@@ -59,7 +59,7 @@ type ParameterMetadataGetType = {
   callback?: ParameterMetadataCallbackType;
 };
 type ParameterMetadataSetType = {
-  data: unknown;
+  data?: unknown;
   callback?: ParameterMetadataCallbackType;
 };
 type ParameterCallbackType = (target: object, propertyKey: string | symbol, parameterIndex: number) => unknown | void;
@@ -101,35 +101,36 @@ export class DecoratorHelper {
   public static setMethodMetadata(
     symbol: symbol,
     target: object,
-    propertyKey: string | symbol,
+    propertyKey: string | symbol | undefined,
     metadata: MethodMetadataSetType,
   ): void {
-    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey);
+    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey || DecoratorHelper.name);
     const methodMetadata: MethodMetadataGetType = {
       type: designMetadata.type,
       data: metadata.data,
       before: metadata.before,
       after: metadata.after,
     };
-    Reflect.defineMetadata(symbol, methodMetadata, target.constructor, propertyKey);
+    Reflect.defineMetadata(symbol, methodMetadata, target.constructor, propertyKey || DecoratorHelper.name);
   }
 
   public static getParameterMetadata(
     symbol: symbol,
     target: object,
-    propertyKey: string | symbol,
+    propertyKey: string | symbol | undefined,
   ): ParameterMetadataGetTypeMap {
-    return (Reflect.getOwnMetadata(symbol, target, propertyKey) || new Map()) as ParameterMetadataGetTypeMap;
+    return (Reflect.getOwnMetadata(symbol, target, propertyKey || DecoratorHelper.name) ||
+      new Map()) as ParameterMetadataGetTypeMap;
   }
 
   public static setParameterMetadata(
     symbol: symbol,
     target: object,
-    propertyKey: string | symbol,
+    propertyKey: string | symbol | undefined,
     parameterIndex: number,
     metadata: ParameterMetadataSetType,
   ): void {
-    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey);
+    const designMetadata = DecoratorHelper.getDesignMetadata(target, propertyKey || DecoratorHelper.name);
     const parameterMetadata: ParameterMetadataGetType = {
       type: designMetadata.paramtypes[parameterIndex],
       data: metadata.data,
@@ -137,7 +138,7 @@ export class DecoratorHelper {
     };
     const current = DecoratorHelper.getParameterMetadata(symbol, target, propertyKey);
     current.set(parameterIndex, [parameterMetadata, ...(current.get(parameterIndex) || [])]);
-    Reflect.defineMetadata(symbol, current, target, propertyKey);
+    Reflect.defineMetadata(symbol, current, target, propertyKey || DecoratorHelper.name);
   }
 
   private static getDesignMetadata(target: object, propertyKey: string | symbol): DesignMetadataInterface {
@@ -187,7 +188,6 @@ export class DecoratorHelper {
               : acc;
           }, value);
     });
-    // @ts-ignore
     return methodMetadata.after ? methodMetadata.after(metadata, ...result) : result;
   }
 
@@ -210,7 +210,7 @@ export class DecoratorHelper {
         // const result = callback ? (callback(target, propertyKey, descriptor, ...args) as unknown[]) : undefined;
         // const result = callback ? (callback(target, propertyKey, descriptor) as unknown[]) : undefined;
         if (callback) {
-          callback(target, propertyKey, descriptor);
+          callback(target, propertyKey);
         }
         return descriptorValue.apply(
           this,
