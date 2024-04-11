@@ -42,10 +42,10 @@ type MethodCallbackType = (
 ) => unknown | void;
 type MethodMetadataCallbackType = (
   metadata: {
-    classType: object;
-    classData: unknown;
-    methodType: ConstructableType;
-    methodData: unknown;
+    classType: object | undefined;
+    classData: unknown | undefined;
+    methodType: ConstructableType | undefined;
+    methodData: unknown | undefined;
   },
   ...args: unknown[]
 ) => unknown[];
@@ -66,12 +66,12 @@ type ParameterCallbackType = (target: object, propertyKey: string | symbol, para
 type ParameterMetadataCallbackType = (
   value: unknown,
   metadata: {
-    classType: object;
-    classData: unknown;
-    methodType: ConstructableType;
-    methodData: unknown;
-    parameterType: ConstructableType;
-    parameterData: unknown;
+    classType: object | undefined;
+    classData: unknown | undefined;
+    methodType: ConstructableType | undefined;
+    methodData: unknown | undefined;
+    parameterType: ConstructableType | undefined;
+    parameterData: unknown | undefined;
   },
 ) => unknown;
 
@@ -82,8 +82,8 @@ export class DecoratorHelper {
     this.symbol = Symbol(symbol);
   }
 
-  public static getClassMetadata(symbol: symbol, target: object): ClassMetadataGetType {
-    return (Reflect.getOwnMetadata(symbol, target.constructor) || {}) as ClassMetadataGetType;
+  public static getClassMetadata(symbol: symbol, target: object): ClassMetadataGetType | undefined {
+    return Reflect.getOwnMetadata(symbol, target.constructor) as ClassMetadataGetType;
   }
 
   public static setClassMetadata(symbol: symbol, target: object, metadata: ClassMetadataSetType): void {
@@ -94,7 +94,11 @@ export class DecoratorHelper {
     Reflect.defineMetadata(symbol, classMetadata, target);
   }
 
-  public static getMethodMetadata(symbol: symbol, target: object, propertyKey: string | symbol): MethodMetadataGetType {
+  public static getMethodMetadata(
+    symbol: symbol,
+    target: object,
+    propertyKey: string | symbol,
+  ): MethodMetadataGetType | undefined {
     return (Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) || {}) as MethodMetadataGetType;
   }
 
@@ -118,7 +122,7 @@ export class DecoratorHelper {
     symbol: symbol,
     target: object,
     propertyKey: string | symbol | undefined,
-  ): ParameterMetadataGetTypeMap {
+  ): ParameterMetadataGetTypeMap | undefined {
     return (Reflect.getOwnMetadata(symbol, target, propertyKey || DecoratorHelper.name) ||
       new Map()) as ParameterMetadataGetTypeMap;
   }
@@ -137,7 +141,7 @@ export class DecoratorHelper {
       callback: metadata.callback,
     };
     const current = DecoratorHelper.getParameterMetadata(symbol, target, propertyKey);
-    current.set(parameterIndex, [parameterMetadata, ...(current.get(parameterIndex) || [])]);
+    current?.set(parameterIndex, [parameterMetadata, ...(current?.get(parameterIndex) || [])]);
     Reflect.defineMetadata(symbol, current, target, propertyKey || DecoratorHelper.name);
   }
 
@@ -165,30 +169,30 @@ export class DecoratorHelper {
     const methodMetadata = DecoratorHelper.getMethodMetadata(symbol, target, propertyKey);
     const parameterMetadata = DecoratorHelper.getParameterMetadata(symbol, target, propertyKey);
     const metadata = {
-      classType: classMetadata.type,
-      classData: classMetadata.data,
-      methodType: methodMetadata.type,
-      methodData: methodMetadata.data,
+      classType: classMetadata?.type,
+      classData: classMetadata?.data,
+      methodType: methodMetadata?.type,
+      methodData: methodMetadata?.data,
     };
-    const before = methodMetadata.before ? methodMetadata.before(metadata, ...args) : args;
+    const before = methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args;
     const result = before.map((value, index) => {
-      const item = parameterMetadata.get(index);
+      const item = parameterMetadata?.get(index);
       return !item
         ? value
         : item.reduce((acc, { callback, data, type }) => {
             return callback
               ? callback(acc, {
-                  classType: classMetadata.type,
-                  classData: classMetadata.data,
-                  methodType: methodMetadata.type,
-                  methodData: methodMetadata.data,
+                  classType: classMetadata?.type,
+                  classData: classMetadata?.data,
+                  methodType: methodMetadata?.type,
+                  methodData: methodMetadata?.data,
                   parameterType: type,
                   parameterData: data,
                 })
               : acc;
           }, value);
     });
-    return methodMetadata.after ? methodMetadata.after(metadata, ...result) : result;
+    return methodMetadata?.after ? methodMetadata.after(metadata, ...result) : result;
   }
 
   public decorateClass(callback?: ClassCallbackType): ClassDecorator {
