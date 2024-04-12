@@ -44,44 +44,6 @@ class CodegenSingleton {
     console.log(result.join(''));
   }
 
-  public deleteDirectorySyncEmpty(directory: string): void {
-    try {
-      fs.readdirSync(directory).forEach((file) => {
-        const fullPath = path.join(directory, file);
-        if (fs.lstatSync(fullPath).isDirectory()) {
-          this.deleteDirectorySyncEmpty(fullPath);
-        }
-      });
-      if (fs.readdirSync(directory).length === 0) {
-        fs.rmdirSync(directory);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  public scanForFilesSync(directory: string, filter: RegExp[]): string[] {
-    if (!fs.existsSync(directory)) {
-      return [];
-    }
-    const result = [];
-    const entries = fs.readdirSync(directory);
-    for (const entry of entries) {
-      const fullPath = path.join(directory, entry);
-      if (fs.statSync(fullPath).isDirectory()) {
-        result.push(...this.scanForFilesSync(fullPath, filter));
-      } else if (
-        !filter ||
-        filter?.some((item) => {
-          return item.test(fullPath);
-        })
-      ) {
-        result.push(fullPath);
-      }
-    }
-    return result;
-  }
-
   public async fetchJson(host: string, init: RequestInit): Promise<unknown | null> {
     try {
       const response = await fetch(host, init);

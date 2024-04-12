@@ -1,5 +1,5 @@
 import { IsNumber, IsString, ValidatorOptions } from 'class-validator';
-import { ClassTransformOptions, plainToInstance } from 'class-transformer';
+import { ClassConstructor, ClassTransformOptions, plainToInstance } from 'class-transformer';
 import { DataHelper, DecoratorHelper, ValidatorHelper } from '../../src';
 import { applyDecorators, Controller, Param } from '@nestjs/common';
 
@@ -56,7 +56,7 @@ const ParamDecorator = (metadata?: unknown): ParameterDecorator => {
     DecoratorHelper.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
       data: metadata,
       callback: (value, metadata) => {
-        const dto = plainToInstance(metadata.parameterType, value, TRANSFORMER_CONFIG);
+        const dto = plainToInstance(metadata.parameterType as ClassConstructor<unknown>, value, TRANSFORMER_CONFIG);
         const errors = ValidatorHelper.validateSync(dto, VALIDATOR_CONFIG);
         return errors ? errors : dto;
       },
@@ -71,7 +71,6 @@ export function testDecoratorEntity(): void {
     entity2: { key: DataHelper.randomString(10) },
     // entity2: { key: 123 },
   };
-  // @ts-ignore
   const result = mock.testEntityMethod(data.entity1, data.entity2);
   console.log({ data, result });
 }

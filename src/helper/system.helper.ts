@@ -39,23 +39,6 @@ class SystemSingleton {
     });
   }
 
-  public scanFilesSync(directory: string, filter?: RegExp[]): string[] {
-    const result: string[] = [];
-    if (!fs.existsSync(directory)) {
-      return result;
-    }
-    const entries = fs.readdirSync(directory);
-    for (const entry of entries) {
-      const fullPath = path.join(directory, entry);
-      if (fs.statSync(fullPath).isDirectory()) {
-        result.push(...this.scanFilesSync(fullPath, filter));
-      } else if (!filter || filter?.some((item) => item.test(fullPath))) {
-        result.push(fullPath);
-      }
-    }
-    return result;
-  }
-
   public scanDirectoriesSync(directory: string, filter?: RegExp[]): string[] {
     const result: string[] = [];
     if (!fs.existsSync(directory)) {
@@ -84,9 +67,19 @@ class SystemSingleton {
     }
   }
 
-  public deleteDirectorySync(directory: string): void {
+  public deleteDirectorySync(directory: string, onlyEmpty?: boolean): void {
     try {
-      if (fs.statSync(directory).isDirectory()) {
+      if (onlyEmpty) {
+        fs.readdirSync(directory).forEach((file) => {
+          const fullPath = path.join(directory, file);
+          if (fs.lstatSync(fullPath).isDirectory()) {
+            this.deleteDirectorySync(fullPath, onlyEmpty);
+          }
+        });
+        if (fs.readdirSync(directory).length == 0) {
+          fs.rmdirSync(directory);
+        }
+      } else if (fs.statSync(directory).isDirectory()) {
         fs.rmSync(directory, { recursive: true, force: true });
       }
     } catch (e) {
@@ -94,20 +87,26 @@ class SystemSingleton {
     }
   }
 
-  public deleteDirectorySyncEmpty(directory: string): void {
-    try {
-      fs.readdirSync(directory).forEach((file) => {
-        const fullPath = path.join(directory, file);
-        if (fs.lstatSync(fullPath).isDirectory()) {
-          this.deleteDirectorySyncEmpty(fullPath);
-        }
-      });
-      if (fs.readdirSync(directory).length == 0) {
-        fs.rmdirSync(directory);
-      }
-    } catch (e) {
-      console.error(e);
+  public scanFilesSync(directory: string, filter?: RegExp[]): string[] {
+    if (!fs.existsSync(directory)) {
+      return [];
     }
+    const result: string[] = [];
+    const entries = fs.readdirSync(directory);
+    for (const entry of entries) {
+      const fullPath = path.join(directory, entry);
+      if (fs.statSync(fullPath).isDirectory()) {
+        result.push(...this.scanFilesSync(fullPath, filter));
+      } else if (
+        !filter ||
+        filter?.some((item) => {
+          return item.test(fullPath);
+        })
+      ) {
+        result.push(fullPath);
+      }
+    }
+    return result;
   }
 
   public createFileSync(filePath: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
