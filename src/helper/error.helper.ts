@@ -21,7 +21,7 @@ export class ErrorHelper extends Error {
       this.status = 500;
     } else {
       this.name = error.name;
-      this.message = typeof error.message === 'string' ? error.message : DataHelper.stringify(error.message);
+      this.message = typeof error.message === 'string' ? error.message : DataHelper.jsonStringify(error.message);
       this.status = error.status || 500;
     }
   }

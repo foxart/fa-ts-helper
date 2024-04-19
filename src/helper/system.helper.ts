@@ -76,7 +76,7 @@ class SystemSingleton {
             this.deleteDirectorySync(fullPath, onlyEmpty);
           }
         });
-        if (fs.readdirSync(directory).length == 0) {
+        if (fs.readdirSync(directory).length === 0) {
           fs.rmdirSync(directory);
         }
       } else if (fs.statSync(directory).isDirectory()) {
@@ -109,10 +109,10 @@ class SystemSingleton {
     return result;
   }
 
-  public createFileSync(filePath: string, data: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
+  public createFileSync(filePath: string, content: string | NodeJS.ArrayBufferView, options?: WriteFileOptions): void {
     try {
       this.createDirectorySync(path.dirname(filePath));
-      fs.writeFileSync(filePath, data, options || { encoding: 'utf-8' });
+      fs.writeFileSync(filePath, content, options || { encoding: 'utf-8' });
     } catch (e) {
       console.error(e);
     }

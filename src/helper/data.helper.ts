@@ -9,6 +9,7 @@ interface FilterOptionsInterface {
 
 class DataSingleton {
   private static self: DataSingleton;
+
   private readonly characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
   public static getInstance(): DataSingleton {
@@ -16,38 +17,6 @@ class DataSingleton {
       DataSingleton.self = new DataSingleton();
     }
     return DataSingleton.self;
-  }
-
-  public stringify(data: unknown, indent = 2): string {
-    const cache: unknown[] = [];
-    return JSON.stringify(
-      data,
-      (_key, value: unknown) =>
-        typeof value === 'object' && value !== null
-          ? cache.includes(value)
-            ? undefined
-            : cache.push(value) && value
-          : value,
-      indent,
-    );
-  }
-
-  public randomFloat(min: number, max: number): number {
-    return Math.random() * (max - min + 1) + min;
-  }
-
-  public randomInteger(min: number, max: number, int?: boolean): number {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-
-  public randomString(length: number): string {
-    let counter = 0;
-    let result = '';
-    while (counter < length) {
-      result += this.characters.charAt(Math.floor(Math.random() * this.characters.length));
-      counter++;
-    }
-    return result;
   }
 
   public filter<T>(data: T, options?: FilterOptionsInterface): T {
@@ -72,6 +41,52 @@ class DataSingleton {
     } else {
       return data;
     }
+  }
+
+  public randomFloat(min: number, max: number): number {
+    return Math.random() * (max - min + 1) + min;
+  }
+
+  public randomInteger(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  public randomString(length: number): string {
+    let counter = 0;
+    let result = '';
+    while (counter < length) {
+      result += this.characters.charAt(Math.floor(Math.random() * this.characters.length));
+      counter++;
+    }
+    return result;
+  }
+
+  public dateToSting(date: Date): string {
+    return date.toISOString().replace(/T/, ' ').replace(/Z/, '');
+  }
+
+  public stringToCamel(string: string, split: string): string {
+    return string
+      .toLowerCase()
+      .split(split)
+      .map((word, index) => {
+        return index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join('');
+  }
+
+  public jsonStringify(data: unknown, indent?: number): string {
+    const cache: unknown[] = [];
+    return JSON.stringify(
+      data,
+      (_key, value: unknown) =>
+        typeof value === 'object' && value !== null
+          ? cache.includes(value)
+            ? undefined
+            : cache.push(value) && value
+          : value,
+      indent ?? 2,
+    );
   }
 
   private isEmpty(data: unknown, options?: FilterOptionsInterface): boolean {

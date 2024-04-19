@@ -174,7 +174,7 @@ export class ConsoleHelper {
     return `${cch.effect.reset}${result}${cch.effect.reset}`;
   }
 
-  private date() {
+  private date(): string {
     // return new Date().toLocaleString('en-GB', {
     //   year: 'numeric',
     //   month: '2-digit',
