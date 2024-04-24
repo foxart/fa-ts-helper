@@ -1,6 +1,6 @@
 import path from 'path';
 
-interface StackOptionInterface {
+interface ParserStackOptionInterface {
   short?: boolean;
   index?: number;
 }
@@ -45,7 +45,7 @@ class ParserSingleton {
     return ParserSingleton.self;
   }
 
-  public stack(stack: string | undefined, options?: StackOptionInterface): string[] {
+  public stack(stack?: string, options?: ParserStackOptionInterface): string[] {
     let result: string[] = [];
     let match = this.stackRegexp.exec(stack || '');
     while (match) {
