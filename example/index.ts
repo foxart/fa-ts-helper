@@ -1,7 +1,8 @@
 import { ConsoleHelper, ErrorHelper, ExceptionHelper } from '../src';
-import { testDecoratorHelper } from './test-decorator-helper';
+import { testDecoratorHelper } from './test/test-decorator-helper';
 import process from 'process';
-import { testExceptionHelper } from './test-exception-helper';
+import { testExceptionHelper } from './test/test-exception-helper';
+import { ConsoleTest } from './test/console.test';
 
 function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -43,11 +44,11 @@ function initConsole(): void {
 void ((): void => {
   initConsole();
   initCatch();
-  // ConsoleHelperExample();
+  ConsoleTest();
   // testCryptHelper();
   // testMiddlewareHelper();
   // testDecoratorHelper();
   // void testSystemHelper();
   // void testValidatorHelper();
-  void testExceptionHelper();
+  // void testExceptionHelper();
 })();

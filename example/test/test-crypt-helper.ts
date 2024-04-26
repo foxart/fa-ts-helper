@@ -1,4 +1,4 @@
-import { CryptHelper } from '../src';
+import { CryptHelper } from '../../src';
 
 function encryptDecrypt(): void {
   const data = { name: 'Иван123' };

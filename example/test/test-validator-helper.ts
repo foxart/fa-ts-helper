@@ -1,6 +1,6 @@
 import { plainToInstance, Type } from 'class-transformer';
 import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
-import { ValidatorHelper } from '../src';
+import { ValidatorHelper } from '../../src';
 import 'reflect-metadata';
 
 class PayloadObjectArrayEntity {

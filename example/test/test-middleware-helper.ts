@@ -1,4 +1,4 @@
-import { MiddlewareHelper } from '../src/helper/middleware.helper';
+import { MiddlewareHelper } from '../../src/helper/middleware.helper';
 
 function middlewareAddUse(): void {
   const payload1 = { name: 'case 1', data: 1 };

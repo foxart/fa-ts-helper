@@ -1,4 +1,4 @@
-import { ExceptionHelper } from '../src';
+import { ExceptionHelper } from '../../src';
 
 export function testExceptionHelper(): void {
   try {

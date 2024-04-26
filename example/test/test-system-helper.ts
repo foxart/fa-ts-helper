@@ -1,4 +1,4 @@
-import { CryptHelper, SystemHelper } from '../src';
+import { CryptHelper, SystemHelper } from '../../src';
 
 async function sleep(milliseconds: number): Promise<void> {
   const timeStart = performance.now();
