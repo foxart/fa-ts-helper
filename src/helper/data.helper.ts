@@ -9,8 +9,14 @@ interface FilterOptionsInterface {
 
 class DataSingleton {
   private static self: DataSingleton;
+  private readonly characters: string;
 
-  private readonly characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  private constructor() {
+    const upper = Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 65)).join('');
+    const lower = Array.from({ length: 26 }, (_, i) => String.fromCharCode(i + 97)).join('');
+    const numbers = Array.from({ length: 10 }, (_, i) => i).join('');
+    this.characters = [upper, lower, numbers].join('');
+  }
 
   public static getInstance(): DataSingleton {
     if (!DataSingleton.self) {
@@ -65,14 +71,19 @@ class DataSingleton {
     return date.toISOString().replace(/T/, ' ').replace(/Z/, '');
   }
 
-  public stringToCamel(string: string, split: string): string {
+  public separatorToCamel(string: string, separator: string): string {
     return string
       .toLowerCase()
-      .split(split)
+      .split(separator)
       .map((word, index) => {
         return index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
       })
       .join('');
+  }
+
+  public camelToSeparator(string: string, separator: string): string {
+    const result = string.match(/([A-Z][a-z]*)/g);
+    return result ? result?.join(separator) : string;
   }
 
   public jsonStringify(data: unknown, indent?: number): string {
