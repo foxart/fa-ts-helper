@@ -6,10 +6,8 @@ import 'reflect-metadata';
 class PayloadObjectArrayEntity {
   @IsString()
   public string: string;
-
   @IsNumber()
   public number: number;
-
   // public constructor(data: dataNestedEntity) {
   // 	this.name = data.name;
   // 	this.surname = data.surname;
@@ -19,15 +17,12 @@ class PayloadObjectArrayEntity {
 class PayloadObjectEntity {
   @IsString()
   public name: string;
-
   @IsString()
   public surname: string;
-
   @IsArray()
   @ValidateNested()
   @Type(() => PayloadObjectArrayEntity)
   public array: PayloadObjectArrayEntity[];
-
   // public constructor(data: dataNestedEntity) {
   // 	this.name = data.name;
   // 	this.surname = data.surname;
@@ -37,12 +32,10 @@ class PayloadObjectEntity {
 class PayloadEntity {
   @IsString()
   public id: string;
-
   @IsObject()
   @ValidateNested()
   @Type(() => PayloadObjectEntity)
   public object: PayloadObjectEntity;
-
   // public constructor(data: dataEntity) {
   // 	this.id = data.id;
   // 	this.nested = data.nested;
@@ -69,7 +62,7 @@ function validateSync(payload: unknown): void {
   });
 }
 
-export function testValidatorHelper(): void {
+export function validatorHelperTest(): void {
   const payload = {
     id: '660bba44fe631e9f9f30e043',
     object: {

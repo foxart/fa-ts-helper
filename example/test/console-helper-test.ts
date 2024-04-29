@@ -1,6 +1,6 @@
 import { ConsoleHelper } from '../../src';
 
-const Console = new ConsoleHelper({ prefix: 'PREFIX', date: true, info: false, link: false });
+const Console = new ConsoleHelper({ date: true, info: true, link: true });
 
 function consoleLog(data: unknown): void {
   Console.info(consoleLog.name);
@@ -27,12 +27,14 @@ function consoleDebug(data: unknown): void {
   console.debug(data);
 }
 
-export function ConsoleTest(): void {
+export function ConsoleHelperTest(): void {
   const data = { number: 1, string: 'lorem ipsum', date: new Date() };
   const error = new Error('Custom error');
-  consoleLog(data);
+  // consoleLog(data);
   // consoleInfo(data);
   // consoleWarn(data);
-  consoleError(error);
+  // consoleError(error);
   // consoleDebug(data);
+  // Console.debug(consoleLog.name);
+  console.log(1, '2', '3', 'xxx', 'yyy');
 }

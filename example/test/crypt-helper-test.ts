@@ -29,7 +29,7 @@ function bcryptInput(): void {
   console.log(bcryptInput.name, CryptHelper.bcryptInput(input));
 }
 
-export function testCryptHelper(): void {
+export function cryptHelperTest(): void {
   encryptDecrypt();
   bcryptCompare();
   bcryptInput();

@@ -26,7 +26,7 @@ function scanDirectories(directory: string, filter?: RegExp[]): void {
   console.log(scanDirectories.name, { filter, result });
 }
 
-export async function testSystemHelper(): Promise<void> {
+export async function systemHelperTest(): Promise<void> {
   const directory = './temp';
   const data = { name: 'Иван123', password: CryptHelper.bcryptSalt() };
   await sleep(100);

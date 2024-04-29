@@ -1,6 +1,6 @@
 import { ExceptionHelper } from '../../src';
 
-export function testExceptionHelper(): void {
+export function exceptionHelperTest(): void {
   try {
     // @ts-ignore
     a = 1;

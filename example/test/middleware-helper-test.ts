@@ -24,6 +24,6 @@ function middlewareAddUse(): void {
   });
 }
 
-export function testMiddlewareHelper(): void {
+export function middlewareHelperTest(): void {
   middlewareAddUse();
 }
