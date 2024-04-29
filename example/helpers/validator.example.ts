@@ -62,7 +62,7 @@ function validateSync(payload: unknown): void {
   });
 }
 
-export function validatorHelperTest(): void {
+export function validatorExample(): void {
   const payload = {
     id: '660bba44fe631e9f9f30e043',
     object: {

@@ -1,11 +1,11 @@
-import { ExceptionHelper } from '../../src';
+import { ExceptionService } from '../../src';
 
-export function exceptionHelperTest(): void {
+export function exceptionExample(): void {
   try {
     // @ts-ignore
     a = 1;
   } catch (e: unknown) {
-    const exceptionHelper = new ExceptionHelper({
+    const exceptionHelper = new ExceptionService({
       short: true,
       callback: (stack: string[]): string[] => {
         return stack.filter((item) => {

@@ -1,9 +1,9 @@
-import { MiddlewareHelper } from '../../src/helper/middleware.helper';
+import { MiddlewareService } from '../../src/service/middleware.service';
 
 function middlewareAddUse(): void {
   const payload1 = { name: 'case 1', data: 1 };
   const payload2 = { name: 'case 1', data: 10 };
-  const middleware = new MiddlewareHelper<{ name: string; data: number }>();
+  const middleware = new MiddlewareService<{ name: string; data: number }>();
   middleware.add((payload, next) => {
     next({
       name: payload.name,
@@ -24,6 +24,6 @@ function middlewareAddUse(): void {
   });
 }
 
-export function middlewareHelperTest(): void {
+export function middlewareExample(): void {
   middlewareAddUse();
 }

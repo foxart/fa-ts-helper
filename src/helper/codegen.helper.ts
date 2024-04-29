@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec as childProcessExec } from 'child_process';
-import { ConsoleColorHelper } from './console-color.helper';
+import { ColorHelper } from './color.helper';
 
 const exec = promisify(childProcessExec);
-const { effect, foreground } = ConsoleColorHelper;
+const { effect, foreground } = ColorHelper;
 
 class CodegenSingleton {
   private static self: CodegenSingleton;

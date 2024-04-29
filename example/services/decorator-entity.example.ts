@@ -1,6 +1,6 @@
 import { IsNumber, IsString, ValidatorOptions } from 'class-validator';
 import { ClassConstructor, ClassTransformOptions, plainToInstance } from 'class-transformer';
-import { DataHelper, DecoratorHelper, ValidatorHelper } from '../../src';
+import { DataHelper, DecoratorService, ValidatorHelper } from '../../src';
 import { applyDecorators, Controller, Param } from '@nestjs/common';
 
 const TRANSFORMER_CONFIG: ClassTransformOptions = {
@@ -24,7 +24,7 @@ class Entity2 {
   public key: string;
 }
 
-const Decorator = new DecoratorHelper('__FA_DECORATOR__');
+const Decorator = new DecoratorService('__FA_DECORATOR__');
 /**
  *
  */
@@ -32,7 +32,7 @@ const ClassDecorator = (metadata?: unknown): ClassDecorator => {
   // return Decorator.decorateClass();
   // return applyDecorators(Controller());
   return Decorator.decorateClass((target: object) => {
-    DecoratorHelper.setClassMetadata(Decorator.symbol, target, {
+    DecoratorService.setClassMetadata(Decorator.symbol, target, {
       data: metadata,
     });
     return applyDecorators(Controller())(target);
@@ -42,7 +42,7 @@ const MethodDecorator = (metadata?: unknown): MethodDecorator => {
   // return Decorator.decorateMethod();
   // return applyDecorators(Get('path'));
   return Decorator.decorateMethod((target: object, propertyKey: string | symbol) => {
-    DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
+    DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: metadata,
       // before: (value, metadata) => {
       // console.warn(value, metadata.classData);
@@ -53,7 +53,7 @@ const MethodDecorator = (metadata?: unknown): MethodDecorator => {
 };
 const ParamDecorator = (metadata?: unknown): ParameterDecorator => {
   return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
-    DecoratorHelper.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
+    DecoratorService.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
       data: metadata,
       callback: (value, metadata) => {
         const dto = plainToInstance(metadata.parameterType as ClassConstructor<unknown>, value, TRANSFORMER_CONFIG);
@@ -64,7 +64,7 @@ const ParamDecorator = (metadata?: unknown): ParameterDecorator => {
   });
 };
 
-export function testDecoratorEntity(): void {
+export function decoratorEntityExample(): void {
   const mock = new TestEntityClass();
   const data = {
     entity1: { key: DataHelper.randomFloat(1, 10) },

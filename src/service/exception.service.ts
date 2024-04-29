@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorHelper } from './error.helper';
-import { ParserHelper } from './parser.helper';
+import { ErrorService } from './error.service';
+import { ParserHelper } from '../helper/parser.helper';
 
 interface ExceptionInterface {
   name: string;
@@ -17,7 +17,7 @@ interface ExceptionOptionInterface {
   callback?: (stack: string[]) => string[];
 }
 
-export class ExceptionHelper {
+export class ExceptionService {
   public readonly options?: ExceptionOptionInterface;
 
   public constructor(options?: ExceptionOptionInterface) {
@@ -30,7 +30,7 @@ export class ExceptionHelper {
       result = this.parseHttpException(exception);
     } else if (exception instanceof mongoose.mongo.MongoError) {
       result = this.parseMongoException(exception);
-    } else if (exception instanceof ErrorHelper) {
+    } else if (exception instanceof ErrorService) {
       result = this.parseErrorHelperException(exception);
     } else if (exception instanceof Error) {
       result = this.parseErrorException(exception);
@@ -92,7 +92,7 @@ export class ExceptionHelper {
     };
   }
 
-  private parseErrorHelperException(exception: ErrorHelper): ExceptionInterface {
+  private parseErrorHelperException(exception: ErrorService): ExceptionInterface {
     let message;
     try {
       message = JSON.parse(exception.message) as unknown;
@@ -104,7 +104,7 @@ export class ExceptionHelper {
       message: message,
       status: exception.status,
       // type: 'helper',
-      type: ErrorHelper.name,
+      type: ErrorService.name,
       stack: this.stack(exception.stack),
     };
   }

@@ -1,7 +1,7 @@
 type MiddlewareNextType<T> = (payload: T) => void;
 type MiddlewareType<T> = (payload: T, next: MiddlewareNextType<T>) => void;
 
-export class MiddlewareHelper<PAYLOAD> {
+export class MiddlewareService<PAYLOAD> {
   private readonly middleware: MiddlewareType<PAYLOAD>[];
 
   public constructor() {

@@ -1,4 +1,4 @@
-import { DataHelper } from './data.helper';
+import { DataHelper } from '../helper/data.helper';
 
 interface ErrorHelperInterface {
   name: string;
@@ -6,13 +6,13 @@ interface ErrorHelperInterface {
   status?: number;
 }
 
-export class ErrorHelper extends Error {
+export class ErrorService extends Error {
   public readonly status: number;
 
   public constructor(error: string | Error | ErrorHelperInterface) {
     super();
     if (typeof error === 'string') {
-      this.name = ErrorHelper.name;
+      this.name = ErrorService.name;
       this.message = error;
       this.status = 500;
     } else if (error instanceof Error) {

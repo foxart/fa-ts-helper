@@ -108,4 +108,4 @@ class ConsoleColorSingleton {
   }
 }
 
-export const ConsoleColorHelper = ConsoleColorSingleton.getInstance();
+export const ColorHelper = ConsoleColorSingleton.getInstance();

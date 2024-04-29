@@ -1,12 +1,12 @@
-import { DecoratorHelper } from '../../src';
+import { DecoratorService } from '../../src';
 
-const Decorator = new DecoratorHelper('__FA_DECORATOR__');
+const Decorator = new DecoratorService('__FA_DECORATOR__');
 /**
  *
  */
 const ClassDecorator = (metadata: string): ClassDecorator => {
   return Decorator.decorateClass((target) => {
-    DecoratorHelper.setClassMetadata(Decorator.symbol, target, {
+    DecoratorService.setClassMetadata(Decorator.symbol, target, {
       data: metadata,
     });
     // console.warn('ClassDecorator', metadata);
@@ -15,7 +15,7 @@ const ClassDecorator = (metadata: string): ClassDecorator => {
 };
 const MethodDecorator = (metadata: string): MethodDecorator => {
   return Decorator.decorateMethod((target, propertyKey) => {
-    DecoratorHelper.setMethodMetadata(Decorator.symbol, target, propertyKey, {
+    DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: metadata,
       // before: (metadata, ...args) => {
       //   console.warn('BEFORE', args);
@@ -34,7 +34,7 @@ const MethodDecorator = (metadata: string): MethodDecorator => {
 };
 const ParamDecorator = (metadata: string): ParameterDecorator => {
   return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
-    DecoratorHelper.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
+    DecoratorService.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
       data: metadata,
       callback: (value, metadata) => {
         // console.warn(metadata);
@@ -49,7 +49,7 @@ const ParamDecorator = (metadata: string): ParameterDecorator => {
   });
 };
 
-export function testDecorator(): void {
+export function decoratorExample(): void {
   const mock = new TestClass();
   const data = {
     param1: 1,
