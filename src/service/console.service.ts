@@ -2,7 +2,6 @@ import * as util from 'util';
 import * as process from 'process';
 import { ColorHelperEnum, ColorHelper as cch } from '../helper/color.helper';
 import { ParserHelper } from '../helper/parser.helper';
-import { DataHelper } from '../helper/data.helper';
 
 enum LevelEnum {
   LOG,
@@ -12,7 +11,7 @@ enum LevelEnum {
   DBG,
 }
 
-interface OptionsInterface {
+export interface ConsoleServiceOptionsInterface {
   info?: boolean;
   name?: string;
   counter?: boolean;
@@ -27,12 +26,12 @@ interface OptionsInterface {
 
 export class ConsoleService {
   public readonly console: Console;
-  private readonly options: OptionsInterface;
+  private readonly options: ConsoleServiceOptionsInterface;
   private counter: number;
   private readonly performance: number;
 
   // private readonly infoLength: number;
-  public constructor(options?: OptionsInterface) {
+  public constructor(options?: ConsoleServiceOptionsInterface) {
     this.options = {
       info: options?.info ?? true,
       name: options?.name,
@@ -97,13 +96,11 @@ export class ConsoleService {
   }
 
   public inspect(data: unknown): string {
-    return typeof data === 'string'
-      ? data
-      : util.inspect(data, {
-          showHidden: this.options.hidden,
-          depth: null,
-          colors: this.options.color,
-        });
+    return util.inspect(data, {
+      showHidden: this.options.hidden,
+      depth: null,
+      colors: this.options.color,
+    });
   }
 
   public stdout(data: string): void {
@@ -149,9 +146,9 @@ export class ConsoleService {
 
   private stdoutName(level: LevelEnum): void {
     if (this.options.name) {
-      this.stdout(this.colorize('[', this.foregroundFromLevel(level)));
-      this.stdout(this.options.name);
-      this.stdout(this.colorize(']', this.foregroundFromLevel(level)));
+      this.stdout(this.colorize('[', cch.foreground.cyan));
+      this.stdout(this.colorize(this.options.name, [cch.effect.dim, this.foregroundFromLevel(level)]));
+      this.stdout(this.colorize(']', cch.foreground.cyan));
       this.stdout(' ');
     }
   }
@@ -188,7 +185,7 @@ export class ConsoleService {
   private stdoutArgs(args: unknown[]): void {
     args.forEach((item) => {
       if (item instanceof Error) {
-        this.stdout(this.colorize(item.name, cch.effect.bright));
+        this.stdout(this.colorize(item.name, cch.foreground.red));
         this.stdout(this.colorize(': ', cch.effect.dim));
         if (item.message) {
           this.stdout(this.colorize(item.message, [cch.effect.bright, cch.foreground.red]));
