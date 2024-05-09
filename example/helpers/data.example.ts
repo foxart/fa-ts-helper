@@ -55,6 +55,13 @@ function testData(): void {
   //
 }
 
-void (function (): void {
-  testData();
-})();
+export function DataExample(): void {
+  const example1 = 'LoremIpsumDolor';
+  const example2 = 'loremIpsumDolor';
+  const example3 = 'Lorem-Ipsum-Dolor';
+  const example4 = 'lorem-Ipsum-Dolor';
+  console.log(DataHelper.upperToSeparator(example1, '-'));
+  console.info(DataHelper.upperToSeparator(example2, '-'));
+  console.info(DataHelper.separatorToCamel(example3, '-'));
+  console.info(DataHelper.separatorToPascal(example4, '-'));
+}

@@ -1,6 +1,7 @@
 import { ConsoleService } from '../src';
 import process from 'process';
 import { ConsoleExample } from './services/console.example';
+import { DataExample } from './helpers/data.example';
 
 function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -49,7 +50,8 @@ function initConsole(): void {
 void ((): void => {
   initConsole();
   initCatch();
-  ConsoleExample();
+  DataExample();
+  // ConsoleExample();
   // testCryptHelper();
   // testMiddlewareHelper();
   // void import('./services/decorator-test').then((module) => module.decoratorTest());

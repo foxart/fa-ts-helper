@@ -71,7 +71,22 @@ class DataSingleton {
     return date.toISOString().replace(/T/, ' ').replace(/Z/, '');
   }
 
+  public upperToSeparator(string: string, separator: string): string {
+    const result = string.match(/(^[a-z]+|[A-Z][a-z]*)/g);
+    return result ? result?.join(separator) : string;
+  }
+
   public separatorToCamel(string: string, separator: string): string {
+    return string
+      .toLowerCase()
+      .split(separator)
+      .map((word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join('');
+  }
+
+  public separatorToPascal(string: string, separator: string): string {
     return string
       .toLowerCase()
       .split(separator)
@@ -79,11 +94,6 @@ class DataSingleton {
         return index === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
       })
       .join('');
-  }
-
-  public camelToSeparator(string: string, separator: string): string {
-    const result = string.match(/([A-Z][a-z]*)/g);
-    return result ? result?.join(separator) : string;
   }
 
   public jsonStringify(data: unknown, indent?: number): string {
