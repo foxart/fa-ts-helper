@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import { exec as childProcessExec } from 'child_process';
-import { ColorHelper } from './color.helper';
+import { ColorHelper, ColorHelperEnum } from './color.helper';
 
 const exec = promisify(childProcessExec);
-const { effect, foreground } = ColorHelper;
+const { foreground, background, effect, symbol } = ColorHelper;
 
 class CodegenSingleton {
   private static self: CodegenSingleton;
@@ -18,28 +18,34 @@ class CodegenSingleton {
   }
 
   public message(name: string, msg: string): void {
-    const result = ['[', effect.bright, foreground.cyan, name.toUpperCase(), effect.reset, ']'];
+    const result = [ColorHelper.colorize([' ', name.toUpperCase(), ' '], background.cyan)];
     if (msg) {
-      result.push(' ', effect.bright, foreground.blue, msg, effect.reset);
+      result.push(ColorHelper.colorize([' ', msg], foreground.cyan), ' ');
     }
     console.log(result.join(''));
   }
 
   public success(name: string, msg: string): void {
-    const result = [foreground.yellow, name, ' ', effect.reset, foreground.green, '✔', effect.reset];
-    if (msg) {
-      result.push(' ', effect.dim, msg, effect.reset);
-    }
+    const result = [
+      ColorHelper.colorize(name, foreground.white),
+      ' ',
+      ColorHelper.colorize(symbol.success, [effect.bright, foreground.green]),
+      ' ',
+      ColorHelper.colorize(msg, [effect.dim, foreground.green]),
+    ];
     console.log(result.join(''));
   }
 
-  public error(name: string, msg: string, e: Error): void {
-    const result = [foreground.magenta, name, ' ', effect.reset, foreground.red, '✖', effect.reset];
-    if (msg) {
-      result.push(' ', msg);
-    }
-    if (e) {
-      result.push(' ', foreground.red, e.message, effect.reset);
+  public error(name: string, msg: string, err: Error): void {
+    const result = [
+      ColorHelper.colorize(name, foreground.white),
+      ' ',
+      ColorHelper.colorize(symbol.error, [effect.bright, foreground.red]),
+      ' ',
+      ColorHelper.colorize(msg, [effect.dim, foreground.red]),
+    ];
+    if (err) {
+      result.push(' ', ColorHelper.colorize(err.message ?? err.name, foreground.red));
     }
     console.log(result.join(''));
   }
@@ -53,8 +59,8 @@ class CodegenSingleton {
       }
       this.success('fetch', host);
       return (await response.json()) as unknown;
-    } catch (e) {
-      this.error('fetch', host, e as Error);
+    } catch (err) {
+      this.error('fetch', host, err as Error);
       return null;
     }
   }
@@ -68,8 +74,8 @@ class CodegenSingleton {
       }
       this.success('fetch', host);
       return await response.text();
-    } catch (e) {
-      this.error('fetch', host, e as Error);
+    } catch (err) {
+      this.error('fetch', host, err as Error);
       return null;
     }
   }
@@ -87,8 +93,8 @@ class CodegenSingleton {
       ];
       await exec(command.join(' '));
       this.success('build', path.basename(file));
-    } catch (e) {
-      this.error('build', path.basename(file), e as Error);
+    } catch (err) {
+      this.error('build', path.basename(file), err as Error);
     }
   }
 }

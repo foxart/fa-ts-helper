@@ -24,6 +24,8 @@ export enum ColorHelperEnum {
   BG_CYAN = '\x1b[46m',
   BG_WHITE = '\x1b[47m',
   BG_GRAY = '\x1b[100m',
+  SYMBOL_SUCCESS = '\u2714',
+  SYMBOL_ERROR = '\u2716',
 }
 
 interface EffectInterface {
@@ -60,11 +62,17 @@ interface BackgroundInterface {
   gray: ColorHelperEnum.BG_GRAY;
 }
 
+interface SymbolInterface {
+  success: ColorHelperEnum.SYMBOL_SUCCESS;
+  error: ColorHelperEnum.SYMBOL_ERROR;
+}
+
 class ConsoleColorSingleton {
   private static self: ConsoleColorSingleton;
   public readonly effect: EffectInterface;
   public readonly foreground: ForegroundInterface;
   public readonly background: BackgroundInterface;
+  public readonly symbol: SymbolInterface;
 
   private constructor() {
     this.effect = {
@@ -98,6 +106,10 @@ class ConsoleColorSingleton {
       white: ColorHelperEnum.BG_WHITE,
       gray: ColorHelperEnum.BG_GRAY,
     };
+    this.symbol = {
+      success: ColorHelperEnum.SYMBOL_SUCCESS,
+      error: ColorHelperEnum.SYMBOL_ERROR,
+    };
   }
 
   public static getInstance(): ConsoleColorSingleton {
@@ -105,6 +117,16 @@ class ConsoleColorSingleton {
       ConsoleColorSingleton.self = new ConsoleColorSingleton();
     }
     return ConsoleColorSingleton.self;
+  }
+
+  public colorize(data: string | string[], colors: ColorHelperEnum | ColorHelperEnum[]): string {
+    const result = (Array.isArray(colors) ? colors : [colors]).reduce(
+      (acc, value) => {
+        return `${value}${acc}`;
+      },
+      Array.isArray(data) ? data.join('') : data,
+    );
+    return `${this.effect.reset}${result}${this.effect.reset}`;
   }
 }
 

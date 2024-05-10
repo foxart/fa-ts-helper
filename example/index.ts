@@ -2,6 +2,7 @@ import { ConsoleService } from '../src';
 import process from 'process';
 import { ConsoleExample } from './services/console.example';
 import { DataExample } from './helpers/data.example';
+import { CodegenExample } from './helpers/codegen.example';
 
 function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -48,10 +49,12 @@ function initConsole(): void {
  *
  * */
 void ((): void => {
-  initConsole();
+  console.clear();
+  // initConsole();
   initCatch();
-  DataExample();
+  CodegenExample();
   // ConsoleExample();
+  // DataExample();
   // testCryptHelper();
   // testMiddlewareHelper();
   // void import('./services/decorator-test').then((module) => module.decoratorTest());

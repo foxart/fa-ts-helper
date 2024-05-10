@@ -20,11 +20,12 @@ export function ConsoleExample(): void {
   // console.log(1, '2', '3', 'xxx', 'yyy');
   // console.info(1, '2', '3', 'xxx', 'yyy');
   console.log('Class1');
-  nestLogger.log(undefined, 'Class1');
-  nestLogger.log(error, 'Class1');
-  nestLogger.info(message, 'Class1');
-  nestLogger.warn(message, 'Class1');
-  nestLogger.error(message, 'Class1');
-  nestLogger.debug(message, 'Class1');
+  console.error(new Error('Custom error'));
+  // nestLogger.log(undefined, 'Class1');
+  // nestLogger.log(error, 'Class1');
+  // nestLogger.info(message, 'Class1');
+  // nestLogger.warn(message, 'Class1');
+  // nestLogger.error(message, 'Class1');
+  // nestLogger.debug(message, 'Class1');
   // nestLogger.error('error', 'Function1');
 }
