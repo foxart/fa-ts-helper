@@ -50,10 +50,10 @@ function initConsole(): void {
  * */
 void ((): void => {
   console.clear();
-  // initConsole();
+  initConsole();
   initCatch();
-  CodegenExample();
-  // ConsoleExample();
+  // CodegenExample();
+  ConsoleExample();
   // DataExample();
   // testCryptHelper();
   // testMiddlewareHelper();
