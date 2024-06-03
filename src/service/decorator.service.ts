@@ -168,14 +168,7 @@ export class DecoratorService {
     const classMetadata = DecoratorService.getClassMetadata(symbol, target);
     const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
     const parameterMetadata = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
-    const metadata = {
-      classType: classMetadata?.type,
-      classData: classMetadata?.data,
-      methodType: methodMetadata?.type,
-      methodData: methodMetadata?.data,
-    };
-    const before = methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args;
-    const result = before.map((value, index) => {
+    return args.map((value, index) => {
       const item = parameterMetadata?.get(index);
       return !item
         ? value
@@ -192,7 +185,6 @@ export class DecoratorService {
               : acc;
           }, value);
     });
-    return methodMetadata?.after ? methodMetadata.after(metadata, ...result) : result;
   }
 
   public decorateClass(callback?: ClassCallbackType): ClassDecorator {
@@ -211,14 +203,30 @@ export class DecoratorService {
       const symbol = this.symbol;
       const descriptorValue = descriptor.value as FunctionType;
       descriptor.value = function (...args: unknown[]): FunctionType {
-        // const result = callback ? (callback(target, propertyKey, descriptor, ...args) as unknown[]) : undefined;
-        // const result = callback ? (callback(target, propertyKey, descriptor) as unknown[]) : undefined;
         if (callback) {
           callback(target, propertyKey);
         }
+        const classMetadata = DecoratorService.getClassMetadata(symbol, target);
+        const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
+        const metadata = {
+          classType: classMetadata?.type,
+          classData: classMetadata?.data,
+          methodType: methodMetadata?.type,
+          methodData: methodMetadata?.data,
+        };
+        const beforeArgs = methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args;
+        if (methodMetadata?.after) {
+          return methodMetadata.after(
+            metadata,
+            ...(descriptorValue.apply(
+              this,
+              DecoratorService.applyParameterDecorator(symbol, target, propertyKey, ...beforeArgs),
+            ) as unknown[]),
+          ) as unknown as FunctionType;
+        }
         return descriptorValue.apply(
           this,
-          DecoratorService.applyParameterDecorator(symbol, target, propertyKey, ...args),
+          DecoratorService.applyParameterDecorator(symbol, target, propertyKey, ...beforeArgs),
         ) as FunctionType;
       };
       DecoratorService.copyProperties(descriptorValue, descriptor.value as FunctionType, propertyKey);

@@ -16,11 +16,11 @@ function initCatch(): void {
 function initConsole(): void {
   console.clear();
   const Console = new ConsoleService({
-    name: 'CONTEXT',
-    date: true,
+    // name: 'CONTEXT',
+    // date: true,
     counter: true,
     info: true,
-    performance: true,
+    performance: false,
     index: 2,
   });
   console.log = (...args: unknown[]): void => {
@@ -51,14 +51,14 @@ function initConsole(): void {
 void ((): void => {
   console.clear();
   initConsole();
-  initCatch();
+  // initCatch();
   // CodegenExample();
-  ConsoleExample();
+  // ConsoleExample();
   // DataExample();
   // testCryptHelper();
   // testMiddlewareHelper();
   // void import('./services/decorator-test').then((module) => module.decoratorTest());
-  // void import('./decorator/test-decorator-entity').then((module) => module.testDecoratorEntity());
+  void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
   // void testSystemHelper();
   // void testValidatorHelper();
   // void testExceptionHelper();
