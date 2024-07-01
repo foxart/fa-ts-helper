@@ -1,5 +1,6 @@
 import path from 'path';
 import fs, { ObjectEncodingOptions, WriteFileOptions } from 'fs';
+import process from 'node:process';
 
 export interface PackageInfoInterface {
   name?: string;
@@ -13,12 +14,27 @@ export interface PackageInfoInterface {
 
 class SystemSingleton {
   private static self: SystemSingleton;
+  private readonly timeMap: Map<string, [number, number]>;
+
+  private constructor() {
+    this.timeMap = new Map();
+  }
 
   public static getInstance(): SystemSingleton {
     if (!SystemSingleton.self) {
       SystemSingleton.self = new SystemSingleton();
     }
     return SystemSingleton.self;
+  }
+
+  public timeStart(label?: string): void {
+    this.timeMap.set(label ?? 'default', process.hrtime());
+  }
+
+  public timeEnd(label?: string): number {
+    const diff = process.hrtime(this.timeMap.get(label ?? 'default'));
+    this.timeMap.delete(label ?? 'default');
+    return parseFloat((diff[0] * 1e3 + diff[1] / 1e6).toFixed(3));
   }
 
   public packageInfo(directory: string): PackageInfoInterface {

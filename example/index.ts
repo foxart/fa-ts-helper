@@ -3,6 +3,7 @@ import process from 'process';
 import { ConsoleExample } from './services/console.example';
 import { DataExample } from './helpers/data.example';
 import { CodegenExample } from './helpers/codegen.example';
+import { parserExample } from './helpers/parser.example';
 
 function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -55,11 +56,7 @@ void ((): void => {
   // CodegenExample();
   // ConsoleExample();
   // DataExample();
-  // testCryptHelper();
-  // testMiddlewareHelper();
   // void import('./services/decorator-test').then((module) => module.decoratorTest());
-  void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
-  // void testSystemHelper();
-  // void testValidatorHelper();
-  // void testExceptionHelper();
+  // void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
+  parserExample();
 })();

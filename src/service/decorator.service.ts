@@ -202,7 +202,7 @@ export class DecoratorService {
     return <T>(target: ConstructableType, propertyKey: string | symbol, descriptor: PropertyDescriptor): T | void => {
       const symbol = this.symbol;
       const descriptorValue = descriptor.value as FunctionType;
-      descriptor.value = function (...args: unknown[]): FunctionType {
+      descriptor.value = async function (...args: unknown[]): Promise<FunctionType> {
         if (callback) {
           callback(target, propertyKey);
         }
@@ -214,19 +214,29 @@ export class DecoratorService {
           methodType: methodMetadata?.type,
           methodData: methodMetadata?.data,
         };
-        const beforeArgs = methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args;
         if (methodMetadata?.after) {
-          return methodMetadata.after(
-            metadata,
-            ...(descriptorValue.apply(
-              this,
-              DecoratorService.applyParameterDecorator(symbol, target, propertyKey, ...beforeArgs),
-            ) as unknown[]),
-          ) as unknown as FunctionType;
+          let result = descriptorValue.apply(
+            this,
+            DecoratorService.applyParameterDecorator(
+              symbol,
+              target,
+              propertyKey,
+              ...(methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args),
+            ),
+          );
+          if (result instanceof Promise) {
+            result = await result;
+          }
+          return methodMetadata.after(metadata, result) as unknown as FunctionType;
         }
         return descriptorValue.apply(
           this,
-          DecoratorService.applyParameterDecorator(symbol, target, propertyKey, ...beforeArgs),
+          DecoratorService.applyParameterDecorator(
+            symbol,
+            target,
+            propertyKey,
+            ...(methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args),
+          ),
         ) as FunctionType;
       };
       DecoratorService.copyProperties(descriptorValue, descriptor.value as FunctionType, propertyKey);

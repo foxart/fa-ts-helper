@@ -40,19 +40,17 @@ const ClassDecorator = (metadata?: unknown): ClassDecorator => {
   });
 };
 const MethodDecorator = (metadata?: unknown): MethodDecorator => {
-  // return Decorator.decorateMethod();
-  // return applyDecorators(Get('path'));
   return Decorator.decorateMethod((target: object, propertyKey: string | symbol) => {
     DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       // data: metadata,
-      before: (metadata, ...args) => {
-        // console.warn('BEFORE', args);
+      callback: (metadata, ...args) => {
+        console.warn('BEFORE', args);
         // @ts-ignore
-        return [args[0], { key: args[1].key + '-' + MethodDecorator.name }];
+        return [args[0], { key: MethodDecorator.name + '-' + args[1].key }];
         // return args;
       },
     });
-    return applyDecorators(Param)(target);
+    // return applyDecorators(Param)(target);
   });
 };
 const MethodDecorator2 = (metadata?: unknown): MethodDecorator => {
@@ -61,14 +59,14 @@ const MethodDecorator2 = (metadata?: unknown): MethodDecorator => {
   return Decorator.decorateMethod((target: object, propertyKey: string | symbol) => {
     DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: metadata,
-      after: (metadata, ...args) => {
-        // console.warn('AFTER', args);
+      callback: (metadata, ...args) => {
+        console.warn('AFTER', args);
         // @ts-ignore
         return [args[0], { key: args[1].key + '-' + MethodDecorator2.name }];
         // return args;
       },
     });
-    return applyDecorators(Param)(target);
+    // return applyDecorators(Param)(target);
   });
 };
 const ParamDecorator = (metadata?: unknown): ParameterDecorator => {
@@ -118,15 +116,14 @@ export function decoratorEntityExample(): void {
 
 @ClassDecorator('Class1')
 class TestEntityClass {
-  @Get()
+  // @Get()
   @MethodDecorator('Method1')
-  // @MethodDecorator2('Method2')
+  @MethodDecorator2('Method2')
   public testEntityMethod(
     // @ParamDecorator('Parameter1')
     entity1: Entity1,
     // entity2: Entity2,
-    @ParamDecorator()
-    @ParamDecorator2()
+    @ParamDecorator() // @ParamDecorator2()
     entity2: Entity2,
   ): unknown[] {
     console.info('INCOME', { entity1, entity2 });

@@ -23,10 +23,8 @@ class ParserSingleton {
   private readonly urlRegexp: RegExp;
 
   private constructor() {
-    // this.cwd = __dirname;
     this.cwd = process.cwd();
-    // this.stackRegexp = /.+\/(.+):([0-9]+):[0-9]+/;
-    this.stackRegexp = /\/(.+:\d+:\d+)/gm;
+    this.stackRegexp = /\((\/?.+:\d+:\d+)\)/gm;
     this.urlRegexp = new RegExp(
       [
         '^(https?:)//', // protocol
@@ -50,7 +48,7 @@ class ParserSingleton {
     let match = this.stackRegexp.exec(stack || '');
     while (match) {
       if (match[0].indexOf(this.cwd) !== -1) {
-        result.push(match[0]);
+        result.push(match[1]);
       }
       match = this.stackRegexp.exec(stack || '');
     }

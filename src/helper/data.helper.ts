@@ -122,7 +122,12 @@ class DataSingleton {
     return this.isObjectEmpty(result) ? null : result;
   }
 
+  public isPromise(value: unknown): value is Promise<unknown> {
+    return value != null && typeof value === 'object' && typeof (value as Promise<unknown>).then === 'function';
+  }
+
   private getValidationErrorList(data: ValidationError[]): Record<string, unknown> {
+    // todo prev could be array not record
     return data.reduce((prev: Record<string, unknown>, error) => {
       if (error.children?.length) {
         prev[error.property] = this.getValidationErrorList(error.children);
