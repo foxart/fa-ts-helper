@@ -1,4 +1,4 @@
-import { ParserHelper } from '../../src';
+import { ParserHelper } from '../index';
 import path from 'path';
 
 export function parserExample(): void {

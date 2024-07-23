@@ -1,18 +1,18 @@
 /**
  * Services
  */
-export * from './service/console.service';
-export * from './service/decorator.service';
-export * from './service/error.service';
-export * from './service/exception.service';
-export * from './service/middleware.service';
-export * from './service/nest-logger.service';
+export * from './services/console.service';
+export * from './services/decorator.service';
+export * from './services/error.service';
+export * from './services/exception.service';
+export * from './services/middleware.service';
+export * from './services/nest-logger.service';
 /**
  * Helpers
  */
-export * from './helper/codegen.helper';
-export * from './helper/color.helper';
-export * from './helper/crypt.helper';
-export * from './helper/data.helper';
-export * from './helper/parser.helper';
-export * from './helper/system.helper';
+export * from './helpers/codegen.helper';
+export * from './helpers/color.helper';
+export * from './helpers/crypt.helper';
+export * from './helpers/data.helper';
+export * from './helpers/parser.helper';
+export * from './helpers/system.helper';

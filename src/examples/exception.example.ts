@@ -1,4 +1,4 @@
-import { ExceptionService } from '../../src';
+import { ExceptionService } from '../index';
 
 export function exceptionExample(): void {
   try {

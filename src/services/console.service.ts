@@ -1,7 +1,7 @@
 import * as util from 'util';
 import * as process from 'process';
-import { ColorHelperEnum, ColorHelper } from '../helper/color.helper';
-import { ParserHelper } from '../helper/parser.helper';
+import { ColorHelperEnum, ColorHelper } from '../helpers/color.helper';
+import { ParserHelper } from '../helpers/parser.helper';
 
 const { foreground, background, effect } = ColorHelper;
 

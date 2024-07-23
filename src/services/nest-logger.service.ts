@@ -1,6 +1,6 @@
 import { LoggerService } from '@nestjs/common';
 import { ConsoleService, ConsoleServiceOptionsInterface } from './console.service';
-import { ColorHelper as cch, ColorHelperEnum } from '../helper/color.helper';
+import { ColorHelper as cch, ColorHelperEnum } from '../helpers/color.helper';
 import util from 'util';
 
 export class NestLoggerService implements LoggerService {

@@ -3,6 +3,7 @@ import { validate, validateSync, ValidationError, ValidatorOptions } from 'class
 interface FilterOptionsInterface {
   undefined?: boolean;
   null?: boolean;
+  emptyArray?: boolean;
   emptyObject?: boolean;
   emptyString?: boolean;
   zeroNumber?: boolean;
@@ -27,7 +28,7 @@ class DataSingleton {
     return DataSingleton.self;
   }
 
-  public filter<T>(data: T, options?: FilterOptionsInterface): T {
+  public filter<T>(data: T, options: FilterOptionsInterface): T {
     if (Array.isArray(data)) {
       return data
         .filter((item) => {
@@ -38,7 +39,7 @@ class DataSingleton {
         }) as T;
     } else if (this.isObject(data)) {
       return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
-        if (options?.exclude?.includes(key)) {
+        if (options.exclude?.includes(key)) {
           return acc;
         } else if (this.isObject(value)) {
           return this.isEmpty(value, options) ? acc : { ...acc, [key]: this.filter(value, options) };
@@ -114,16 +115,20 @@ class DataSingleton {
 
   public async validateAsync<T>(object: T, options?: ValidatorOptions): Promise<Record<string, unknown> | null> {
     const result = this.getValidationErrorList(await validate(object as object, options));
-    return this.isObjectEmpty(result) ? null : result;
+    return this.isEmptyObject(result) ? null : result;
   }
 
   public validateSync<T>(object: T, options?: ValidatorOptions): Record<string, unknown> | null {
     const result = this.getValidationErrorList(validateSync(object as object, options));
-    return this.isObjectEmpty(result) ? null : result;
+    return this.isEmptyObject(result) ? null : result;
   }
 
-  public isPromise(value: unknown): value is Promise<unknown> {
-    return value != null && typeof value === 'object' && typeof (value as Promise<unknown>).then === 'function';
+  public isEmptyObject(object: unknown): boolean {
+    return object instanceof Object && Object.keys(object).length === 0;
+  }
+
+  public isPlainObject(object: unknown): boolean {
+    return object instanceof Object && object.constructor === Object;
   }
 
   private getValidationErrorList(data: ValidationError[]): Record<string, unknown> {
@@ -151,12 +156,14 @@ class DataSingleton {
       return true;
     } else if (options?.null && data === null) {
       return true;
-    } else if (options?.emptyObject && this.isObject(data)) {
-      return Object.keys(data as object).length === 0;
     } else if (options?.emptyString && data === '') {
       return true;
     } else if (options?.zeroNumber && data === 0) {
       return true;
+    } else if (options?.emptyObject && this.isObject(data)) {
+      return this.isEmptyObject(data);
+    } else if (options?.emptyArray && Array.isArray(data)) {
+      return data.length === 0;
     }
     return false;
   }
@@ -164,18 +171,14 @@ class DataSingleton {
   private isObject(data: unknown): boolean {
     if (data instanceof Date) {
       return false;
+    } else if (data instanceof RegExp) {
+      return false;
     } else if (data instanceof Object) {
       /** Check for mongoId instance */
       return !data.toString().match(/^[0-9a-fA-F]{24}$/);
-    } else if (data === null) {
-      return false;
     } else {
-      return typeof data === 'object' && data.constructor === Object;
+      return data instanceof Object;
     }
-  }
-
-  private isObjectEmpty(object: object): boolean {
-    return object && Object.keys(object).length === 0 && object.constructor === Object;
   }
 }
 

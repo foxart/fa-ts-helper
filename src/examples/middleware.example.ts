@@ -1,4 +1,4 @@
-import { MiddlewareService } from '../../src/service/middleware.service';
+import { MiddlewareService } from '../services/middleware.service';
 
 function middlewareAddUse(): void {
   const payload1 = { name: 'case 1', data: 1 };

@@ -1,4 +1,4 @@
-import { DataHelper } from '../../src';
+import { DataHelper } from '../index';
 
 class ObjectId {
   private readonly id: string;
@@ -60,8 +60,10 @@ export function DataExample(): void {
   const example2 = 'loremIpsumDolor';
   const example3 = 'Lorem-Ipsum-Dolor';
   const example4 = 'lorem-Ipsum-Dolor';
-  console.log(DataHelper.upperToSeparator(example1, '-'));
-  console.info(DataHelper.upperToSeparator(example2, '-'));
-  console.info(DataHelper.separatorToCamel(example3, '-'));
-  console.info(DataHelper.separatorToPascal(example4, '-'));
+  const example5 = { a: 'lorem-Ipsum-Dolor', b: new RegExp(example1, 'i') };
+  // console.log(DataHelper.upperToSeparator(example1, '-'));
+  // console.info(DataHelper.upperToSeparator(example2, '-'));
+  // console.info(DataHelper.separatorToCamel(example3, '-'));
+  // console.info(DataHelper.separatorToPascal(example4, '-'));
+  console.log(DataHelper.filter(example5, { emptyObject: true }));
 }

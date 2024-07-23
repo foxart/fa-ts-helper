@@ -1,4 +1,4 @@
-import { DataHelper } from '../helper/data.helper';
+import { DataHelper } from '../helpers/data.helper';
 
 interface ErrorHelperInterface {
   name: string;

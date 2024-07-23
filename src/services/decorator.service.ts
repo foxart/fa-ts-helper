@@ -26,13 +26,13 @@ type ClassCallbackType = <T extends FunctionType>(target: object) => T | void;
 type MethodMetadataGetType = {
   type: ConstructableType;
   data: unknown;
-  before?: MethodMetadataCallbackType;
-  after?: MethodMetadataCallbackType;
+  before?: MethodMetadataBeforeType;
+  after?: MethodMetadataAfterType;
 };
 type MethodMetadataSetType = {
   data?: unknown;
-  before?: MethodMetadataCallbackType;
-  after?: MethodMetadataCallbackType;
+  before?: MethodMetadataBeforeType;
+  after?: MethodMetadataAfterType;
 };
 type MethodCallbackType = (
   target: object,
@@ -40,7 +40,7 @@ type MethodCallbackType = (
   // descriptor: TypedPropertyDescriptor<T>,
   // ...args: unknown[]
 ) => unknown | void;
-type MethodMetadataCallbackType = (
+type MethodMetadataBeforeType = (
   metadata: {
     classType: object | undefined;
     classData: unknown | undefined;
@@ -49,6 +49,15 @@ type MethodMetadataCallbackType = (
   },
   ...args: unknown[]
 ) => unknown[];
+type MethodMetadataAfterType = (
+  metadata: {
+    classType: object | undefined;
+    classData: unknown | undefined;
+    methodType: ConstructableType | undefined;
+    methodData: unknown | undefined;
+  },
+  data: unknown,
+) => unknown;
 /**
  *
  */
@@ -170,9 +179,8 @@ export class DecoratorService {
     const parameterMetadata = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
     return args.map((value, index) => {
       const item = parameterMetadata?.get(index);
-      return !item
-        ? value
-        : item.reduce((acc, { callback, data, type }) => {
+      return item
+        ? item.reverse().reduce((acc, { callback, data, type }) => {
             return callback
               ? callback(acc, {
                   classType: classMetadata?.type,
@@ -183,7 +191,8 @@ export class DecoratorService {
                   parameterData: data,
                 })
               : acc;
-          }, value);
+          }, value)
+        : value;
     });
   }
 
@@ -214,6 +223,19 @@ export class DecoratorService {
           methodType: methodMetadata?.type,
           methodData: methodMetadata?.data,
         };
+        // const result = descriptorValue.apply(
+        //   this,
+        //   DecoratorService.applyParameterDecorator(
+        //     symbol,
+        //     target,
+        //     propertyKey,
+        //     ...(methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args),
+        //   ),
+        // ) as FunctionType;
+        // if (methodMetadata?.after) {
+        //   return methodMetadata.after(metadata, result) as FunctionType;
+        // }
+        // return result;
         if (methodMetadata?.after) {
           let result = descriptorValue.apply(
             this,
@@ -227,7 +249,7 @@ export class DecoratorService {
           if (result instanceof Promise) {
             result = await result;
           }
-          return methodMetadata.after(metadata, result) as unknown as FunctionType;
+          return methodMetadata.after(metadata, result) as FunctionType;
         }
         return descriptorValue.apply(
           this,
@@ -246,9 +268,9 @@ export class DecoratorService {
   public decorateParameter(callback?: ParameterCallbackType): ParameterDecorator {
     return <T>(target: ConstructableType, propertyKey: string | symbol, parameterIndex: number): T | void => {
       if (callback) {
-        const result = callback(target, propertyKey, parameterIndex) as T;
+        const result = callback(target, propertyKey, parameterIndex);
         if (result) {
-          return result;
+          return result as T;
         }
       }
     };

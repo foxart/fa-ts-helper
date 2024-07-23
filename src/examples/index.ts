@@ -1,11 +1,9 @@
-import { ConsoleService } from '../src';
+import { ConsoleService } from '../index';
 import process from 'process';
-import { ConsoleExample } from './services/console.example';
-import { DataExample } from './helpers/data.example';
-import { CodegenExample } from './helpers/codegen.example';
-import { parserExample } from './helpers/parser.example';
+import { DecoratorServiceExample } from './decorator-service.example';
+import { DataExample } from './data.example';
 
-function initCatch(): void {
+export function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
     console.error('unhandledRejection', reason, promise);
   });
@@ -14,12 +12,11 @@ function initCatch(): void {
   });
 }
 
-function initConsole(): void {
-  console.clear();
+export function initConsole(): void {
   const Console = new ConsoleService({
     // name: 'CONTEXT',
-    // date: true,
-    counter: true,
+    date: false,
+    counter: false,
     info: true,
     performance: false,
     index: 2,
@@ -49,14 +46,13 @@ function initConsole(): void {
 /**
  *
  * */
+// console.clear();
 void ((): void => {
-  console.clear();
-  initConsole();
-  // initCatch();
-  // CodegenExample();
-  // ConsoleExample();
-  // DataExample();
-  // void import('./services/decorator-test').then((module) => module.decoratorTest());
+  // CodegenHelperExample();
+  // ConsoleServiceExample();
+  DataExample();
+  // DecoratorServiceExample();
+  // void import('./decorator-service.example').then((module) => module.DecoratorServiceExample());
   // void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
-  parserExample();
+  // parserExample();
 })();

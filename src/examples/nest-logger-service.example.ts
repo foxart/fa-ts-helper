@@ -1,6 +1,8 @@
-import { NestLoggerService } from '../../src';
+import { NestLoggerService } from '../index';
+import { initConsole } from './index';
 
-export function ConsoleExample(): void {
+export function ConsoleServiceExample(): void {
+  initConsole();
   const message = 'lorem ipsum';
   const data = { number: 1, string: message, date: new Date() };
   const error = new Error('Custom error');
@@ -19,13 +21,11 @@ export function ConsoleExample(): void {
   // Console.debug(consoleLog.name);
   // console.log(1, '2', '3', 'xxx', 'yyy');
   // console.info(1, '2', '3', 'xxx', 'yyy');
-  console.log('Class1');
-  console.error(new Error('Custom error'));
-  // nestLogger.log(undefined, 'Class1');
-  // nestLogger.log(error, 'Class1');
-  // nestLogger.info(message, 'Class1');
-  // nestLogger.warn(message, 'Class1');
-  // nestLogger.error(message, 'Class1');
-  // nestLogger.debug(message, 'Class1');
-  // nestLogger.error('error', 'Function1');
+  nestLogger.log(undefined, 'Class1');
+  nestLogger.log(error, 'Class1');
+  nestLogger.info(message, 'Class1');
+  nestLogger.warn(message, 'Class1');
+  nestLogger.error(message, 'Class1');
+  nestLogger.debug(message, 'Class1');
+  nestLogger.error('error', 'Function1');
 }

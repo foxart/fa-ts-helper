@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorService } from './error.service';
-import { ParserHelper } from '../helper/parser.helper';
+import { ParserHelper } from '../helpers/parser.helper';
 
 interface ExceptionInterface {
   name: string;
