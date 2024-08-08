@@ -2,12 +2,13 @@ import { validate, validateSync, ValidationError, ValidatorOptions } from 'class
 
 interface FilterOptionsInterface {
   undefined?: boolean;
-  null?: boolean;
+  nullValue?: boolean;
   emptyArray?: boolean;
   emptyObject?: boolean;
   emptyString?: boolean;
   zeroNumber?: boolean;
   exclude?: string[];
+  recursive?: boolean;
 }
 
 class DataSingleton {
@@ -28,25 +29,52 @@ class DataSingleton {
     return DataSingleton.self;
   }
 
-  public filter<T>(data: T, options: FilterOptionsInterface): T {
+  public filter<Data, Type>(data: Data, options: FilterOptionsInterface & { only?: Type[] }): Data {
+    const isEmpty = (data: unknown, options?: FilterOptionsInterface & { only?: Type[] }): boolean => {
+      // options?.only;
+      if (options?.undefined && data === undefined) {
+        return true;
+      } else if (options?.nullValue && data === null) {
+        return true;
+      } else if (options?.emptyString && data === '') {
+        return true;
+      } else if (options?.zeroNumber && data === 0) {
+        return true;
+      } else if (options?.emptyObject && this.isObject(data)) {
+        return this.isEmptyObject(data);
+      } else if (options?.emptyArray && Array.isArray(data)) {
+        return data.length === 0;
+      }
+      return false;
+    };
+    /**
+     *
+     */
     if (Array.isArray(data)) {
       return data
-        .filter((item) => {
-          return !this.isEmpty(item, options);
-        })
-        .map((item: T) => {
+        .map((item: Data) => {
           return this.filter(item, options);
-        }) as T;
+        })
+        .filter((item) => {
+          return !isEmpty(item, { ...options, nullValue: false, zeroNumber: false, emptyString: false });
+        }) as Data;
     } else if (this.isObject(data)) {
       return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
         if (options.exclude?.includes(key)) {
           return acc;
         } else if (this.isObject(value)) {
-          return this.isEmpty(value, options) ? acc : { ...acc, [key]: this.filter(value, options) };
+          const result = options.recursive ? this.filter(value, options) : value;
+          if (options.only && !options.only.includes(key as Type)) {
+            return { ...acc, [key]: result };
+          }
+          return isEmpty(result, options) ? acc : { ...acc, [key]: result };
         } else {
-          return this.isEmpty(value, options) ? acc : { ...acc, [key]: value };
+          if (options.only && !options.only.includes(key as Type)) {
+            return { ...acc, [key]: value };
+          }
+          return isEmpty(value, options) ? acc : { ...acc, [key]: value };
         }
-      }, {} as T);
+      }, {} as Data);
     } else {
       return data;
     }
@@ -114,12 +142,12 @@ class DataSingleton {
   }
 
   public async validateAsync<T>(object: T, options?: ValidatorOptions): Promise<Record<string, unknown> | null> {
-    const result = this.getValidationErrorList(await validate(object as object, options));
+    const result = this.validationErrorList(await validate(object as object, options));
     return this.isEmptyObject(result) ? null : result;
   }
 
   public validateSync<T>(object: T, options?: ValidatorOptions): Record<string, unknown> | null {
-    const result = this.getValidationErrorList(validateSync(object as object, options));
+    const result = this.validationErrorList(validateSync(object as object, options));
     return this.isEmptyObject(result) ? null : result;
   }
 
@@ -131,11 +159,24 @@ class DataSingleton {
     return object instanceof Object && object.constructor === Object;
   }
 
-  private getValidationErrorList(data: ValidationError[]): Record<string, unknown> {
+  public isObject(data: unknown): boolean {
+    if (data instanceof Date) {
+      return false;
+    } else if (data instanceof RegExp) {
+      return false;
+    } else if (data instanceof Object) {
+      /** Check for mongoId instance */
+      return !data.toString().match(/^[0-9a-fA-F]{24}$/);
+    } else {
+      return data instanceof Object;
+    }
+  }
+
+  private validationErrorList(data: ValidationError[]): Record<string, unknown> {
     // todo prev could be array not record
     return data.reduce((prev: Record<string, unknown>, error) => {
       if (error.children?.length) {
-        prev[error.property] = this.getValidationErrorList(error.children);
+        prev[error.property] = this.validationErrorList(error.children);
       } else {
         if (!prev[error.property]) {
           prev[error.property] = [];
@@ -149,36 +190,6 @@ class DataSingleton {
       }
       return prev;
     }, {});
-  }
-
-  private isEmpty(data: unknown, options?: FilterOptionsInterface): boolean {
-    if (options?.undefined && data === undefined) {
-      return true;
-    } else if (options?.null && data === null) {
-      return true;
-    } else if (options?.emptyString && data === '') {
-      return true;
-    } else if (options?.zeroNumber && data === 0) {
-      return true;
-    } else if (options?.emptyObject && this.isObject(data)) {
-      return this.isEmptyObject(data);
-    } else if (options?.emptyArray && Array.isArray(data)) {
-      return data.length === 0;
-    }
-    return false;
-  }
-
-  private isObject(data: unknown): boolean {
-    if (data instanceof Date) {
-      return false;
-    } else if (data instanceof RegExp) {
-      return false;
-    } else if (data instanceof Object) {
-      /** Check for mongoId instance */
-      return !data.toString().match(/^[0-9a-fA-F]{24}$/);
-    } else {
-      return data instanceof Object;
-    }
   }
 }
 

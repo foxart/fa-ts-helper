@@ -1,6 +1,5 @@
 import { ConsoleService } from '../index';
 import process from 'process';
-import { DecoratorServiceExample } from './decorator-service.example';
 import { DataExample } from './data.example';
 
 export function initCatch(): void {
@@ -14,11 +13,10 @@ export function initCatch(): void {
 
 export function initConsole(): void {
   const Console = new ConsoleService({
-    // name: 'CONTEXT',
-    date: false,
-    counter: false,
+    name: 'CONTEXT',
+    color: true,
     info: true,
-    performance: false,
+    link: true,
     index: 2,
   });
   console.log = (...args: unknown[]): void => {
@@ -46,7 +44,8 @@ export function initConsole(): void {
 /**
  *
  * */
-// console.clear();
+console.clear();
+initConsole();
 void ((): void => {
   // CodegenHelperExample();
   // ConsoleServiceExample();

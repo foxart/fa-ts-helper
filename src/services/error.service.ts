@@ -4,6 +4,7 @@ interface ErrorHelperInterface {
   name: string;
   message: unknown;
   status?: number;
+  stack?: string;
 }
 
 export class ErrorService extends Error {
@@ -19,10 +20,12 @@ export class ErrorService extends Error {
       this.name = error.name;
       this.message = error.message;
       this.status = 500;
+      this.stack = error.stack ? error.stack : this.stack;
     } else {
       this.name = error.name;
       this.message = typeof error.message === 'string' ? error.message : DataHelper.jsonStringify(error.message);
-      this.status = error.status || 500;
+      this.status = error.status ?? 500;
+      this.stack = error.stack ? error.stack : this.stack;
     }
   }
 }

@@ -6,7 +6,6 @@ export * from './services/decorator.service';
 export * from './services/error.service';
 export * from './services/exception.service';
 export * from './services/middleware.service';
-export * from './services/nest-logger.service';
 /**
  * Helpers
  */

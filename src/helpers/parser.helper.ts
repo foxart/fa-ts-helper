@@ -1,4 +1,5 @@
 import path from 'path';
+import process from 'node:process';
 
 interface ParserStackOptionInterface {
   short?: boolean;
@@ -24,7 +25,8 @@ class ParserSingleton {
 
   private constructor() {
     this.cwd = process.cwd();
-    this.stackRegexp = /\((\/?.+:\d+:\d+)\)/gm;
+    // this.stackRegexp = /\((\/?.+:\d+:\d+)\)/gm;
+    this.stackRegexp = /\/?(\/.+:\d+:\d+)/gm;
     this.urlRegexp = new RegExp(
       [
         '^(https?:)//', // protocol
@@ -53,10 +55,12 @@ class ParserSingleton {
       match = this.stackRegexp.exec(stack || '');
     }
     if (options?.index) {
-      result = result[options.index] ? [result[options.index]] : [result[1]];
+      result = result[options.index] ? [result[options.index]] : result;
     }
     if (options?.short) {
-      result = result.map((item) => path.relative(this.cwd, item));
+      result = result.map((item) => {
+        return path.relative(this.cwd, item);
+      });
     }
     return result;
   }

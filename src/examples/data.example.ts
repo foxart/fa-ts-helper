@@ -60,10 +60,48 @@ export function DataExample(): void {
   const example2 = 'loremIpsumDolor';
   const example3 = 'Lorem-Ipsum-Dolor';
   const example4 = 'lorem-Ipsum-Dolor';
-  const example5 = { a: 'lorem-Ipsum-Dolor', b: new RegExp(example1, 'i') };
+  const example5 = {
+    array: [
+      0,
+      1,
+      undefined,
+      '',
+      null,
+      {
+        zero: 0,
+        arr: [],
+        childrens: '',
+        test: undefined,
+        paid: 0,
+      },
+    ],
+    object: {},
+    arr: [],
+    adults: '',
+    students: new RegExp(example1, 'i'),
+    childrens: {
+      single: 0,
+      double: '',
+      nested: {
+        a: 0,
+      },
+      paid: 0,
+    },
+    paid: '',
+  };
   // console.log(DataHelper.upperToSeparator(example1, '-'));
   // console.info(DataHelper.upperToSeparator(example2, '-'));
   // console.info(DataHelper.separatorToCamel(example3, '-'));
   // console.info(DataHelper.separatorToPascal(example4, '-'));
-  console.log(DataHelper.filter(example5, { emptyObject: true }));
+  console.log(
+    DataHelper.filter(example5, {
+      undefined: true,
+      zeroNumber: true,
+      emptyString: true,
+      emptyObject: true,
+      emptyArray: true,
+      recursive: true,
+      // only: ['paid', 'childrens'],
+    }),
+  );
 }
