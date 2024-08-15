@@ -57,8 +57,9 @@ class CodegenSingleton {
         this.error('fetch', host, new Error(response.statusText));
         return null;
       }
+      const json = await response.json();
       this.success('fetch', host);
-      return (await response.json()) as unknown;
+      return json as unknown;
     } catch (err) {
       this.error('fetch', host, err as Error);
       return null;
@@ -72,8 +73,9 @@ class CodegenSingleton {
         this.error('fetch', host, new Error(response.statusText));
         return null;
       }
+      const text = await response.text();
       this.success('fetch', host);
-      return await response.text();
+      return text;
     } catch (err) {
       this.error('fetch', host, err as Error);
       return null;

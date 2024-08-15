@@ -93,8 +93,9 @@ export function DataExample(): void {
   // console.info(DataHelper.upperToSeparator(example2, '-'));
   // console.info(DataHelper.separatorToCamel(example3, '-'));
   // console.info(DataHelper.separatorToPascal(example4, '-'));
-  console.log(
-    DataHelper.filter(example5, {
+  const result = DataHelper.filter(
+    { a: 10 },
+    {
       undefined: true,
       zeroNumber: true,
       emptyString: true,
@@ -102,6 +103,7 @@ export function DataExample(): void {
       emptyArray: true,
       recursive: true,
       // only: ['paid', 'childrens'],
-    }),
+    },
   );
+  console.log(result, DataHelper.isEmptyObject(result));
 }

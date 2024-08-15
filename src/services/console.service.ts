@@ -33,13 +33,13 @@ export class ConsoleService {
   private readonly options: ConsoleServiceOptionsInterface;
   private counter: number;
   private readonly performance: number;
+  private readonly infoLength: number;
 
-  // private readonly infoLength: number;
   public constructor(options?: ConsoleServiceOptionsInterface) {
     this.options = { ...options, index: options?.index ?? 1 };
     this.counter = 0;
     this.performance = performance.now();
-    // this.infoLength = Math.max(...Object.keys(LevelEnum as object).map((item) => item.length));
+    this.infoLength = Math.max(...Object.keys(LevelEnum as object).map((item) => item.length));
     this.console = Object.assign({}, console);
   }
 
@@ -187,20 +187,20 @@ export class ConsoleService {
     }
   }
 
+  private printName(level: LevelEnum): void {
+    if (this.options.name) {
+      this.stdout(this.colorize('[', this.foregroundFromLevel(level)));
+      this.stdout(this.colorize(this.options.name, [effect.dim, this.foregroundFromLevel(level)]));
+      this.stdout(this.colorize(']', this.foregroundFromLevel(level)));
+      this.stdout(' ');
+    }
+  }
+
   private printDate(): void {
     if (this.options.date) {
       this.stdout(
         this.colorize(new Date().toISOString().replace(/T/, ' ').replace(/Z/, ''), [effect.dim, foreground.cyan]),
       );
-      this.stdout(' ');
-    }
-  }
-
-  private printName(level: LevelEnum): void {
-    if (this.options.name) {
-      this.stdout(this.colorize('[', foreground.cyan));
-      this.stdout(this.colorize(this.options.name, [effect.dim, this.foregroundFromLevel(level)]));
-      this.stdout(this.colorize(']', foreground.cyan));
       this.stdout(' ');
     }
   }
@@ -235,7 +235,7 @@ export class ConsoleService {
     if (this.options.link) {
       this.stdout('\n');
       if (this.options.info) {
-        this.stdout(this.colorize(' at ', this.backgroundFromLevel(level)));
+        this.stdout(this.colorize([' ', 'at', ' '], this.backgroundFromLevel(level)));
         this.stdout(' ');
       }
       this.stdout(link);

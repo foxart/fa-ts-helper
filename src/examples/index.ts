@@ -15,9 +15,12 @@ export function initConsole(): void {
   const Console = new ConsoleService({
     name: 'CONTEXT',
     color: true,
+    counter: true,
+    date: true,
     info: true,
     link: true,
     index: 2,
+    // performance: true,
   });
   console.log = (...args: unknown[]): void => {
     Console.log(...args);
