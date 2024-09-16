@@ -101,7 +101,15 @@ export class DecoratorService {
   }
 
   public static getClassMetadata(symbol: symbol, target: object): ClassMetadataGetType | undefined {
-    return Reflect.getOwnMetadata(symbol, target.constructor) as ClassMetadataGetType;
+    return Reflect.getMetadata(symbol, target.constructor) as ClassMetadataGetType;
+    // while (target) {
+    //   const metadata = Reflect.getMetadata(symbol, target.constructor) as ClassMetadataGetType;
+    //   if (metadata) {
+    //     return metadata;
+    //   }
+    //   target = Object.getPrototypeOf(target);
+    // }
+    // return undefined;
   }
 
   public static setClassMetadata(symbol: symbol, target: object, metadata: ClassMetadataSetType): void {

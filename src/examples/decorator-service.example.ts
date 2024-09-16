@@ -4,7 +4,7 @@ import { initConsole } from './index';
 const Decorator = new DecoratorService('__FA_DECORATOR__');
 const ClassDecorator = (data: string): ClassDecorator => {
   return Decorator.decorateClass((target) => {
-    // console.log('CLASS', { target });
+    console.log('CLASS', { target });
     DecoratorService.setClassMetadata(Decorator.symbol, target, {
       data: data,
     });
@@ -15,10 +15,10 @@ const Method = (data: string): MethodDecorator => {
     // console.log('METHOD', { target, propertyKey });
     DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
       data: data,
-      // before: (metadata, ...args) => {
-      //   console.log('BEFORE', { metadata });
-      //   return args;
-      // },
+      before: (metadata, ...args) => {
+        console.log('BEFORE', { metadata });
+        return args;
+      },
     });
   });
 };
