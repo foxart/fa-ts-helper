@@ -109,7 +109,7 @@ export class DecoratorService {
       type: target,
       data: metadata.data,
     };
-    Reflect.defineMetadata(symbol, classMetadata, target.constructor);
+    Reflect.defineMetadata(symbol, classMetadata, target);
   }
 
   public static getMethodMetadata(
@@ -126,7 +126,7 @@ export class DecoratorService {
     propertyKey: string | symbol | undefined,
     metadata: MethodMetadataSetType,
   ): void {
-    const designMetadata = DecoratorService.getDesignMetadata(target.constructor, propertyKey || DecoratorService.name);
+    const designMetadata = DecoratorService.getDesignMetadata(target, propertyKey || DecoratorService.name);
     const methodMetadata: MethodMetadataGetType = {
       type: designMetadata.type,
       parameterType: designMetadata.paramtypes,
@@ -135,7 +135,7 @@ export class DecoratorService {
       before: metadata.before,
       after: metadata.after,
     };
-    Reflect.defineMetadata(symbol, methodMetadata, target.constructor, propertyKey || DecoratorService.name);
+    Reflect.defineMetadata(symbol, methodMetadata, target, propertyKey || DecoratorService.name);
   }
 
   public static setParameterMetadata(
@@ -153,7 +153,7 @@ export class DecoratorService {
     };
     const current = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
     current?.set(parameterIndex, [parameterMetadata, ...(current?.get(parameterIndex) || [])]);
-    Reflect.defineMetadata(symbol, current, target, propertyKey || DecoratorService.name);
+    Reflect.defineMetadata(symbol, current, target.constructor, propertyKey || DecoratorService.name);
   }
 
   public static getParameterMetadata(
@@ -161,7 +161,7 @@ export class DecoratorService {
     target: object,
     propertyKey: string | symbol | undefined,
   ): ParameterMetadataGetTypeMap | undefined {
-    return (Reflect.getOwnMetadata(symbol, target, propertyKey || DecoratorService.name) ||
+    return (Reflect.getOwnMetadata(symbol, target.constructor, propertyKey || DecoratorService.name) ||
       new Map()) as ParameterMetadataGetTypeMap;
   }
 
