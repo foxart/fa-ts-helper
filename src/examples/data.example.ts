@@ -81,7 +81,7 @@ export function DataExample(): void {
     students: new RegExp(example1, 'i'),
     childrens: {
       single: 0,
-      double: '',
+      double: 'double',
       nested: {
         a: 0,
       },
@@ -93,17 +93,19 @@ export function DataExample(): void {
   // console.info(DataHelper.upperToSeparator(example2, '-'));
   // console.info(DataHelper.separatorToCamel(example3, '-'));
   // console.info(DataHelper.separatorToPascal(example4, '-'));
-  const result = DataHelper.filter(
-    { a: 10 },
-    {
-      undefined: true,
-      zeroNumber: true,
-      emptyString: true,
-      emptyObject: true,
-      emptyArray: true,
-      recursive: true,
-      // only: ['paid', 'childrens'],
-    },
+  const result = DataHelper.filter(example5, {
+    undefined: true,
+    zeroNumber: true,
+    emptyString: true,
+    emptyObject: true,
+    emptyArray: true,
+    recursive: true,
+    only: ['paid', 'childrens'],
+  });
+  console.log(
+    DataHelper.mapObjectKeyValue((key, value) => {
+      console.log({ key, value });
+      return [`${key}_1`, value];
+    }, result),
   );
-  console.log(result, DataHelper.isEmptyObject(result));
 }

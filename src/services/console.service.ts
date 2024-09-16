@@ -33,13 +33,13 @@ export class ConsoleService {
   private readonly options: ConsoleServiceOptionsInterface;
   private counter: number;
   private readonly performance: number;
-  private readonly infoLength: number;
 
+  // private readonly infoLength: number;
   public constructor(options?: ConsoleServiceOptionsInterface) {
     this.options = { ...options, index: options?.index ?? 1 };
     this.counter = 0;
     this.performance = performance.now();
-    this.infoLength = Math.max(...Object.keys(LevelEnum as object).map((item) => item.length));
+    // this.infoLength = Math.max(...Object.keys(LevelEnum as object).map((item) => item.length));
     this.console = Object.assign({}, console);
   }
 

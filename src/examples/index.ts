@@ -1,6 +1,7 @@
 import { ConsoleService } from '../index';
 import process from 'process';
 import { DataExample } from './data.example';
+import { DecoratorServiceExample } from './decorator-service.example';
 
 export function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -47,13 +48,13 @@ export function initConsole(): void {
 /**
  *
  * */
-console.clear();
+// console.clear();
 initConsole();
 void ((): void => {
   // CodegenHelperExample();
   // ConsoleServiceExample();
-  DataExample();
-  // DecoratorServiceExample();
+  // DataExample();
+  DecoratorServiceExample();
   // void import('./decorator-service.example').then((module) => module.DecoratorServiceExample());
   // void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
   // parserExample();

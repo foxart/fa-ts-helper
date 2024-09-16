@@ -2,34 +2,36 @@ import { DataHelper, DecoratorService } from '../index';
 import { initConsole } from './index';
 
 const Decorator = new DecoratorService('__FA_DECORATOR__');
-const ClassDecorator = (metadata: string): ClassDecorator => {
+const ClassDecorator = (data: string): ClassDecorator => {
   return Decorator.decorateClass((target) => {
+    console.log('CLASS', { target });
     DecoratorService.setClassMetadata(Decorator.symbol, target, {
-      data: metadata,
+      data: data,
     });
   });
 };
-const Method = (metadata: string): MethodDecorator => {
+const Method = (data: string): MethodDecorator => {
   return Decorator.decorateMethod((target, propertyKey) => {
+    console.log('METHOD', { target, propertyKey });
     DecoratorService.setMethodMetadata(Decorator.symbol, target, propertyKey, {
-      data: metadata,
+      data: data,
     });
   });
 };
-const Param1 = (metadata: string): ParameterDecorator => {
+const Param1 = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
     DecoratorService.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
-      data: metadata,
+      data: data,
       callback: (value, metadata) => {
         return `Param1/${value as string}`;
       },
     });
   });
 };
-const Param2 = (metadata: string): ParameterDecorator => {
+const Param2 = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter((target, propertyKey, parameterIndex) => {
     DecoratorService.setParameterMetadata(Decorator.symbol, target, propertyKey, parameterIndex, {
-      data: metadata,
+      data: data,
       callback: (value, metadata) => {
         return `Param2/${value as string}`;
       },
@@ -37,6 +39,7 @@ const Param2 = (metadata: string): ParameterDecorator => {
   });
 };
 
+@ClassDecorator('')
 class TestClass {
   @Method('Method1')
   public testMethod(
@@ -47,7 +50,7 @@ class TestClass {
     param2?: unknown,
   ): { param1: unknown; param2: unknown } {
     const result = { param1, param2 };
-    console.warn(`${this.constructor.name}->${this.testMethod.name}()`, { param1, param2 });
+    // console.warn(`${this.constructor.name}->${this.testMethod.name}()`, { param1, param2 });
     return result;
   }
 }
@@ -60,5 +63,5 @@ export function DecoratorServiceExample(): void {
     param2: DataHelper.randomString(10),
   };
   const result = mock.testMethod(data.param1, data.param2);
-  console.log(result);
+  // console.log(result);
 }

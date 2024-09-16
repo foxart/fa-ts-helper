@@ -29,8 +29,8 @@ class DataSingleton {
     return DataSingleton.self;
   }
 
-  public filter<Data, Type>(data: Data, options: FilterOptionsInterface & { only?: Type[] }): Data {
-    const isEmpty = (data: unknown, options?: FilterOptionsInterface & { only?: Type[] }): boolean => {
+  public filter<Data>(data: Data, options: FilterOptionsInterface & { only?: Array<keyof Data> }): Data {
+    const isEmpty = (data: unknown, options?: FilterOptionsInterface & { only?: Array<keyof Data> }): boolean => {
       // options?.only;
       if (options?.undefined && data === undefined) {
         return true;
@@ -59,17 +59,17 @@ class DataSingleton {
           return !isEmpty(item, { ...options, nullValue: false, zeroNumber: false, emptyString: false });
         }) as Data;
     } else if (this.isObject(data)) {
-      return Object.entries(data as Record<string, unknown>).reduce((acc, [key, value]) => {
+      return Object.entries(data as Record<keyof Data, Data>).reduce((acc, [key, value]) => {
         if (options.exclude?.includes(key)) {
           return acc;
         } else if (this.isObject(value)) {
-          const result = options.recursive ? this.filter(value, options) : value;
-          if (options.only && !options.only.includes(key as Type)) {
+          const result = options.recursive ? this.filter(value as Data, options) : value;
+          if (options.only && !options.only.includes(key as keyof Data)) {
             return { ...acc, [key]: result };
           }
           return isEmpty(result, options) ? acc : { ...acc, [key]: result };
         } else {
-          if (options.only && !options.only.includes(key as Type)) {
+          if (options.only && !options.only.includes(key as keyof Data)) {
             return { ...acc, [key]: value };
           }
           return isEmpty(value, options) ? acc : { ...acc, [key]: value };
@@ -78,6 +78,24 @@ class DataSingleton {
     } else {
       return data;
     }
+  }
+
+  public mapObjectKeyValue<Type>(
+    callback: (key: keyof Type, value: unknown) => [string, unknown],
+    obj: Type,
+    recursive?: boolean,
+  ): Type {
+    return Object.fromEntries(
+      Object.entries(obj as Record<keyof Type, unknown>).map(([key, value]) => {
+        const [newKey, newValue] = callback(key as keyof Type, value);
+        return [
+          newKey,
+          recursive && this.isObject(newValue)
+            ? this.mapObjectKeyValue(callback, newValue as Type, recursive)
+            : newValue,
+        ];
+      }),
+    ) as Type;
   }
 
   public randomFloat(min: number, max: number): number {

@@ -13,8 +13,8 @@ interface DesignMetadataInterface {
  *
  */
 type ClassMetadataGetType = {
-  type: object;
   data: unknown;
+  type: object;
 };
 type ClassMetadataSetType = {
   data?: unknown;
@@ -25,12 +25,17 @@ type ClassCallbackType = <T extends FunctionType>(target: object) => T | void;
  */
 type MethodMetadataGetType = {
   type: ConstructableType;
+  parameterType: ConstructableType[];
+  returnType: ConstructableType;
   data: unknown;
   before?: MethodMetadataBeforeType;
   after?: MethodMetadataAfterType;
 };
 type MethodMetadataSetType = {
   data?: unknown;
+  // type: ConstructableType;
+  // parameterType: ConstructableType[];
+  // returnType: ConstructableType;
   before?: MethodMetadataBeforeType;
   after?: MethodMetadataAfterType;
 };
@@ -42,21 +47,23 @@ type MethodCallbackType = (
 ) => unknown | void;
 type MethodMetadataBeforeType = (
   metadata: {
-    classType: object | undefined;
-    classData: unknown | undefined;
-    methodType: ConstructableType | undefined;
-    methodData: unknown | undefined;
+    classType?: object;
+    classData?: unknown;
+    methodType?: ConstructableType;
+    methodParameterType: ConstructableType[];
+    methodReturnType?: ConstructableType;
+    methodData?: unknown;
   },
   ...args: unknown[]
 ) => unknown[];
 type MethodMetadataAfterType = (
   metadata: {
-    classType: object | undefined;
-    classData: unknown | undefined;
-    methodType: ConstructableType | undefined;
+    classType?: object;
+    classData?: unknown;
+    methodType?: ConstructableType;
     methodData: unknown | undefined;
   },
-  data: unknown,
+  data?: unknown | unknown[],
 ) => unknown;
 /**
  *
@@ -64,7 +71,7 @@ type MethodMetadataAfterType = (
 type ParameterMetadataGetTypeMap = Map<number, ParameterMetadataGetType[]>;
 type ParameterMetadataGetType = {
   type: ConstructableType;
-  data: unknown;
+  data?: unknown;
   callback?: ParameterMetadataCallbackType;
 };
 type ParameterMetadataSetType = {
@@ -75,12 +82,14 @@ type ParameterCallbackType = (target: object, propertyKey: string | symbol, para
 type ParameterMetadataCallbackType = (
   value: unknown,
   metadata: {
-    classType: object | undefined;
-    classData: unknown | undefined;
-    methodType: ConstructableType | undefined;
-    methodData: unknown | undefined;
-    parameterType: ConstructableType | undefined;
-    parameterData: unknown | undefined;
+    classType?: object;
+    classData?: unknown;
+    methodType?: ConstructableType;
+    methodParameterType: ConstructableType[];
+    methodReturnType?: ConstructableType;
+    methodData?: unknown;
+    parameterType?: unknown;
+    parameterData?: unknown;
   },
 ) => unknown;
 
@@ -97,10 +106,10 @@ export class DecoratorService {
 
   public static setClassMetadata(symbol: symbol, target: object, metadata: ClassMetadataSetType): void {
     const classMetadata: ClassMetadataGetType = {
-      type: target.constructor,
+      type: target,
       data: metadata.data,
     };
-    Reflect.defineMetadata(symbol, classMetadata, target);
+    Reflect.defineMetadata(symbol, classMetadata, target.constructor);
   }
 
   public static getMethodMetadata(
@@ -108,7 +117,7 @@ export class DecoratorService {
     target: object,
     propertyKey: string | symbol,
   ): MethodMetadataGetType | undefined {
-    return (Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) || {}) as MethodMetadataGetType;
+    return (Reflect.getOwnMetadata(symbol, target, propertyKey) || {}) as MethodMetadataGetType;
   }
 
   public static setMethodMetadata(
@@ -117,23 +126,16 @@ export class DecoratorService {
     propertyKey: string | symbol | undefined,
     metadata: MethodMetadataSetType,
   ): void {
-    const designMetadata = DecoratorService.getDesignMetadata(target, propertyKey || DecoratorService.name);
+    const designMetadata = DecoratorService.getDesignMetadata(target.constructor, propertyKey || DecoratorService.name);
     const methodMetadata: MethodMetadataGetType = {
       type: designMetadata.type,
+      parameterType: designMetadata.paramtypes,
+      returnType: designMetadata.returntype,
       data: metadata.data,
       before: metadata.before,
       after: metadata.after,
     };
     Reflect.defineMetadata(symbol, methodMetadata, target.constructor, propertyKey || DecoratorService.name);
-  }
-
-  public static getParameterMetadata(
-    symbol: symbol,
-    target: object,
-    propertyKey: string | symbol | undefined,
-  ): ParameterMetadataGetTypeMap | undefined {
-    return (Reflect.getOwnMetadata(symbol, target, propertyKey || DecoratorService.name) ||
-      new Map()) as ParameterMetadataGetTypeMap;
   }
 
   public static setParameterMetadata(
@@ -152,6 +154,15 @@ export class DecoratorService {
     const current = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
     current?.set(parameterIndex, [parameterMetadata, ...(current?.get(parameterIndex) || [])]);
     Reflect.defineMetadata(symbol, current, target, propertyKey || DecoratorService.name);
+  }
+
+  public static getParameterMetadata(
+    symbol: symbol,
+    target: object,
+    propertyKey: string | symbol | undefined,
+  ): ParameterMetadataGetTypeMap | undefined {
+    return (Reflect.getOwnMetadata(symbol, target, propertyKey || DecoratorService.name) ||
+      new Map()) as ParameterMetadataGetTypeMap;
   }
 
   private static getDesignMetadata(target: object, propertyKey: string | symbol): DesignMetadataInterface {
@@ -186,6 +197,8 @@ export class DecoratorService {
                   classType: classMetadata?.type,
                   classData: classMetadata?.data,
                   methodType: methodMetadata?.type,
+                  methodParameterType: methodMetadata?.parameterType ?? [],
+                  methodReturnType: methodMetadata?.returnType,
                   methodData: methodMetadata?.data,
                   parameterType: type,
                   parameterData: data,
@@ -217,10 +230,13 @@ export class DecoratorService {
         }
         const classMetadata = DecoratorService.getClassMetadata(symbol, target);
         const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
+        // todo: typehint here
         const metadata = {
           classType: classMetadata?.type,
           classData: classMetadata?.data,
           methodType: methodMetadata?.type,
+          methodParameterType: methodMetadata?.parameterType ?? [],
+          methodReturnType: methodMetadata?.returnType,
           methodData: methodMetadata?.data,
         };
         // const result = descriptorValue.apply(
