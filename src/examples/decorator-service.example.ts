@@ -45,7 +45,9 @@ const Param2 = (data: string): ParameterDecorator => {
   });
 };
 
-class BaseClass {}
+class MainClass {}
+
+class BaseClass extends MainClass {}
 
 @ClassDecorator('xxx')
 class TestClass extends BaseClass {

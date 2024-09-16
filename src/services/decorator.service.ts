@@ -135,6 +135,7 @@ export class DecoratorService {
     metadata: MethodMetadataSetType,
   ): void {
     const designMetadata = DecoratorService.getDesignMetadata(target, propertyKey || DecoratorService.name);
+    console.log({ designMetadata });
     const methodMetadata: MethodMetadataGetType = {
       type: designMetadata.type,
       parameterType: designMetadata.paramtypes,
@@ -173,11 +174,20 @@ export class DecoratorService {
       new Map()) as ParameterMetadataGetTypeMap;
   }
 
+  /**
+   * PRIVATE
+   */
   private static getDesignMetadata(target: object, propertyKey: string | symbol): DesignMetadataInterface {
     return {
-      type: Reflect.getOwnMetadata('design:type', target, propertyKey) as ConstructableType,
-      paramtypes: Reflect.getOwnMetadata('design:paramtypes', target, propertyKey) as ConstructableType[],
-      returntype: Reflect.getOwnMetadata('design:returntype', target, propertyKey) as ConstructableType,
+      type:
+        (Reflect.getOwnMetadata('design:type', target, propertyKey) as ConstructableType) ??
+        (Reflect.getOwnMetadata('design:type', target.constructor, propertyKey) as ConstructableType),
+      paramtypes:
+        (Reflect.getOwnMetadata('design:paramtypes', target, propertyKey) as ConstructableType[]) ??
+        (Reflect.getOwnMetadata('design:paramtypes', target.constructor, propertyKey) as ConstructableType[]),
+      returntype:
+        (Reflect.getOwnMetadata('design:returntype', target, propertyKey) as ConstructableType) ??
+        (Reflect.getOwnMetadata('design:returntype', target.constructor, propertyKey) as ConstructableType),
     };
   }
 
