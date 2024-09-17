@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import { DataHelper } from '../helpers/data.helper';
 
 type FunctionType = (...args: unknown[]) => unknown;
 type ConstructableType = new (...args: unknown[]) => unknown;
@@ -13,7 +12,6 @@ interface DesignMetadataInterface {
 /**
  *
  */
-// type ClassCallbackType = <T extends FunctionType>(target: object) => T | void;
 type ClassCallbackType = () => ClassMetadataSetType | void;
 type ClassMetadataGetType = {
   data?: unknown;
@@ -25,7 +23,6 @@ type ClassMetadataSetType = {
 /**
  *
  */
-// type MethodCallbackType = (target: object, propertyKey: string | symbol) => unknown | void;
 type MethodCallbackType = () => MethodMetadataSetType | void;
 type MethodMetadataCallbackType = {
   classType?: object;
@@ -49,14 +46,12 @@ type MethodMetadataSetType = {
   after?: MethodMetadataAfterCallbackType;
 };
 type MethodMetadataBeforeCallbackType = (metadata: MethodMetadataCallbackType, ...args: unknown[]) => unknown[];
-type MethodMetadataAfterCallbackType = (metadata: MethodMetadataCallbackType, data?: unknown | unknown[]) => unknown;
+type MethodMetadataAfterCallbackType = (metadata: MethodMetadataCallbackType, arg?: unknown | unknown[]) => unknown;
 /**
  *
  */
-// type ParameterCallbackType = (target: object, propertyKey: string | symbol, parameterIndex: number) => unknown | void;
 type ParameterCallbackType = () => ParameterMetadataSetType | void;
 type ParameterMetadataCallbackType = (
-  value: unknown,
   metadata: {
     classType?: object;
     classData?: unknown;
@@ -67,6 +62,7 @@ type ParameterMetadataCallbackType = (
     parameterType: unknown;
     parameterData: unknown;
   },
+  arg: unknown,
 ) => unknown;
 type ParameterMetadataGetTypeMap = Map<number, ParameterMetadataGetType[]>;
 type ParameterMetadataGetType = {
@@ -141,16 +137,19 @@ export class DecoratorService {
       return item
         ? item.reverse().reduce((acc, { callback, data, type }) => {
             return callback
-              ? callback(acc, {
-                  classType: classMetadata?.type,
-                  classData: classMetadata?.data,
-                  methodData: methodMetadata?.data,
-                  methodType: methodMetadata?.type,
-                  methodParameterType: methodMetadata?.parameterType,
-                  methodReturnType: methodMetadata?.returnType,
-                  parameterType: type,
-                  parameterData: data,
-                })
+              ? callback(
+                  {
+                    classType: classMetadata?.type,
+                    classData: classMetadata?.data,
+                    methodData: methodMetadata?.data,
+                    methodType: methodMetadata?.type,
+                    methodParameterType: methodMetadata?.parameterType,
+                    methodReturnType: methodMetadata?.returnType,
+                    parameterType: type,
+                    parameterData: data,
+                  },
+                  acc,
+                )
               : acc;
           }, value)
         : value;
@@ -165,9 +164,9 @@ export class DecoratorService {
       const callbackResult = callback ? callback() : undefined;
       const callbackClassMetadata: ClassMetadataGetType = {
         type: target,
-        data: callbackResult,
+        data: callbackResult?.data,
       };
-      Reflect.defineMetadata(this.symbol, DataHelper.filter(callbackClassMetadata, { undefined: true }), target);
+      Reflect.defineMetadata(this.symbol, callbackClassMetadata, target);
     };
   }
 
@@ -188,7 +187,7 @@ export class DecoratorService {
         };
         Reflect.defineMetadata(
           symbol,
-          DataHelper.filter(callbackMethodMetadata, { undefined: true }),
+          callbackMethodMetadata,
           target.constructor,
           propertyKey || DecoratorService.name,
         );
@@ -241,10 +240,7 @@ export class DecoratorService {
         callback: callbackResult?.callback,
       };
       const current = DecoratorService.getParameterMetadata(this.symbol, target, propertyKey);
-      current?.set(parameterIndex, [
-        DataHelper.filter(callbackParameterMetadata, { undefined: true }),
-        ...(current?.get(parameterIndex) || []),
-      ]);
+      current?.set(parameterIndex, [callbackParameterMetadata, ...(current?.get(parameterIndex) || [])]);
       Reflect.defineMetadata(this.symbol, current, target, propertyKey || DecoratorService.name);
     };
   }

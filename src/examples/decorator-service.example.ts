@@ -41,9 +41,9 @@ const Param1 = (data: string): ParameterDecorator => {
     // Decorator.setParameterMetadata(target, propertyKey, parameterIndex, {
     return {
       data: data,
-      callback: (value, metadata): unknown => {
+      callback: (metadata, arg): unknown => {
         console.log('PARAM', { metadata });
-        return `Param1/${value as string}`;
+        return `Param1/${arg as string}`;
       },
     };
   });
@@ -85,5 +85,5 @@ export function DecoratorServiceExample(): void {
     param2: DataHelper.randomString(10),
   };
   const result = mock.testMethod(data.param1, data.param2);
-  // console.log(result);
+  console.log(result);
 }
