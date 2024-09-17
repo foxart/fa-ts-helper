@@ -190,6 +190,10 @@ class DataSingleton {
     }
   }
 
+  public isClass(data: unknown): boolean {
+    return typeof data === 'object' && data !== null && Object.getPrototypeOf(data) !== Object.prototype;
+  }
+
   private validationErrorList(data: ValidationError[]): Record<string, unknown> {
     // todo prev could be array not record
     return data.reduce((prev: Record<string, unknown>, error) => {
