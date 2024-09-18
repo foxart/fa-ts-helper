@@ -174,26 +174,26 @@ export class DecoratorOldService {
     return <T>(target: ConstructableType, propertyKey: string | symbol, descriptor: PropertyDescriptor): T | void => {
       const symbol = this.symbol;
       const descriptorValue = descriptor.value as FunctionType;
+      const callbackResult = callback ? callback() : undefined;
+      const callbackDesignMetadata = DecoratorOldService.getDesignMetadata(
+        target,
+        propertyKey || DecoratorOldService.name,
+      );
+      const callbackMethodMetadata: MethodMetadataGetType = {
+        type: callbackDesignMetadata.type,
+        parameterType: callbackDesignMetadata.paramtypes,
+        returnType: callbackDesignMetadata.returntype,
+        data: callbackResult?.data,
+        before: callbackResult?.before,
+        after: callbackResult?.after,
+      };
+      Reflect.defineMetadata(
+        symbol,
+        callbackMethodMetadata,
+        target.constructor,
+        propertyKey || DecoratorOldService.name,
+      );
       descriptor.value = async function (...args: unknown[]): Promise<FunctionType> {
-        const callbackResult = callback ? callback() : undefined;
-        const callbackDesignMetadata = DecoratorOldService.getDesignMetadata(
-          target,
-          propertyKey || DecoratorOldService.name,
-        );
-        const callbackMethodMetadata: MethodMetadataGetType = {
-          type: callbackDesignMetadata.type,
-          parameterType: callbackDesignMetadata.paramtypes,
-          returnType: callbackDesignMetadata.returntype,
-          data: callbackResult?.data,
-          before: callbackResult?.before,
-          after: callbackResult?.after,
-        };
-        Reflect.defineMetadata(
-          symbol,
-          callbackMethodMetadata,
-          target.constructor,
-          propertyKey || DecoratorOldService.name,
-        );
         const classMetadata = DecoratorOldService.getClassMetadata(symbol, target.constructor);
         const methodMetadata = DecoratorOldService.getMethodMetadata(symbol, target.constructor, propertyKey);
         const metadata: MethodMetadataCallbackType = {

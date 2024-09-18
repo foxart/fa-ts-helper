@@ -4,19 +4,19 @@ class MainClass {}
 
 class BaseClass extends MainClass {}
 
-class Method1Dto {
-  public param1: number;
-  public param2: number;
+class Param1Dto {
+  public key1: number;
+  public key2: number;
 }
 
-class Method2Dto {
-  public param1: number;
-  public param2: number;
+class Param2Dto {
+  public key1: number;
+  public key2: number;
 }
 
 class MethodEntity {
-  public param1: number;
-  public param2: number;
+  public value1: number;
+  public value2: number;
 }
 
 const Decorator = new DecoratorService('__FA_DECORATOR__');
@@ -28,24 +28,30 @@ const ClassDecorator = (data: string): ClassDecorator => {
   });
 };
 const Method = (data: string): MethodDecorator => {
-  // @ts-ignore
   return Decorator.decorateMethod(() => {
     return {
       data: data,
-      before: (metadata, ...args): unknown[] => {
-        console.log('BEFORE', ...args);
-        (args[0] as Method1Dto).param1 = (args[0] as Method1Dto).param1 + 5;
-        (args[0] as Method1Dto).param2 = (args[0] as Method1Dto).param2 + 5;
-        // console.log('AFTER', ...args);
-        console.log('BEFORE', ...args);
-        return args;
+      before: (metadata, params): unknown[] => {
+        // console.log('BEFORE', metadata);
+        // @ts-ignore
+        console.log('BEFORE', params);
+        // @ts-ignore
+        (params[0] as Param1Dto).key1 = (params[0] as Param1Dto).key1 + 3;
+        // @ts-ignore
+        (params[0] as Param1Dto).key2 = (params[0] as Param1Dto).key2 + 3;
+        console.log('BEFORE', params);
+        // @ts-ignore
+        return params;
       },
-      after: (metadata, args): unknown => {
-        console.log('AFTER', args);
-        (args as Method1Dto).param1 = (args as Method1Dto).param1 * 10;
-        (args as Method1Dto).param2 = (args as Method1Dto).param2 * 10;
-        console.log('AFTER', args);
-        return args;
+      after: (metadata, result): unknown => {
+        // console.log('AFTER', metadata);
+        console.log('AFTER', result);
+        // @ts-ignore
+        (result[0] as MethodEntity).value1 = (result[0] as MethodEntity).value1 + 4;
+        // @ts-ignore
+        (result[0] as MethodEntity).value2 = (result[0] as MethodEntity).value2 + 4;
+        // console.log('AFTER', args);
+        return result;
       },
     };
   });
@@ -54,9 +60,9 @@ const Param1 = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter(() => {
     return {
       data: data,
-      callback: (metadata, arg: Method1Dto): unknown => {
-        // console.log('PARAM1', { metadata, arg });
+      callback: (metadata, arg: Param1Dto): unknown => {
         console.log('PARAM1', arg);
+        // console.log('PARAM1', metadata);
         return arg;
       },
     };
@@ -66,69 +72,77 @@ const Param2 = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter(() => {
     return {
       data: data,
-      callback: (metadata, arg: Method2Dto): unknown => {
-        // console.log('PARAM2', { metadata, arg });
+      callback: (metadata, arg: Param2Dto): unknown => {
         console.log('PARAM2', arg);
+        // console.log('PARAM2', metadata);
         return arg;
       },
     };
   });
 };
-
-@ClassDecorator('TestClass')
-class TestClass extends BaseClass {
-  @Method('testMethod')
-  public testMethod(
-    @Param1('Param1') // @Param2('Param2')
-    param: Method1Dto,
-    // @Param2('Param2')
-    param2?: Method2Dto,
-  ): MethodEntity {
-    console.info(`${this.constructor.name}->${this.testMethod.name}()`, param);
-    console.warn(param);
-    return { param1: param.param1 + 1, param2: param.param2 + 1 };
-  }
-}
-
-@ClassDecorator('TestAsyncClass')
+// @ClassDecorator('TestClassSync')
+// class TestClassSync extends BaseClass {
+//   @Method('testMethod')
+//   public testMethod(
+//     @Param1('Param1') // @Param2('Param2')
+//     param: Param1Dto,
+//     @Param2('Param2')
+//     param2?: Param2Dto,
+//   ): MethodEntity {
+//     console.info(`${this.constructor.name}->${this.testMethod.name}()`, { param, param2 });
+//     return { param1: param.param1 + 1, param2: param.param2 + 1 };
+//   }
+// }
+@ClassDecorator('TestClassAsync')
 class TestClassAsync extends BaseClass {
   @Method('testMethod')
-  public async testMethod(
+  public async testMethodAsync(
     @Param1('Param1') // @Param2('Param2')
-    param: Method1Dto,
-    // @Param2('Param2')
-    param2?: Method2Dto,
-  ): Promise<MethodEntity> {
-    console.info(`${this.constructor.name}->${this.testMethod.name}()`, param);
+    param: Param1Dto,
+    @Param2('Param2')
+    param2: Param2Dto,
+  ): Promise<MethodEntity[]> {
+    console.info(`${this.constructor.name}->${this.testMethodAsync?.name}()`, { param, param2 });
     return await new Promise((resolve) => {
-      resolve({ param1: param.param1 + 1, param2: param.param2 + 1 });
+      resolve([
+        {
+          value1: param.key1 * 10,
+          value2: param.key2 * 10,
+        },
+        {
+          value1: param2.key1 * 10,
+          value2: param2.key2 * 10,
+        },
+      ]);
     });
   }
 }
 
 export async function runDecoratorServiceAsync(): Promise<void> {
-  const param1 = 10;
-  const param2 = 20;
-  const dto = {
-    param1,
-    param2,
+  const dto: Param1Dto = {
+    key1: 1,
+    key2: 2,
+  };
+  const dto2: Param2Dto = {
+    key1: 10,
+    key2: 20,
   };
   const testClassAsync = new TestClassAsync();
-  const resultAsync = await testClassAsync.testMethod(dto);
+  // const resultAsync = await testClassAsync.testMethodAsync(dto);
+  const resultAsync = await testClassAsync.testMethodAsync(dto, dto2);
   console.warn('RESULT', resultAsync);
 }
 
-export function runDecoratorService(): void {
-  const param1 = 10;
-  const param2 = 20;
-  const dto = {
-    param1,
-    param2,
-  };
-  const testClass = new TestClass();
-  const result = testClass.testMethod(dto, dto);
-  console.log('RESULT', result);
-  // const testAsyncClass = new TestAsyncClass();
-  // const resultAsync = await testAsyncClass.testMethod(dto);
-  // console.warn('RESULT', resultAsync);
+export function runDecoratorServiceSync(): void {
+  // const dto = {
+  //   param1: 10,
+  //   param2: 20,
+  // };
+  // const dto2 = {
+  //   param1: 1,
+  //   param2: 2,
+  // };
+  // const testClass = new TestClassSync();
+  // const result = testClass.testMethod(dto, dto2);
+  // console.log('RESULT', result);
 }

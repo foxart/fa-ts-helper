@@ -1,6 +1,5 @@
 import { ConsoleService } from '../index';
 import process from 'process';
-import { runDecoratorService } from './decorator-service.example';
 
 export function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -55,7 +54,7 @@ initConsole();
 // ConsoleServiceExample();
 // void import('./data.example').then((module) => module.DataExample());
 // DecoratorServiceExample();
-void import('./decorator-service.example').then((module) => module.runDecoratorService());
-// void import('./decorator-service.example').then((module) => module.runDecoratorServiceAsync());
+// void import('./decorator-service.example').then((module) => module.runDecoratorServiceSync());
+void import('./decorator-service.example').then((module) => module.runDecoratorServiceAsync());
 // parserExample();
 // void import('./decorator-service.example').then((module) => module.run());
