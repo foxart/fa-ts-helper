@@ -37,11 +37,11 @@ interface MethodCallbackMetadataInterface {
 
 type MethodBeforeParameterCallbackMetadataType = (
   metadata: MethodCallbackMetadataInterface,
-  ...args: unknown[]
+  ...parameters: unknown[]
 ) => unknown[];
 type MethodAfterResultCallbackMetadataType = (
   metadata: MethodCallbackMetadataInterface,
-  args: unknown | unknown[],
+  result: unknown | unknown[],
 ) => unknown | unknown[];
 
 interface MethodMetadataInterface {
@@ -70,7 +70,7 @@ interface ParameterCallbackMetadataInterface {
   parameterData: unknown;
 }
 
-type ParameterCallbackMetadataType = (metadata: ParameterCallbackMetadataInterface, arg: unknown) => unknown;
+type ParameterCallbackMetadataType = (metadata: ParameterCallbackMetadataInterface, parameter: unknown) => unknown;
 
 interface ParameterMetadataInterface {
   type: ConstructableType;
@@ -79,6 +79,9 @@ interface ParameterMetadataInterface {
 }
 
 type ParameterMetadataMapType = Map<number, ParameterMetadataInterface[]>;
+const DESIGN_TYPE = 'design:type';
+const DESIGN_PARAMETER_TYPE_LIST = 'design:paramtypes';
+const DESIGN_RETURN_TYPE = 'design:returntype';
 
 export class DecoratorService {
   private readonly symbol: symbol;
@@ -133,9 +136,9 @@ export class DecoratorService {
   /* PRIVATE */
   private static getDesignMetadata(target: object, propertyKey: string | symbol): DesignMetadataInterface {
     return {
-      type: Reflect.getOwnMetadata('design:type', target, propertyKey) as ConstructableType,
-      paramtypes: Reflect.getOwnMetadata('design:paramtypes', target, propertyKey) as ConstructableType[],
-      returntype: Reflect.getOwnMetadata('design:returntype', target, propertyKey) as ConstructableType,
+      type: Reflect.getOwnMetadata(DESIGN_TYPE, target, propertyKey) as ConstructableType,
+      paramtypes: Reflect.getOwnMetadata(DESIGN_PARAMETER_TYPE_LIST, target, propertyKey) as ConstructableType[],
+      returntype: Reflect.getOwnMetadata(DESIGN_RETURN_TYPE, target, propertyKey) as ConstructableType,
     };
   }
 
@@ -182,61 +185,64 @@ export class DecoratorService {
     });
   }
 
-  private static rewriteDescriptorAsync(
+  private static rewriteDescriptor(
     symbol: symbol,
     target: ConstructableType,
     propertyKey: string | symbol,
-    context: PropertyDescriptor,
     originalMethod: FunctionType,
-    methodCallbackMetadata: MethodCallbackMetadataInterface,
-    methodMetadata?: MethodMetadataInterface,
-  ): (...args: unknown[]) => Promise<FunctionType> {
-    return async (...args: unknown[]): Promise<FunctionType> => {
-      const beforeArgs = methodMetadata?.beforeParameter
-        ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
-        : args;
-      if (methodMetadata?.afterResult) {
-        return methodMetadata.afterResult(
-          methodCallbackMetadata,
-          await originalMethod.apply(
+    context: PropertyDescriptor,
+    async: boolean,
+  ): (...args: unknown[]) => unknown | Promise<unknown> {
+    // return async (...args: unknown[]): Promise<FunctionType> => {
+    //   const beforeArgs = methodMetadata?.beforeParameter
+    //     ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
+    //     : args;
+    //   if (methodMetadata?.afterResult) {
+    //     return methodMetadata.afterResult(
+    //       methodCallbackMetadata,
+    //       await originalMethod.apply(
+    //         context,
+    //         DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
+    //       ),
+    //     ) as FunctionType;
+    //   } else {
+    //     return (await originalMethod.apply(
+    //       context,
+    //       DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
+    //     )) as FunctionType;
+    //   }
+    // };
+    const classMetadata = DecoratorService.getClassMetadata(symbol, target.constructor);
+    const methodMetadata = DecoratorService.getMethodMetadata(symbol, target.constructor, propertyKey);
+    const methodCallbackMetadata: MethodCallbackMetadataInterface = {
+      classType: classMetadata?.type,
+      classData: classMetadata?.data,
+      methodType: methodMetadata?.type,
+      methodParameterType: methodMetadata?.parameterType,
+      methodReturnType: methodMetadata?.returnType,
+      methodData: methodMetadata?.data,
+    };
+    return async
+      ? async (...args: unknown[]): Promise<unknown> => {
+          const beforeArgs = methodMetadata?.beforeParameter
+            ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
+            : args;
+          const result = await originalMethod.apply(
             context,
             DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
-          ),
-        ) as FunctionType;
-      } else {
-        return (await originalMethod.apply(
-          context,
-          DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
-        )) as FunctionType;
-      }
-    };
-  }
-
-  private static rewriteDescriptorSync(
-    symbol: symbol,
-    target: ConstructableType,
-    propertyKey: string | symbol,
-    context: PropertyDescriptor,
-    originalMethod: FunctionType,
-    methodCallbackMetadata: MethodCallbackMetadataInterface,
-    methodMetadata?: MethodMetadataInterface,
-  ): (...args: unknown[]) => FunctionType {
-    return (...args: unknown[]): FunctionType => {
-      const beforeArgs = methodMetadata?.beforeParameter
-        ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
-        : args;
-      if (methodMetadata?.afterResult) {
-        return methodMetadata.afterResult(
-          methodCallbackMetadata,
-          originalMethod.apply(context, DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs)),
-        ) as FunctionType;
-      } else {
-        return originalMethod.apply(
-          context,
-          DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
-        ) as FunctionType;
-      }
-    };
+          );
+          return methodMetadata?.afterResult ? methodMetadata.afterResult(methodCallbackMetadata, result) : result;
+        }
+      : (...args: unknown[]): unknown => {
+          const beforeArgs = methodMetadata?.beforeParameter
+            ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
+            : args;
+          const result = originalMethod.apply(
+            context,
+            DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
+          );
+          return methodMetadata?.afterResult ? methodMetadata.afterResult(methodCallbackMetadata, result) : result;
+        };
   }
 
   /* PUBLIC */
@@ -269,35 +275,14 @@ export class DecoratorService {
       };
       DecoratorService.setMethodMetadata(symbol, target.constructor, propertyKey, methodMetadata);
       descriptor.value = function (...args: unknown[]): unknown {
-        const classMetadata = DecoratorService.getClassMetadata(symbol, target.constructor);
-        const methodMetadata = DecoratorService.getMethodMetadata(symbol, target.constructor, propertyKey);
-        const methodCallbackMetadata: MethodCallbackMetadataInterface = {
-          classType: classMetadata?.type,
-          classData: classMetadata?.data,
-          methodType: methodMetadata?.type,
-          methodParameterType: methodMetadata?.parameterType,
-          methodReturnType: methodMetadata?.returnType,
-          methodData: methodMetadata?.data,
-        };
-        return designMetadata.returntype === Promise
-          ? DecoratorService.rewriteDescriptorAsync(
-              symbol,
-              target,
-              propertyKey,
-              this,
-              originalMethod,
-              methodCallbackMetadata,
-              methodMetadata,
-            )(...args)
-          : DecoratorService.rewriteDescriptorSync(
-              symbol,
-              target,
-              propertyKey,
-              this,
-              originalMethod,
-              methodCallbackMetadata,
-              methodMetadata,
-            )(...args);
+        return DecoratorService.rewriteDescriptor(
+          symbol,
+          target,
+          propertyKey,
+          originalMethod,
+          this,
+          designMetadata.returntype === Promise,
+        )(...args);
       };
       DecoratorService.copyDescriptorProperties(originalMethod, descriptor.value as FunctionType, propertyKey);
       return descriptor;

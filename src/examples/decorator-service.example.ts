@@ -28,10 +28,11 @@ const ClassDecorator = (data: string): ClassDecorator => {
 const Method = (data: string): MethodDecorator => {
   return Decorator.decorateMethod({
     data: data,
+    // @ts-ignore
     beforeParameterCallback: (metadata, ...params): unknown[] => {
       console.log('BEFORE', params);
-      (params[0] as Param1Dto).key1 = (params[0] as Param1Dto).key1 * 100;
-      (params[0] as Param1Dto).key2 = (params[0] as Param1Dto).key2 * 100;
+      (params[0] as Param1Dto).key1 = (params[0] as Param1Dto).key1 * 10;
+      (params[0] as Param1Dto).key2 = (params[0] as Param1Dto).key2 * 10;
       return params;
     },
     // @ts-ignore
@@ -43,10 +44,12 @@ const Method = (data: string): MethodDecorator => {
       result1.value2 = result1.value2 / 2;
       return [result1, result2];
     },
+    // @ts-ignore
     afterResultCallback: (metadata, result): unknown => {
       console.log('AFTER', metadata);
       const result1 = result as MethodEntity;
       result1.value1 = result1.value1 / 2;
+      result1.value2 = result1.value2 / 2;
       return result1;
     },
   });
@@ -66,7 +69,7 @@ const Param2 = (data: string): ParameterDecorator => {
     data: data,
     callback: (metadata, param: Param2Dto): unknown => {
       console.log('PARAM2', param, metadata.parameterType);
-      // console.log('PARAM2', metadata);
+      console.log('PARAM2', metadata);
       return param;
     },
   });
