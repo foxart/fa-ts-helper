@@ -1,5 +1,6 @@
 import { ConsoleService } from '../index';
 import process from 'process';
+import { runDecoratorService } from './decorator-service.example';
 
 export function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -11,6 +12,7 @@ export function initCatch(): void {
 }
 
 export function initConsole(): void {
+  Array.from(Array(10).keys()).forEach(() => console.log('|'));
   const Console = new ConsoleService({
     name: 'CONTEXT',
     color: true,
@@ -53,7 +55,7 @@ initConsole();
 // ConsoleServiceExample();
 // void import('./data.example').then((module) => module.DataExample());
 // DecoratorServiceExample();
-// void import('./decorator-service.example').then((module) => module.DecoratorServiceExample());
-// void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
+void import('./decorator-service.example').then((module) => module.runDecoratorService());
+// void import('./decorator-service.example').then((module) => module.runDecoratorServiceAsync());
 // parserExample();
-void import('./decorator-service.example').then((module) => module.run());
+// void import('./decorator-service.example').then((module) => module.run());

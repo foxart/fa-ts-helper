@@ -24,7 +24,7 @@ type ClassMetadataSetType = {
  *
  */
 type MethodCallbackType = () => MethodMetadataSetType | void;
-type MethodMetadataCallbackType = {
+type MethodMetadataType = {
   classType?: object;
   classData?: unknown;
   methodData?: unknown;
@@ -32,26 +32,25 @@ type MethodMetadataCallbackType = {
   methodParameterType?: ConstructableType[];
   methodReturnType?: ConstructableType | ConstructableType[];
 };
+type MethodMetadataCallbackType = (metadata: MethodMetadataType, ...args: unknown[]) => unknown;
 type MethodMetadataGetType = {
   type: ConstructableType;
   parameterType: ConstructableType[];
   returnType: ConstructableType;
   data?: unknown;
-  before?: MethodMetadataBeforeCallbackType;
-  after?: MethodMetadataAfterCallbackType;
+  before?: MethodMetadataCallbackType;
+  after?: MethodMetadataCallbackType;
 };
 type MethodMetadataSetType = {
   data?: unknown;
-  before?: MethodMetadataBeforeCallbackType;
-  after?: MethodMetadataAfterCallbackType;
+  before?: MethodMetadataCallbackType;
+  after?: MethodMetadataCallbackType;
 };
-type MethodMetadataBeforeCallbackType = (metadata: MethodMetadataCallbackType, ...args: unknown[]) => unknown[];
-type MethodMetadataAfterCallbackType = (metadata: MethodMetadataCallbackType, arg?: unknown | unknown[]) => unknown;
 /**
  *
  */
 type ParameterCallbackType = () => ParameterMetadataSetType | void;
-type ParameterMetadataCallbackType = (
+type ParameterMetadataType = (
   metadata: {
     classType?: object;
     classData?: unknown;
@@ -68,11 +67,11 @@ type ParameterMetadataGetTypeMap = Map<number, ParameterMetadataGetType[]>;
 type ParameterMetadataGetType = {
   type: ConstructableType;
   data?: unknown;
-  callback?: ParameterMetadataCallbackType;
+  callback?: ParameterMetadataType;
 };
 type ParameterMetadataSetType = {
   data?: unknown;
-  callback?: ParameterMetadataCallbackType;
+  callback?: ParameterMetadataType;
 };
 
 export class DecoratorService {
@@ -123,7 +122,7 @@ export class DecoratorService {
     });
   }
 
-  private static applyParameterDecorator(
+  private static handleParameters(
     symbol: symbol,
     target: ConstructableType,
     propertyKey: string | symbol,
@@ -171,9 +170,13 @@ export class DecoratorService {
   }
 
   public decorateMethod(callback?: MethodCallbackType): MethodDecorator {
-    return <T>(target: ConstructableType, propertyKey: string | symbol, descriptor: PropertyDescriptor): T | void => {
-      const symbol = this.symbol;
-      const descriptorValue = descriptor.value as FunctionType;
+    const symbol = this.symbol;
+    return function (
+      target: ConstructableType,
+      propertyKey: string | symbol,
+      descriptor: PropertyDescriptor,
+    ): PropertyDescriptor {
+      const originalMethod = descriptor.value as FunctionType;
       descriptor.value = async function (...args: unknown[]): Promise<FunctionType> {
         const callbackResult = callback ? callback() : undefined;
         const callbackDesignMetadata = DecoratorService.getDesignMetadata(target, propertyKey || DecoratorService.name);
@@ -193,7 +196,7 @@ export class DecoratorService {
         );
         const classMetadata = DecoratorService.getClassMetadata(symbol, target.constructor);
         const methodMetadata = DecoratorService.getMethodMetadata(symbol, target.constructor, propertyKey);
-        const metadata: MethodMetadataCallbackType = {
+        const metadata: MethodMetadataType = {
           classType: classMetadata?.type,
           classData: classMetadata?.data,
           methodType: methodMetadata?.type,
@@ -202,31 +205,32 @@ export class DecoratorService {
           methodData: methodMetadata?.data,
         };
         if (methodMetadata?.after) {
-          let result = descriptorValue.apply(
-            this,
-            DecoratorService.applyParameterDecorator(
-              symbol,
-              target,
-              propertyKey,
-              ...(methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args),
-            ),
-          );
-          if (result instanceof Promise) {
-            result = await result;
-          }
-          return methodMetadata.after(metadata, result) as FunctionType;
-        }
-        return descriptorValue.apply(
-          this,
-          DecoratorService.applyParameterDecorator(
+          const beforeArgs = DecoratorService.handleParameters(
             symbol,
             target,
             propertyKey,
-            ...(methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args),
-          ),
-        ) as FunctionType;
+            ...((methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args) as unknown[]),
+          );
+          let result = originalMethod.apply(this, beforeArgs);
+          if (result instanceof Promise) {
+            result = await result;
+          }
+          // return descriptorValue.apply(this, methodMetadata.after(metadata, result)) as FunctionType;
+          return methodMetadata.after(metadata, result) as FunctionType;
+        } else {
+          return originalMethod.apply(
+            this,
+            DecoratorService.handleParameters(
+              symbol,
+              target,
+              propertyKey,
+              ...((methodMetadata?.before ? methodMetadata.before(metadata, ...args) : args) as unknown[]),
+            ),
+          ) as FunctionType;
+        }
       };
-      DecoratorService.copyProperties(descriptorValue, descriptor.value as FunctionType, propertyKey);
+      DecoratorService.copyProperties(originalMethod, descriptor.value as FunctionType, propertyKey);
+      return descriptor;
     };
   }
 
@@ -239,9 +243,12 @@ export class DecoratorService {
         data: callbackResult?.data,
         callback: callbackResult?.callback,
       };
-      const current = DecoratorService.getParameterMetadata(this.symbol, target, propertyKey);
-      current?.set(parameterIndex, [callbackParameterMetadata, ...(current?.get(parameterIndex) || [])]);
-      Reflect.defineMetadata(this.symbol, current, target, propertyKey || DecoratorService.name);
+      const parameterMetadata = DecoratorService.getParameterMetadata(this.symbol, target, propertyKey);
+      parameterMetadata?.set(parameterIndex, [
+        callbackParameterMetadata,
+        ...(parameterMetadata?.get(parameterIndex) || []),
+      ]);
+      Reflect.defineMetadata(this.symbol, parameterMetadata, target, propertyKey || DecoratorService.name);
     };
   }
 }
