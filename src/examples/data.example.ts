@@ -1,10 +1,16 @@
-import { DataHelper } from '../index';
+import { DataHelper, FilterOptionsInterface } from '../index';
+
+class EmptyClass {}
+
+class ValueClass {
+  public readonly data: string = 'data';
+}
 
 class ObjectId {
   private readonly id: string;
 
-  public constructor(id: string) {
-    this.id = id;
+  public constructor() {
+    this.id = '65aa4ceac632b427f4311ad3';
   }
 
   public toString(): string {
@@ -12,100 +18,113 @@ class ObjectId {
   }
 }
 
-const fields = {
-  fieldUndefined: undefined,
-  fieldNull: null,
-  fieldZeroNumber: 0,
-  fieldEmptyString: '',
-  // fieldNumber: 1,
-  // fieldString: 'string',
-  fieldObjectId: new ObjectId('65aa4ceac632b427f4311ad3'),
-  fieldDate: new Date(),
-  fieldExclude: {
-    body: { content: 'body' },
-  },
-  test1: {},
-  test2: ['1'],
+const objectEmptyValues = {
+  undefined: undefined,
+  null: null,
+  zeroNumber: 0,
+  emptyString: '',
+  emptyObject: {},
+  emptyArray: [],
+  emptyClass: new EmptyClass(),
 };
-const keys = {
-  keyUndefined: undefined,
-  // keyNull: null,
-  // keyNumber: 1,
-  // keyZeroNumber: 0,
-  // keyString: 'string',
-  // keyEmptyString: '',
-  // keyObjectId: new ObjectId('65aa4ceac632b427f4311ad3'),
-  // keyDate: new Date(),
-  keyArray: Object.values(fields),
-  keyObject: { ...fields, keyFields: fields },
+const objectValues = {
+  number: 1,
+  string: 'string',
+  array: [1, 'string', Object.values(objectEmptyValues)],
+  object: { keyNumber: 1, keyString: '2' },
+  objectId: new ObjectId(),
+  date: new Date(),
+  regex: new RegExp('/.+/g'),
+  valueClass: new ValueClass(),
 };
 
-function testData(): void {
-  const options = {
-    undefined: true,
-    null: true,
-    zeroNumber: true,
-    emptyString: true,
-    exclude: ['body'],
-    emptyObject: true,
-  };
-  console.info('SOURCE', keys);
-  console.log('RESULT', DataHelper.filter(keys, options));
-  // console.info('ARRAY', DataHelper.filter([...Object.values(fields), { sub: Object.values(fields) }], options));
-  //
+function splitObjectByTrueFalse(obj: { [key: string]: boolean }): {
+  trueValues: { [key: string]: boolean };
+  falseValues: { [key: string]: boolean };
+} {
+  const trueValues: { [key: string]: boolean } = {};
+  const falseValues: { [key: string]: boolean } = {};
+  for (const key in obj) {
+    if (obj[key]) {
+      trueValues[key] = obj[key];
+    } else {
+      falseValues[key] = obj[key];
+    }
+  }
+  return { trueValues, falseValues };
 }
 
-export function DataExample(): void {
-  const example1 = 'LoremIpsumDolor';
-  const example2 = 'loremIpsumDolor';
-  const example3 = 'Lorem-Ipsum-Dolor';
-  const example4 = 'lorem-Ipsum-Dolor';
-  const example5 = {
-    array: [
-      0,
-      1,
-      undefined,
-      '',
-      null,
-      {
-        zero: 0,
-        arr: [],
-        childrens: '',
-        test: undefined,
-        paid: 0,
-      },
-    ],
-    object: {},
-    arr: [],
-    adults: '',
-    students: new RegExp(example1, 'i'),
-    childrens: {
-      single: 0,
-      double: 'double',
-      nested: {
-        a: 0,
-      },
-      paid: 0,
-    },
-    paid: '',
-  };
-  // console.log(DataHelper.upperToSeparator(example1, '-'));
-  // console.info(DataHelper.upperToSeparator(example2, '-'));
-  // console.info(DataHelper.separatorToCamel(example3, '-'));
-  // console.info(DataHelper.separatorToPascal(example4, '-'));
-  const result = DataHelper.filter(example5, {
+function testFilter(): object {
+  const options: FilterOptionsInterface = {
     undefined: true,
+    nullValue: true,
     zeroNumber: true,
     emptyString: true,
-    emptyObject: true,
-    emptyArray: true,
+    // emptyObject: true,
     recursive: true,
-    only: ['paid', 'childrens'],
-  });
-  console.log(
-    DataHelper.mapObjectKeyValue((key, value) => {
-      console.log({ key, value });
-      return [`${key}_1`, value];
-    }, result),
+  };
+  // todo: empty object also filters array
+  const data = {
+    ...objectEmptyValues,
+    valueObject: { ...objectEmptyValues, ...objectValues, exclude: 'EXCLUDE' },
+    exclude: 'EXCLUDE',
+  };
+  return DataHelper.filter(data, { ...options, exclude: ['exclude'] });
+}
+
+function testIsClass(): object {
+  const data = { ...objectEmptyValues, ...objectValues };
+  const result = Object.entries(data).reduce(
+    (acc, [key, value]) => {
+      acc[key] = DataHelper.isClass(value);
+      return acc;
+    },
+    {} as Record<string, boolean>,
   );
+  return splitObjectByTrueFalse(result);
+}
+
+function testIsObject(): object {
+  const data = { ...objectEmptyValues, ...objectValues };
+  const result = Object.entries(data).reduce(
+    (acc, [key, value]) => {
+      acc[key] = DataHelper.isObject(value);
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+  return splitObjectByTrueFalse(result);
+}
+
+function testIsEmptyObject(): object {
+  const data = { ...objectEmptyValues, ...objectValues };
+  const result = Object.entries(data).reduce(
+    (acc, [key, value]) => {
+      acc[key] = DataHelper.isEmptyObject(value);
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+  return splitObjectByTrueFalse(result);
+}
+
+function testIsPlainObject(): object {
+  const data = { ...objectEmptyValues, ...objectValues };
+  const result = Object.entries(data).reduce(
+    (acc, [key, value]) => {
+      acc[key] = DataHelper.isPlainObject(value);
+      return acc;
+    },
+    {} as Record<string, boolean>,
+  );
+  return splitObjectByTrueFalse(result);
+}
+
+export function run(): void {
+  console.clear();
+  console.log(testFilter());
+  console.log('testIsClass', testIsClass());
+  // console.log('testIsObject', testIsObject());
+  // console.log('testIsEmptyObject', testIsEmptyObject());
+  // console.log('testIsPlainObject', testIsPlainObject());
 }

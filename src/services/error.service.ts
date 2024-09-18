@@ -1,4 +1,4 @@
-import { DataHelper } from '../helpers/data.helper';
+import { ConverterHelper } from '../helpers/converter.helper';
 
 interface ErrorHelperInterface {
   name: string;
@@ -23,7 +23,7 @@ export class ErrorService extends Error {
       this.stack = error.stack ? error.stack : this.stack;
     } else {
       this.name = error.name;
-      this.message = typeof error.message === 'string' ? error.message : DataHelper.jsonStringify(error.message);
+      this.message = typeof error.message === 'string' ? error.message : ConverterHelper.dataToJson(error.message);
       this.status = error.status ?? 500;
       this.stack = error.stack ? error.stack : this.stack;
     }

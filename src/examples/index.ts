@@ -1,7 +1,5 @@
 import { ConsoleService } from '../index';
 import process from 'process';
-import { DataExample } from './data.example';
-import { DecoratorServiceExample } from './decorator-service.example';
 
 export function initCatch(): void {
   process.on('unhandledRejection', (reason, promise) => {
@@ -21,6 +19,7 @@ export function initConsole(): void {
     info: true,
     link: true,
     index: 2,
+    // hidden: true,
     // performance: true,
   });
   console.log = (...args: unknown[]): void => {
@@ -47,15 +46,14 @@ export function initConsole(): void {
 
 /**
  *
- * */
-// console.clear();
+ */
+initCatch();
 initConsole();
-void ((): void => {
-  // CodegenHelperExample();
-  // ConsoleServiceExample();
-  // DataExample();
-  DecoratorServiceExample();
-  // void import('./decorator-service.example').then((module) => module.DecoratorServiceExample());
-  // void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
-  // parserExample();
-})();
+// CodegenHelperExample();
+// ConsoleServiceExample();
+// void import('./data.example').then((module) => module.DataExample());
+// DecoratorServiceExample();
+// void import('./decorator-service.example').then((module) => module.DecoratorServiceExample());
+// void import('./services/decorator-entity.example').then((module) => module.decoratorEntityExample());
+// parserExample();
+void import('./decorator-service.example').then((module) => module.run());
