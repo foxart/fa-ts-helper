@@ -57,5 +57,5 @@ initConsole();
 /**
  * Decorator Service
  */
-// void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
-void import('./decorator-service/decorator-service.example').then((module) => module.runAsync());
+void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
+// void import('./decorator-service/decorator-service.example').then((module) => module.runAsync());

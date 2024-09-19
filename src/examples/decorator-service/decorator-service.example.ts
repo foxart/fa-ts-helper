@@ -91,11 +91,11 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
 }
 
 export function runSync(): void {
-  // const decoratorServiceAsync = new DecoratorServiceClass();
-  // const dataDto: DecoratorServiceParamValueDto = { value: 1 };
-  // const objectDto: DecoratorServiceParamKeyDto = { key: 'key' };
-  // console.error(decoratorServiceAsync.testSync(dataDto, objectDto));
-  // console.error(decoratorServiceAsync.testSyncArray(dataDto, objectDto));
+  const decoratorServiceAsync = new DecoratorServiceClass();
+  const keyDto: DecoratorServiceParamKeyDto = { key: 'key' };
+  const valueDto: DecoratorServiceParamValueDto = { value: 1 };
+  console.error(decoratorServiceAsync.testSync(keyDto, valueDto));
+  // console.error(decoratorServiceAsync.testSyncArray(keyDto, valueDto));
 }
 
 export async function runAsync(): Promise<void> {

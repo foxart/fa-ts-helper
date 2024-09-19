@@ -15,7 +15,6 @@ interface ClassDecoratorInterface {
 }
 
 interface ClassMetadataInterface {
-  // type?: object;
   data?: unknown;
 }
 
@@ -28,13 +27,9 @@ interface MethodDecoratorInterface {
 
 interface MethodCallbackMetadataInterface {
   className: string;
-  // classType?: object;
   classData?: unknown;
-  methodData?: unknown;
-  // methodType?: ConstructableType;
-  // methodParameterType?: ConstructableType[];
-  // methodReturnType?: ConstructableType | ConstructableType[];
   methodName: string;
+  methodData?: unknown;
 }
 
 type MethodBeforeParameterCallbackMetadataType = (
@@ -47,10 +42,6 @@ type MethodAfterResultCallbackMetadataType = (
 ) => unknown | unknown[];
 
 interface MethodMetadataInterface {
-  // type: ConstructableType;
-  // parameterType: ConstructableType[];
-  // returnType: ConstructableType;
-  // name: string;
   data?: unknown;
   beforeParameterCallbackMetadata?: MethodBeforeParameterCallbackMetadataType;
   afterResultCallbackMetadata?: MethodAfterResultCallbackMetadataType;
@@ -153,26 +144,28 @@ export class DecoratorService {
     const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
     const parameterMetadata = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
     return args.map((value, index) => {
-      const parameterMetadataList = parameterMetadata.get(index);
-      return parameterMetadataList
-        ? parameterMetadataList.reduce((acc, { name, type, callback, data }, currentIndex) => {
-            return callback
-              ? callback(
-                  {
-                    className: target.constructor.name,
-                    classData: classMetadata?.data,
-                    methodData: methodMetadata?.data,
-                    methodName: propertyKey.toString(),
-                    parameterIndex: index,
-                    parameterCurrentIndex: currentIndex,
-                    parameterName: name,
-                    parameterType: type,
-                    parameterData: data,
-                  },
-                  acc,
-                )
-              : acc;
-          }, value)
+      return parameterMetadata.has(index)
+        ? (parameterMetadata.get(index) as ParameterMetadataInterface[]).reduce(
+            (acc, { name, type, callback, data }, currentIndex) => {
+              return callback
+                ? callback(
+                    {
+                      className: target.constructor.name,
+                      classData: classMetadata?.data,
+                      methodData: methodMetadata?.data,
+                      methodName: propertyKey.toString(),
+                      parameterIndex: index,
+                      parameterCurrentIndex: currentIndex,
+                      parameterName: name,
+                      parameterType: type,
+                      parameterData: data,
+                    },
+                    acc,
+                  )
+                : acc;
+            },
+            value,
+          )
         : value;
     });
   }
@@ -234,7 +227,6 @@ export class DecoratorService {
   public decorateClass(data?: ClassDecoratorInterface): ClassDecorator {
     return <T>(target: object): T | void => {
       const classMetadata: ClassMetadataInterface = {
-        // type: target,
         data: data?.data,
       };
       DecoratorService.setClassMetadata(this.symbol, target, classMetadata);
