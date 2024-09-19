@@ -96,7 +96,7 @@ export class DecoratorService {
     target: object,
     propertyKey: string | symbol,
   ): MethodMetadataInterface | undefined {
-    return (Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) || {}) as MethodMetadataInterface;
+    return Reflect.getOwnMetadata(symbol, target.constructor, propertyKey) as MethodMetadataInterface;
   }
 
   private static setMethodMetadata(
