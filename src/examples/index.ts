@@ -11,7 +11,7 @@ export function initCatch(): void {
 }
 
 export function initConsole(): void {
-  Array.from(Array(10).keys()).forEach(() => console.log('|'));
+  Array.from(Array(15).keys()).forEach(() => console.log('|'));
   const Console = new ConsoleService({
     name: 'CONTEXT',
     color: true,
@@ -53,8 +53,6 @@ initConsole();
 // CodegenHelperExample();
 // ConsoleServiceExample();
 // void import('./data.example').then((module) => module.DataExample());
-// DecoratorServiceExample();
-void import('./decorator-service.example').then((module) => module.runDecoratorServiceSync());
-// void import('./decorator-service.example').then((module) => module.runDecoratorServiceAsync());
 // parserExample();
-// void import('./decorator-service.example').then((module) => module.run());
+// void import('./decorator-service.example').then((module) => module.runDecoratorServiceSync());
+void import('./decorator-service/decorator-service.example').then((module) => module.runSync());

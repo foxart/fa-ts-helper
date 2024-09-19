@@ -49,8 +49,8 @@ interface MethodMetadataInterface {
   parameterType: ConstructableType[];
   returnType: ConstructableType;
   data?: unknown;
-  beforeParameter?: MethodBeforeParameterCallbackMetadataType;
-  afterResult?: MethodAfterResultCallbackMetadataType;
+  beforeParameterCallbackMetadata?: MethodBeforeParameterCallbackMetadataType;
+  afterResultCallbackMetadata?: MethodAfterResultCallbackMetadataType;
 }
 
 // PARAMETER
@@ -224,24 +224,28 @@ export class DecoratorService {
     };
     return async
       ? async (...args: unknown[]): Promise<unknown> => {
-          const beforeArgs = methodMetadata?.beforeParameter
-            ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
+          const beforeArgs = methodMetadata?.beforeParameterCallbackMetadata
+            ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
             : args;
           const result = await originalMethod.apply(
             context,
             DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
-          return methodMetadata?.afterResult ? methodMetadata.afterResult(methodCallbackMetadata, result) : result;
+          return methodMetadata?.afterResultCallbackMetadata
+            ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
+            : result;
         }
       : (...args: unknown[]): unknown => {
-          const beforeArgs = methodMetadata?.beforeParameter
-            ? methodMetadata.beforeParameter(methodCallbackMetadata, ...args)
+          const beforeArgs = methodMetadata?.beforeParameterCallbackMetadata
+            ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
             : args;
           const result = originalMethod.apply(
             context,
             DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
-          return methodMetadata?.afterResult ? methodMetadata.afterResult(methodCallbackMetadata, result) : result;
+          return methodMetadata?.afterResultCallbackMetadata
+            ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
+            : result;
         };
   }
 
@@ -270,8 +274,8 @@ export class DecoratorService {
         parameterType: designMetadata.paramtypes,
         returnType: designMetadata.returntype,
         data: data?.data,
-        beforeParameter: data?.beforeParameterCallback,
-        afterResult: data?.afterResultCallback,
+        beforeParameterCallbackMetadata: data?.beforeParameterCallback,
+        afterResultCallbackMetadata: data?.afterResultCallback,
       };
       DecoratorService.setMethodMetadata(symbol, target.constructor, propertyKey, methodMetadata);
       descriptor.value = function (...args: unknown[]): unknown {
