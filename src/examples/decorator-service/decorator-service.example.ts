@@ -15,17 +15,18 @@ import {
 
 @ClassDecorator('DecoratorServiceClassData')
 class DecoratorServiceClass extends ExtendedAbstractClass {
+  protected keyDto: DecoratorServiceParamKeyDto = { key: 'initial' };
+
   @MethodDecorator('testSync')
   public testSync(
     @ParamKeyDto(`${ParamKeyDto.name}-data`)
     keyDto: DecoratorServiceParamKeyDto,
-    @ParamValueDto(`${ParamValueDto.name}-data`)
-    @ParamValueDtoMultiple(3)
+    @ParamValueDto(`${ParamValueDto.name}-data`) // @ParamValueDtoMultiple(3)
     valueDto: DecoratorServiceParamValueDto,
   ): DecoratorServiceMethodEntity {
     console.info([this.constructor.name, this.testSync.name], keyDto, valueDto);
     return {
-      key: `${keyDto.key}-1`,
+      key: `${keyDto.key}-testSync`,
       value: valueDto.value + 1,
     };
   }
@@ -41,7 +42,7 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
     console.info([this.constructor.name, this.testSyncArray.name], keyDto, valueDto);
     return [
       {
-        key: `${keyDto.key}-1`,
+        key: `${keyDto.key}-testSyncArray`,
         value: valueDto.value + 1,
       },
       {
@@ -62,7 +63,7 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
     console.info([this.constructor.name, this.testAsync.name], keyDto, valueDto);
     return await new Promise((resolve) => {
       resolve({
-        key: `${keyDto.key}-1`,
+        key: `${keyDto.key}-testAsync`,
         value: valueDto.value + 1,
       });
     });
@@ -80,7 +81,7 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
     return await new Promise((resolve) => {
       resolve([
         {
-          key: `${keyDto.key}-1`,
+          key: `${keyDto.key}-testAsyncArray`,
           value: valueDto.value + 1,
         },
         {
@@ -92,12 +93,9 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
   }
 
   @MethodDecoratorGetter('getTestSync')
-  public get getTestSync(): DecoratorServiceMethodEntity {
-    const key = 'key';
-    const value = 1;
-    const result = this.testSync({ key }, { value });
-    console.info([this.constructor.name, result]);
-    return result;
+  public get getTestSync(): DecoratorServiceParamKeyDto {
+    console.info([this.constructor.name]);
+    return this.keyDto;
   }
 
   @MethodDecoratorSetter('getTestSync')
@@ -105,9 +103,8 @@ class DecoratorServiceClass extends ExtendedAbstractClass {
     @ParamKeyDto(`${ParamKeyDto.name}-data`)
     keyDto: DecoratorServiceParamKeyDto,
   ) {
-    const value = { value: 1 };
-    const result = this.testSync(keyDto, value);
-    console.info([this.constructor.name, result]);
+    console.info([this.constructor.name]);
+    this.keyDto = keyDto;
   }
 }
 
@@ -115,16 +112,16 @@ export function runSync(): void {
   const decoratorServiceAsync = new DecoratorServiceClass();
   const keyDto: DecoratorServiceParamKeyDto = { key: 'key' };
   const valueDto: DecoratorServiceParamValueDto = { value: 1 };
-  // console.error(decoratorServiceAsync.testSync(keyDto, valueDto));
   // console.error(decoratorServiceAsync.testSyncArray(keyDto, valueDto));
-  // console.error(decoratorServiceAsync.getTestSync);
-  console.error((decoratorServiceAsync.setTestSync = { key: 'key' }));
+  // console.error(decoratorServiceAsync.testSync(keyDto, valueDto));
+  decoratorServiceAsync.setTestSync = keyDto;
+  console.error(decoratorServiceAsync.getTestSync);
 }
 
 export async function runAsync(): Promise<void> {
   const decoratorServiceAsync = new DecoratorServiceClass();
   const keyDto: DecoratorServiceParamKeyDto = { key: 'key' };
   const valueDto: DecoratorServiceParamValueDto = { value: 1 };
-  // console.error(await decoratorServiceAsync.testAsync(keyDto, valueDto));
   // console.error(await decoratorServiceAsync.testAsyncArray(dataDto, objectDto));
+  console.error(await decoratorServiceAsync.testAsync(keyDto, valueDto));
 }

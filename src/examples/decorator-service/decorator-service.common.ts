@@ -27,7 +27,7 @@ export const MethodDecorator = (data: string): MethodDecorator => {
   return Decorator.decorateMethod({
     data: data,
     beforeParameterCallback: (metadata, ...params): unknown[] => {
-      console.log(`${MethodDecorator.name}-beforeParameter`, metadata.methodName, params);
+      console.log(`${MethodDecorator.name}-beforeParameter`, params);
       // console.log(`${MethodDecorator.name}-beforeParameter`, metadata);
       const keyDto = params[0] as DecoratorServiceParamKeyDto;
       const valueDto = params[1] as DecoratorServiceParamValueDto;
@@ -36,7 +36,7 @@ export const MethodDecorator = (data: string): MethodDecorator => {
       return params;
     },
     afterResultCallback: (metadata, result): unknown => {
-      // console.log(`${MethodDecorator.name}-afterResult`, metadata.methodName, result);
+      console.log(`${MethodDecorator.name}-afterResult`, result);
       // console.log(`${MethodDecorator.name}-afterResult`, metadata);
       const methodEntity = result as DecoratorServiceMethodEntity;
       methodEntity.key = `${methodEntity.key}-afterResult`;
@@ -49,7 +49,7 @@ export const MethodDecoratorArray = (data: string): MethodDecorator => {
   return Decorator.decorateMethod({
     data: data,
     beforeParameterCallback: (metadata, ...params): unknown[] => {
-      // console.log(`${MethodDecoratorArray.name}-beforeParameterArray`, metadata.methodName, params);
+      // console.log(`${MethodDecoratorArray.name}-beforeParameterArray`, params);
       // console.log(`${MethodDecoratorArray.name}-beforeParameterArray`, metadata);
       const keyDto = params[0] as DecoratorServiceParamKeyDto;
       const valueDto = params[1] as DecoratorServiceParamValueDto;
@@ -58,7 +58,7 @@ export const MethodDecoratorArray = (data: string): MethodDecorator => {
       return params;
     },
     afterResultCallback: (metadata, result): unknown => {
-      // console.log(`${MethodDecoratorArray.name}-afterResultArray`, metadata.methodName, result);
+      // console.log(`${MethodDecoratorArray.name}-afterResultArray`, result);
       // console.log(`${MethodDecoratorArray.name}-afterResultArray`, metadata);
       const methodEntity = result as DecoratorServiceMethodEntity[];
       methodEntity[0].key = `${methodEntity[0].key}-afterResultArray`;
@@ -71,16 +71,15 @@ export const MethodDecoratorGetter = (data: string): MethodDecorator => {
   return Decorator.decorateMethod({
     data: data,
     beforeParameterCallback: (metadata, ...params): unknown[] => {
-      console.log(`${MethodDecoratorGetter.name}-beforeParameterGetter`, metadata.methodName, params);
+      console.log(`${MethodDecoratorGetter.name}-beforeParameterGetter`, params);
       // console.log(`${MethodDecoratorGetter.name}-beforeParameterGetter`, metadata);
       return params;
     },
     afterResultCallback: (metadata, result): unknown => {
-      console.log(`${MethodDecoratorGetter.name}-afterResultGetter`, metadata.methodName, result);
+      console.log(`${MethodDecoratorGetter.name}-afterResultGetter`, result);
       // console.log(`${MethodDecoratorGetter.name}-afterResultGetter`, metadata);
       const methodEntity = result as DecoratorServiceMethodEntity;
       methodEntity.key = `${methodEntity.key}-afterResultGetter`;
-      methodEntity.value = methodEntity.value / 10;
       return result;
     },
   });
@@ -89,18 +88,15 @@ export const MethodDecoratorSetter = (data: string): MethodDecorator => {
   return Decorator.decorateMethod({
     data: data,
     beforeParameterCallback: (metadata, ...params): unknown[] => {
-      console.log(`${MethodDecoratorSetter.name}-beforeParameterSetter`, metadata.methodName, params);
+      console.log(`${MethodDecoratorSetter.name}-beforeParameterSetter`, params);
       // console.log(`${MethodDecoratorSetter.name}-beforeParameterSetter`, metadata);
       const keyDto = params[0] as DecoratorServiceParamKeyDto;
       keyDto.key = `beforeParameterSetter-${keyDto.key}`;
       return params;
     },
     afterResultCallback: (metadata, result): unknown => {
-      console.log(`${MethodDecoratorSetter.name}-afterResultSetter`, metadata.methodName, result);
+      console.log(`${MethodDecoratorSetter.name}-afterResultSetter`, result);
       // console.log(`${MethodDecoratorSetter.name}-afterResultSetter`, metadata);
-      // const methodEntity = result as DecoratorServiceMethodEntity;
-      // methodEntity.key = `${methodEntity.key}-afterResultSetter`;
-      // methodEntity.value = methodEntity.value / 10;
       return result;
     },
   });
@@ -109,8 +105,9 @@ export const ParamKeyDto = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter({
     data: data,
     callback: (metadata, parameter: DecoratorServiceParamKeyDto): unknown => {
-      // console.log(ParamKeyDto.name, metadata.parameterName, param);
+      console.log(ParamKeyDto.name, parameter);
       // console.log(ParamKeyDto.name, metadata);
+      parameter.key = `ParamKeyDto( ${parameter.key} )`;
       return parameter;
     },
   });
@@ -119,8 +116,9 @@ export const ParamValueDto = (data: string): ParameterDecorator => {
   return Decorator.decorateParameter({
     data: data,
     callback: (metadata, parameter: DecoratorServiceParamValueDto): unknown => {
-      // console.log(ParamValueDto.name, metadata.parameterName, param);
+      console.log(ParamValueDto.name, parameter);
       // console.log(ParamValueDto.name, metadata);
+      parameter.value = parameter.value + 5;
       return parameter;
     },
   });
@@ -129,7 +127,7 @@ export const ParamValueDtoMultiple = (multiplier: number): ParameterDecorator =>
   return Decorator.decorateParameter({
     data: multiplier,
     callback: (metadata, param: DecoratorServiceParamValueDto): unknown => {
-      // console.log(ParamValueDtoMultiple.name, metadata.parameterName, param, multiplier);
+      // console.log(ParamValueDtoMultiple.name, param, multiplier);
       // console.log(ParamValueDtoMultiple.name, metadata);
       param.value = param.value * (metadata.parameterData as number);
       return param;

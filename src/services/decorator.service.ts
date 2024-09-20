@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 
+type MethodType = 'GET' | 'SET' | 'VAL';
 type FunctionType = (...args: unknown[]) => unknown;
 type ConstructableType = new (...args: unknown[]) => unknown;
 
@@ -42,6 +43,7 @@ type MethodAfterResultCallbackMetadataType = (
 ) => unknown | unknown[];
 
 interface MethodMetadataInterface {
+  type: MethodType;
   data?: unknown;
   beforeParameterCallbackMetadata?: MethodBeforeParameterCallbackMetadataType;
   afterResultCallbackMetadata?: MethodAfterResultCallbackMetadataType;
@@ -174,8 +176,8 @@ export class DecoratorService {
     symbol: symbol,
     target: ConstructableType,
     propertyKey: string | symbol,
-    method: FunctionType,
     context: PropertyDescriptor,
+    method: FunctionType,
   ): (...args: unknown[]) => unknown | Promise<unknown> {
     const classMetadata = DecoratorService.getClassMetadata(symbol, target);
     const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
@@ -185,28 +187,31 @@ export class DecoratorService {
       methodName: method.name,
       methodData: methodMetadata?.data,
     };
+    console.log(methodMetadata?.type);
     return DecoratorService.getDesignMetadata(target, propertyKey).returntype === Promise
       ? async (...args: unknown[]): Promise<unknown> => {
-          const beforeArgs = methodMetadata?.beforeParameterCallbackMetadata
-            ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
-            : args;
+          const beforeArgs =
+            methodMetadata?.beforeParameterCallbackMetadata && methodMetadata?.type !== 'GET'
+              ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
+              : args;
           const result = await method.apply(
             context,
             DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
-          return methodMetadata?.afterResultCallbackMetadata
+          return methodMetadata?.afterResultCallbackMetadata && methodMetadata?.type !== 'SET'
             ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
             : result;
         }
       : (...args: unknown[]): unknown => {
-          const beforeArgs = methodMetadata?.beforeParameterCallbackMetadata
-            ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
-            : args;
+          const beforeArgs =
+            methodMetadata?.beforeParameterCallbackMetadata && methodMetadata?.type !== 'GET'
+              ? methodMetadata.beforeParameterCallbackMetadata(methodCallbackMetadata, ...args)
+              : args;
           const result = method.apply(
             context,
             DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
-          return methodMetadata?.afterResultCallbackMetadata
+          return methodMetadata?.afterResultCallbackMetadata && methodMetadata?.type !== 'SET'
             ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
             : result;
         };
@@ -230,6 +235,7 @@ export class DecoratorService {
     ): PropertyDescriptor => {
       const symbol = this.symbol;
       const methodMetadata: MethodMetadataInterface = {
+        type: descriptor.value ? 'VAL' : descriptor.get ? 'GET' : 'SET',
         data: data?.data,
         beforeParameterCallbackMetadata: data?.beforeParameterCallback,
         afterResultCallbackMetadata: data?.afterResultCallback,
@@ -238,22 +244,22 @@ export class DecoratorService {
       if (descriptor.value) {
         const descriptorValue = descriptor.value as FunctionType;
         descriptor.value = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, descriptorValue, this)(...args);
+          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorValue)(...args);
         };
         Object.getOwnPropertyNames(descriptorValue).forEach((property) => {
-          Object.defineProperty(descriptor.value, property, { value: propertyKey });
+          Object.defineProperty(descriptor.value, property, { value: property });
         });
       }
       if (descriptor.get) {
         const descriptorGet = descriptor.get;
         descriptor.get = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, descriptorGet, this)(...args);
+          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorGet)(...args);
         };
       }
       if (descriptor.set) {
         const descriptorSet = descriptor.set;
         descriptor.set = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, descriptorSet, this)(...args);
+          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorSet)(...args);
         };
       }
       return descriptor;
