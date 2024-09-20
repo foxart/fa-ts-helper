@@ -187,7 +187,6 @@ export class DecoratorService {
       methodName: method.name,
       methodData: methodMetadata?.data,
     };
-    console.log(methodMetadata?.type);
     return DecoratorService.getDesignMetadata(target, propertyKey).returntype === Promise
       ? async (...args: unknown[]): Promise<unknown> => {
           const beforeArgs =
