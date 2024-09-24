@@ -8,6 +8,7 @@ interface ExceptionInterface {
   message: unknown;
   status: number;
   type: string;
+  timestamp: string;
   stack: string[];
 }
 
@@ -58,8 +59,8 @@ export class ExceptionService {
       name: typeof response === 'string' ? response : exception.name,
       message: typeof response === 'object' ? response : exception.message,
       status: exception.getStatus(),
-      // type: 'http',
       type: HttpException.name,
+      timestamp: new Date().toISOString(),
       stack: this.stack(exception.stack),
     };
   }
@@ -86,8 +87,8 @@ export class ExceptionService {
       name: exception.name,
       message: message,
       status: HttpStatus.BAD_REQUEST,
-      // type: 'mongo',
       type: mongoose.mongo.MongoError.name,
+      timestamp: new Date().toISOString(),
       stack: this.stack(exception.stack),
     };
   }
@@ -103,8 +104,8 @@ export class ExceptionService {
       name: exception.name,
       message: message,
       status: exception.status,
-      // type: 'helper',
       type: ErrorService.name,
+      timestamp: new Date().toISOString(),
       stack: this.stack(exception.stack),
     };
   }
@@ -114,8 +115,8 @@ export class ExceptionService {
       name: exception.name,
       message: exception.message,
       status: 500,
-      // type: 'error',
       type: Error.name,
+      timestamp: new Date().toISOString(),
       stack: this.stack(exception.stack),
     };
   }
@@ -125,7 +126,8 @@ export class ExceptionService {
       name: 'UnknownException',
       message: exception,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      type: 'unknown',
+      type: typeof exception,
+      timestamp: new Date().toISOString(),
       stack: this.stack(new Error().stack),
     };
   }

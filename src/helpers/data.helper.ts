@@ -45,19 +45,15 @@ class DataSingleton {
     return result;
   }
 
-  public isClass(data: unknown): boolean {
-    return typeof data === 'object' && data !== null && Object.getPrototypeOf(data) !== Object.prototype;
+  public isInstanceObject(data: unknown): boolean {
+    return this.isPlainObject(data) && Object.getPrototypeOf(data) !== Object.prototype;
   }
 
-  public isEmptyObject(object: unknown): boolean {
-    return object instanceof Object && object.constructor === Object && Object.keys(object).length === 0;
+  public isEmptyObject(data: unknown): boolean {
+    return this.isPlainObject(data) && Object.keys(data as object).length === 0;
   }
 
-  public isPlainObject(object: unknown): boolean {
-    return object instanceof Object && object.constructor === Object;
-  }
-
-  public isObject(data: unknown): boolean {
+  public isPlainObject(data: unknown): boolean {
     if (Array.isArray(data)) {
       return false;
     } else if (data instanceof Date) {
@@ -83,7 +79,7 @@ class DataSingleton {
         return true;
       } else if (options?.zeroNumber && data === 0) {
         return true;
-      } else if (options?.emptyObject && this.isObject(data)) {
+      } else if (options?.emptyObject && this.isPlainObject(data)) {
         return this.isEmptyObject(data);
       } else if (options?.emptyArray && Array.isArray(data)) {
         return data.length === 0;
@@ -101,11 +97,11 @@ class DataSingleton {
         .filter((item) => {
           return !isEmpty(item, { ...options, nullValue: false, zeroNumber: false, emptyString: false });
         }) as Data;
-    } else if (this.isObject(data)) {
+    } else if (this.isPlainObject(data)) {
       return Object.entries(data as Record<keyof Data, Data>).reduce((acc, [key, value]) => {
         if (options.exclude?.includes(key)) {
           return acc;
-        } else if (this.isObject(value)) {
+        } else if (this.isPlainObject(value)) {
           const result = options.recursive ? this.filter(value as Data, options) : value;
           if (options.only && !options.only.includes(key as keyof Data)) {
             return { ...acc, [key]: result };

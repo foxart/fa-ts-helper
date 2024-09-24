@@ -30,21 +30,21 @@ const objectEmptyValues = {
 const objectValues = {
   number: 1,
   string: 'string',
-  array: [1, 'string', Object.values(objectEmptyValues)],
-  object: { keyNumber: 1, keyString: '2' },
+  array: [1, 'string', new ValueClass()],
+  object: { keyNumber: 1, keyString: '2', class: new ValueClass() },
   objectId: new ObjectId(),
   date: new Date(),
   regex: new RegExp('/.+/g'),
   valueClass: new ValueClass(),
 };
 
-function testMapObjectKeyValue(): object {
+function testMapObjectKeys(): object {
   const data = { ...objectEmptyValues, valueObject: { ...objectEmptyValues, ...objectValues } };
-  return ConverterHelper.mapObjectKeyValue(
-    (key, value) => {
-      return [`${key}_MAPPED`, value];
-    },
+  return ConverterHelper.mapObjectKeys(
     data,
+    (key) => {
+      return `MAPPED_${key}_MAPPED`;
+    },
     true,
   );
 }
@@ -87,8 +87,8 @@ function testSeparator(): object {
   };
 }
 
-export function ConverterExample(): void {
+export function run(): void {
   console.clear();
-  console.log(testMapObjectKeyValue());
-  console.log(testSeparator());
+  console.log(testMapObjectKeys());
+  // console.log(testSeparator());
 }

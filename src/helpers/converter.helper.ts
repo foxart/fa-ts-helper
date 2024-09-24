@@ -10,22 +10,58 @@ class ConverterSingleton {
     return ConverterSingleton.self;
   }
 
-  public mapObjectKeyValue<Type>(
-    callback: (key: keyof Type, value: unknown) => [string, unknown],
-    obj: Type,
+  public mapObjectKeyValue<ObjectType>(
+    obj: ObjectType,
+    callback: (key: keyof ObjectType, value: unknown) => [string, unknown],
     recursive?: boolean,
-  ): Type {
+  ): ObjectType {
     return Object.fromEntries(
-      Object.entries(obj as Record<keyof Type, unknown>).map(([key, value]) => {
-        const [newKey, newValue] = callback(key as keyof Type, value);
+      Object.entries(obj as Record<keyof ObjectType, unknown>).map(([key, value]) => {
+        const [newKey, newValue] = callback(key as keyof ObjectType, value);
         return [
           newKey,
-          recursive && DataHelper.isObject(newValue)
-            ? this.mapObjectKeyValue(callback, newValue as Type, recursive)
+          recursive && DataHelper.isPlainObject(newValue)
+            ? this.mapObjectKeyValue(newValue as ObjectType, callback, recursive)
             : newValue,
         ];
       }),
-    ) as Type;
+    ) as ObjectType;
+  }
+
+  public mapObjectKeys<ObjectType>(
+    obj: ObjectType,
+    callback: (key: string) => string,
+    recursive?: boolean,
+  ): ObjectType {
+    return Object.fromEntries(
+      Object.entries(obj as Record<keyof ObjectType, unknown>).map(([key, value]) => {
+        const newKey = callback(key);
+        return [
+          newKey,
+          recursive && DataHelper.isPlainObject(value)
+            ? this.mapObjectKeys(value as ObjectType, callback, recursive)
+            : value,
+        ];
+      }),
+    ) as ObjectType;
+  }
+
+  public mapDataValues<ObjectType, ValueType>(
+    obj: ObjectType,
+    callback: (value: unknown) => ValueType,
+    recursive?: boolean,
+  ): Record<keyof ObjectType, ValueType> {
+    return Object.fromEntries(
+      Object.entries(obj as Record<keyof ObjectType, unknown>).map(([key, value]) => {
+        const newValue = callback(value);
+        return [
+          key,
+          recursive && DataHelper.isPlainObject(newValue)
+            ? this.mapDataValues(newValue, callback, recursive)
+            : newValue,
+        ];
+      }),
+    ) as Record<keyof ObjectType, ValueType>;
   }
 
   // public dateToSting(date: Date): string {

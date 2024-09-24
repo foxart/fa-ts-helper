@@ -76,7 +76,7 @@ function testIsClass(): object {
   const data = { ...objectEmptyValues, ...objectValues };
   const result = Object.entries(data).reduce(
     (acc, [key, value]) => {
-      acc[key] = DataHelper.isClass(value);
+      acc[key] = DataHelper.isInstanceObject(value);
       return acc;
     },
     {} as Record<string, boolean>,
@@ -88,7 +88,7 @@ function testIsObject(): object {
   const data = { ...objectEmptyValues, ...objectValues };
   const result = Object.entries(data).reduce(
     (acc, [key, value]) => {
-      acc[key] = DataHelper.isObject(value);
+      acc[key] = DataHelper.isPlainObject(value);
       return acc;
     },
     {} as Record<string, boolean>,

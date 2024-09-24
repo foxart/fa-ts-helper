@@ -52,10 +52,16 @@ initCatch();
 initConsole();
 // CodegenHelperExample();
 // ConsoleServiceExample();
-// void import('./data.example').then((module) => module.DataExample());
-// parserExample();
+/**
+ * Converter Helper
+ */
+void import('./converter-helper.example').then((module) => module.run());
 /**
  * Decorator Service
  */
-void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
+// void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
 // void import('./decorator-service/decorator-service.example').then((module) => module.runAsync());
+/**
+ * Validator Service
+ */
+// void import('./validator-service.example').then((module) => module.run());
