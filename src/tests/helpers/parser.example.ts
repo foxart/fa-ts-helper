@@ -1,5 +1,4 @@
-import { ParserHelper } from '../index';
-import path from 'path';
+import { ParserHelper } from '../../index';
 
 export function parserExample(): void {
   // console.error(new Error('My Error'));

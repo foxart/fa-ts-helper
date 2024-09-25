@@ -45,22 +45,21 @@ export function initConsole(): void {
   };
 }
 
-/**
- *
- */
 initCatch();
 initConsole();
-// CodegenHelperExample();
-// ConsoleServiceExample();
 /**
  * Converter Helper
  */
-void import('./converter-helper.example').then((module) => module.run());
+// void import('./converter-helper.example').then((module) => module.run());
 /**
  * Decorator Service
  */
 // void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
 // void import('./decorator-service/decorator-service.example').then((module) => module.runAsync());
+/**
+ * Exception Service
+ */
+void import('./services/exception-service.example').then((module) => module.run());
 /**
  * Validator Service
  */

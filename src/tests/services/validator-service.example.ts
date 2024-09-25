@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
-import { DataHelper } from '../helpers/data.helper';
-import { ConverterHelper } from '../helpers/converter.helper';
+import { DataHelper } from '../../helpers/data.helper';
+import { ConverterHelper } from '../../helpers/converter.helper';
 
 class ObjectId {
   private readonly id: string;

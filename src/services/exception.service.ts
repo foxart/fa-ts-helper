@@ -3,13 +3,21 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorService } from './error.service';
 import { ParserHelper } from '../helpers/parser.helper';
 
-interface ExceptionInterface {
+export interface ExceptionInterface {
   name: string;
   message: unknown;
+  type: ExceptionTypeEnum;
   status: number;
-  type: string;
   timestamp: string;
   stack: string[];
+}
+
+export enum ExceptionTypeEnum {
+  'HTTP' = 'Http Exception',
+  'GRAPHQL' = 'Graphql Exception',
+  'RPC' = 'Rpc Exception',
+  'WS' = 'WebSocket Exception',
+  'UNKNOWN' = 'Unknown Exception',
 }
 
 interface ExceptionOptionInterface {
@@ -18,6 +26,8 @@ interface ExceptionOptionInterface {
   callback?: (stack: string[]) => string[];
 }
 
+type ExceptionContextType = 'http' | 'graphql' | 'rpc' | 'ws';
+
 export class ExceptionService {
   public readonly options?: ExceptionOptionInterface;
 
@@ -25,23 +35,44 @@ export class ExceptionService {
     this.options = options;
   }
 
-  public parse(exception: unknown): ExceptionInterface {
+  public parse(exception: unknown, context: ExceptionContextType): ExceptionInterface {
+    const type = this.getType(context);
     let result;
     if (exception instanceof HttpException) {
-      result = this.parseHttpException(exception);
+      result = this.parseHttpException(exception, type);
     } else if (exception instanceof mongoose.mongo.MongoError) {
-      result = this.parseMongoException(exception);
+      result = this.parseMongoException(exception, type);
     } else if (exception instanceof ErrorService) {
-      result = this.parseErrorHelperException(exception);
+      result = this.parseErrorServiceException(exception, type);
     } else if (exception instanceof Error) {
-      result = this.parseErrorException(exception);
+      result = this.parseErrorException(exception, type);
     } else {
-      result = this.parseUnknownException(exception);
+      result = this.parseUnknownException(exception, type);
     }
     return result;
   }
 
-  private stack(stack?: string): string[] {
+  private getType(context: ExceptionContextType): ExceptionTypeEnum {
+    switch (context) {
+      case 'http': {
+        return ExceptionTypeEnum.HTTP;
+      }
+      case 'graphql': {
+        return ExceptionTypeEnum.GRAPHQL;
+      }
+      case 'rpc': {
+        return ExceptionTypeEnum.RPC;
+      }
+      case 'ws': {
+        return ExceptionTypeEnum.WS;
+      }
+      default: {
+        return ExceptionTypeEnum.UNKNOWN;
+      }
+    }
+  }
+
+  private getStack(stack?: string): string[] {
     const result = ParserHelper.stack(stack, {
       short: this.options?.short,
       index: this.options?.index,
@@ -53,19 +84,19 @@ export class ExceptionService {
     }
   }
 
-  private parseHttpException(exception: HttpException): ExceptionInterface {
+  private parseHttpException(exception: HttpException, type: ExceptionTypeEnum): ExceptionInterface {
     const response = exception.getResponse();
     return {
       name: typeof response === 'string' ? response : exception.name,
       message: typeof response === 'object' ? response : exception.message,
+      type: type,
       status: exception.getStatus(),
-      type: HttpException.name,
       timestamp: new Date().toISOString(),
-      stack: this.stack(exception.stack),
+      stack: this.getStack(exception.stack),
     };
   }
 
-  private parseMongoException(exception: mongoose.mongo.MongoError): ExceptionInterface {
+  private parseMongoException(exception: mongoose.mongo.MongoError, type: ExceptionTypeEnum): ExceptionInterface {
     let message;
     switch (exception.code) {
       case 11000:
@@ -86,49 +117,50 @@ export class ExceptionService {
     return {
       name: exception.name,
       message: message,
+      type: type,
       status: HttpStatus.BAD_REQUEST,
-      type: mongoose.mongo.MongoError.name,
       timestamp: new Date().toISOString(),
-      stack: this.stack(exception.stack),
+      stack: this.getStack(exception.stack),
     };
   }
 
-  private parseErrorHelperException(exception: ErrorService): ExceptionInterface {
+  private parseErrorServiceException(exception: ErrorService, type: ExceptionTypeEnum): ExceptionInterface {
     let message;
     try {
       message = JSON.parse(exception.message) as unknown;
     } catch (err) {
       message = exception.message;
     }
+    // exception.status
     return {
       name: exception.name,
       message: message,
+      type: type,
       status: exception.status,
-      type: ErrorService.name,
       timestamp: new Date().toISOString(),
-      stack: this.stack(exception.stack),
+      stack: this.getStack(exception.stack),
     };
   }
 
-  private parseErrorException(exception: Error): ExceptionInterface {
+  private parseErrorException(exception: Error, type: ExceptionTypeEnum): ExceptionInterface {
     return {
       name: exception.name,
       message: exception.message,
-      status: 500,
-      type: Error.name,
+      type: type,
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
       timestamp: new Date().toISOString(),
-      stack: this.stack(exception.stack),
+      stack: this.getStack(exception.stack),
     };
   }
 
-  private parseUnknownException(exception: unknown): ExceptionInterface {
+  private parseUnknownException(exception: unknown, type: ExceptionTypeEnum): ExceptionInterface {
     return {
-      name: 'UnknownException',
+      name: ExceptionService.name,
       message: exception,
+      type: type,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
-      type: typeof exception,
       timestamp: new Date().toISOString(),
-      stack: this.stack(new Error().stack),
+      stack: this.getStack(new Error().stack),
     };
   }
 }

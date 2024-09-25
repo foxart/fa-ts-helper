@@ -7,8 +7,7 @@
   "homepage": "https://github.com/foxart/fa-node",
   "private": false,
   "scripts": {
-    "start": "nodemon -e ts --watch src --watch example -x ts-node src/examples/index.ts",
-    "example": "nodemon -e ts --watch src --watch example -x ts-node src/examples/example.ts",
+    "start": "nodemon -e ts --watch src --watch example -x ts-node src/tests/index.ts",
     "prebuild": "rimraf dist",
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint -c .eslintrc.js \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -47,6 +46,7 @@
     "@nestjs/common": "^10.3.7",
     "@types/bcryptjs": "^2.4.6",
     "@types/crypto-js": "^4.2.2",
+    "@types/graphql": "^14.5.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
     "@types/uuid": "^9.0.8",

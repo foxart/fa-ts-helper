@@ -1,4 +1,4 @@
-import { initConsole } from './index';
+import { initConsole } from '../index';
 
 export function ConsoleServiceExample(): void {
   initConsole();

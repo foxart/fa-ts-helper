@@ -1,10 +1,10 @@
-import { ExceptionService } from '../index';
+import { ExceptionService } from '../../index';
 
-export function exceptionExample(): void {
+export function run(): void {
   try {
     // @ts-ignore
     a = 1;
-  } catch (e: unknown) {
+  } catch (err: unknown) {
     const exceptionHelper = new ExceptionService({
       short: true,
       callback: (stack: string[]): string[] => {
@@ -13,7 +13,8 @@ export function exceptionExample(): void {
         });
       },
     });
-    const result = exceptionHelper.parse(e);
+    // const result = exceptionHelper.parse(new mongoose.mongo.MongoError('XXX'));
+    const result = exceptionHelper.parse(err, 'rpc');
     console.log(result);
   }
 }
