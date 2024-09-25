@@ -246,7 +246,7 @@ export class DecoratorService {
           return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorValue)(...args);
         };
         Object.getOwnPropertyNames(descriptorValue).forEach((property) => {
-          Object.defineProperty(descriptor.value, property, { value: property });
+          Object.defineProperty(descriptor.value, property, { value: propertyKey });
         });
       }
       if (descriptor.get) {

@@ -113,9 +113,9 @@ export function runSync(): void {
   const keyDto: DecoratorServiceParamKeyDto = { key: 'key' };
   const valueDto: DecoratorServiceParamValueDto = { value: 1 };
   // console.error(decoratorServiceAsync.testSyncArray(keyDto, valueDto));
-  // console.error(decoratorServiceAsync.testSync(keyDto, valueDto));
-  decoratorServiceAsync.setTestSync = keyDto;
-  console.error(decoratorServiceAsync.getTestSync);
+  console.error(decoratorServiceAsync.testSync(keyDto, valueDto));
+  // decoratorServiceAsync.setTestSync = keyDto;
+  // console.error(decoratorServiceAsync.getTestSync);
 }
 
 export async function runAsync(): Promise<void> {

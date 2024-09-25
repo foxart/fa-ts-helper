@@ -54,12 +54,12 @@ initConsole();
 /**
  * Decorator Service
  */
-// void import('./decorator-service/decorator-service.example').then((module) => module.runSync());
-// void import('./decorator-service/decorator-service.example').then((module) => module.runAsync());
+void import('./services/decorator-service.example').then((module) => module.runSync());
+// void import('./services/decorator-service.example').then((module) => module.runAsync());
 /**
  * Exception Service
  */
-void import('./services/exception-service.example').then((module) => module.run());
+// void import('./services/exception-service.example').then((module) => module.run());
 /**
  * Validator Service
  */
