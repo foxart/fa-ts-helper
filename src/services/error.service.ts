@@ -23,8 +23,9 @@ export class ErrorService extends Error {
       this.stack = error.stack ? error.stack : this.stack;
     } else {
       this.name = error.name;
-      this.message =
-        typeof error.message === 'object' ? ConverterHelper.dataToJson(error.message) : String(error.message);
+      // this.message =
+      //   typeof error.message === 'object' ? ConverterHelper.dataToJson(error.message) : String(error.message);
+      this.message = <string>error.message;
       this.status = error.status ?? 500;
       this.stack = error.stack ? error.stack : this.stack;
     }

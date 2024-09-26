@@ -12,7 +12,7 @@ export interface ExceptionInterface {
 }
 
 interface ExceptionOptionInterface {
-  short?: boolean;
+  full?: boolean;
   callback?: (stack: string[]) => string[];
 }
 
@@ -41,7 +41,7 @@ export class ExceptionService {
   }
 
   private getStack(stack?: string): string[] {
-    const result = ParserHelper.stack(stack, { full: this.options?.short });
+    const result = ParserHelper.stack(stack, { full: this.options?.full });
     if (this.options?.callback) {
       return this.options.callback(result);
     } else {
@@ -88,15 +88,15 @@ export class ExceptionService {
   }
 
   private parseErrorServiceException(exception: ErrorService): ExceptionInterface {
-    let message;
-    try {
-      message = JSON.parse(exception.message) as unknown;
-    } catch (err) {
-      message = exception.message;
-    }
+    // let message;
+    // try {
+    //   message = JSON.parse(exception.message) as unknown;
+    // } catch (err) {
+    //   message = exception.message;
+    // }
     return {
       name: exception.name,
-      message: message,
+      message: exception.message,
       status: exception.status,
       timestamp: new Date().toISOString(),
       stack: this.getStack(exception.stack),

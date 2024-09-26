@@ -17,18 +17,19 @@ export function initConsole(): void {
   const Console = new ConsoleService({
     name: 'CONTEXT',
     color: true,
+    info: true,
     counter: true,
     date: true,
-    link: true,
-    info: true,
     performance: true,
+    link: true,
+    /** */
+    stackIndex: 2,
+    stackShow: true,
+    // stackFull: true,
+    /** */
     dataColor: true,
     dataSort: true,
     // dataType: true,
-    stackIndex: 2,
-    stackDebug: true,
-    // stackDebugFull: true,
-    // stackErrorFull: true,
   });
   console.log = (...args: unknown[]): void => {
     Console.log(...args);

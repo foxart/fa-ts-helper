@@ -6,7 +6,6 @@ export function run(): void {
     a = 1;
   } catch (err: unknown) {
     const exceptionHelper = new ExceptionService({
-      short: true,
       callback: (stack: string[]): string[] => {
         return stack.filter((item) => {
           return item.indexOf('node_modules/@nestjs') !== -1 || item.indexOf('node_modules') === -1;

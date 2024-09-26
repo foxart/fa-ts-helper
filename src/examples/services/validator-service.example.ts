@@ -51,8 +51,14 @@ export function run(): void {
   const dto = new TestDto();
   dto.fieldArray = [test1, test2, test3];
   dto.fieldString = 'LOREM';
-  const errors = validator.errorsSync(dto);
-  console.error(new Error('XXX'));
-  console.debug(errors);
-  // console.log({ a: 1 });
+  // const errors = validator.errorsSync(dto);
+  // console.error(errors);
+  const error = new ErrorService({
+    name: 'myError',
+    message: {
+      a: 1,
+    },
+  });
+  console.info(error);
+  console.error(new Error('myError'));
 }
