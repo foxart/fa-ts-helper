@@ -1,67 +1,58 @@
-import { IsOptional, IsString } from 'class-validator';
-import { DataHelper } from '../../helpers/data.helper';
-import { ConverterHelper } from '../../helpers/converter.helper';
+import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { ValidatorService } from '../../services/validator.service';
+import { Type } from 'class-transformer';
+import { ErrorService } from '../../services/error.service';
 
-class ObjectId {
-  private readonly id: string;
+enum TestEnum {
+  A,
+  B,
+}
 
-  public constructor() {
-    this.id = '65aa4ceac632b427f4311ad3';
-  }
-
-  public toString(): string {
-    return this.id;
-  }
+class TestItemDto {
+  @IsString()
+  public key: string;
 }
 
 class TestDto {
-  @IsOptional()
   @IsString()
-  public id?: string;
-}
+  @IsNotEmpty()
+  @MinLength(3)
+  public fieldString: string;
 
-function splitObjectByTrueFalse(obj: { [key: string]: boolean }): {
-  trueValues: { [key: string]: boolean };
-  falseValues: { [key: string]: boolean };
-} {
-  const trueValues: { [key: string]: boolean } = {};
-  const falseValues: { [key: string]: boolean } = {};
-  for (const key in obj) {
-    if (obj[key]) {
-      trueValues[key] = obj[key];
-    } else {
-      falseValues[key] = obj[key];
-    }
-  }
-  return { trueValues, falseValues };
+  @IsEnum(TestEnum)
+  public fieldEnum: TestEnum;
+
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TestItemDto)
+  public fieldArray: TestItemDto[];
 }
 
 export function run(): void {
+  const validator = new ValidatorService({
+    forbidNonWhitelisted: true,
+    forbidUnknownValues: true,
+    whitelist: true,
+  });
+  const test1 = new TestItemDto();
+  test1.key = '123';
+  /** */
+  const test2 = new TestItemDto();
+  test2.key = 'lorem';
+  /** */
+  const test3 = new TestItemDto();
+  // @ts-ignore
+  test3.value = 'ipsum';
+  test3.key = 'ipsum';
+  /**
+   *
+   */
   const dto = new TestDto();
-  dto.id = 'ID';
-  const testData = {
-    undefined: undefined,
-    null: null,
-    zeroNumber: 0,
-    emptyString: '',
-    emptyArray: [],
-    emptyObject: {},
-    emptyClass: new TestDto(),
-    number: 1,
-    string: 'string',
-    array: [1, 'string'],
-    object: { keyNumber: 1, keyString: '2' },
-    class: dto,
-    objectId: new ObjectId(),
-    date: new Date(),
-    regex: new RegExp('/.+/g'),
-  };
-  // console.log(splitObjectByTrueFalse(checkIsClass(testData)));
-  console.log(
-    splitObjectByTrueFalse(
-      ConverterHelper.mapDataValues(testData, (value) => {
-        return DataHelper.isInstanceObject(value);
-      }),
-    ),
-  );
+  dto.fieldArray = [test1, test2, test3];
+  dto.fieldString = 'LOREM';
+  const errors = validator.errorsSync(dto);
+  console.error(new Error('XXX'));
+  console.debug(errors);
+  // console.log({ a: 1 });
 }

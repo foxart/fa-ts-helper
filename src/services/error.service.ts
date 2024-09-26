@@ -1,6 +1,6 @@
 import { ConverterHelper } from '../helpers/converter.helper';
 
-interface ErrorHelperInterface {
+interface ErrorServiceInterface {
   name: string;
   message: unknown;
   status?: number;
@@ -10,7 +10,7 @@ interface ErrorHelperInterface {
 export class ErrorService extends Error {
   public readonly status: number;
 
-  public constructor(error: string | Error | ErrorHelperInterface) {
+  public constructor(error: string | Error | ErrorServiceInterface) {
     super();
     if (typeof error === 'string') {
       this.name = ErrorService.name;
@@ -23,7 +23,8 @@ export class ErrorService extends Error {
       this.stack = error.stack ? error.stack : this.stack;
     } else {
       this.name = error.name;
-      this.message = typeof error.message === 'string' ? error.message : ConverterHelper.dataToJson(error.message);
+      this.message =
+        typeof error.message === 'object' ? ConverterHelper.dataToJson(error.message) : String(error.message);
       this.status = error.status ?? 500;
       this.stack = error.stack ? error.stack : this.stack;
     }

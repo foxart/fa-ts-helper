@@ -69,9 +69,13 @@ interface SymbolInterface {
 
 class ConsoleColorSingleton {
   private static self: ConsoleColorSingleton;
+
   public readonly effect: EffectInterface;
+
   public readonly foreground: ForegroundInterface;
+
   public readonly background: BackgroundInterface;
+
   public readonly symbol: SymbolInterface;
 
   private constructor() {
@@ -119,13 +123,8 @@ class ConsoleColorSingleton {
     return ConsoleColorSingleton.self;
   }
 
-  public colorize(data: string | string[], colors: ColorHelperEnum | ColorHelperEnum[]): string {
-    const result = (Array.isArray(colors) ? colors : [colors]).reduce(
-      (acc, value) => {
-        return `${value}${acc}`;
-      },
-      Array.isArray(data) ? data.join('') : data,
-    );
+  public wrapData(data: string, colors: ColorHelperEnum | ColorHelperEnum[]): string {
+    const result = (Array.isArray(colors) ? colors : [colors]).reduce((acc, value) => `${value}${acc}`, data);
     return `${this.effect.reset}${result}${this.effect.reset}`;
   }
 }

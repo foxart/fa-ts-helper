@@ -14,7 +14,7 @@ export function run(): void {
       },
     });
     // const result = exceptionHelper.parse(new mongoose.mongo.MongoError('XXX'));
-    const result = exceptionHelper.parse(err, 'rpc');
+    const result = exceptionHelper.parse(err);
     console.log(result);
   }
 }

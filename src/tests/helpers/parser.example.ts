@@ -11,7 +11,7 @@ export function parserExample(): void {
     '    at Object.createBooking (/Users/ivankosenko/Projects/pet/fa-node/node_modules/@nestjs/core/helpers/external-proxy.js:14:42)\n' +
     '    at processTicksAndRejections (node:internal/process/task_queues:95:5)';
   // console.log({ stack: stack });
-  console.log({ parse: ParserHelper.stack(stack, { short: true }) });
+  console.log({ parse: ParserHelper.stack(stack, { full: true }) });
   /**
    *
    */

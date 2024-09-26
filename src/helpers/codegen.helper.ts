@@ -18,34 +18,34 @@ class CodegenSingleton {
   }
 
   public message(name: string, msg: string): void {
-    const result = [ColorHelper.colorize([' ', name.toUpperCase(), ' '], background.cyan)];
+    const result = [ColorHelper.wrapData(` ${name.toUpperCase()} `, background.cyan)];
     if (msg) {
-      result.push(ColorHelper.colorize([' ', msg], foreground.cyan), ' ');
+      result.push(ColorHelper.wrapData(` ${msg}`, foreground.cyan), ' ');
     }
     console.log(result.join(''));
   }
 
   public success(name: string, msg: string): void {
     const result = [
-      ColorHelper.colorize(name, foreground.white),
+      ColorHelper.wrapData(name, foreground.white),
       ' ',
-      ColorHelper.colorize(symbol.success, [effect.bright, foreground.green]),
+      ColorHelper.wrapData(symbol.success, [effect.bright, foreground.green]),
       ' ',
-      ColorHelper.colorize(msg, [effect.dim, foreground.green]),
+      ColorHelper.wrapData(msg, [effect.dim, foreground.green]),
     ];
     console.log(result.join(''));
   }
 
   public error(name: string, msg: string, err: Error): void {
     const result = [
-      ColorHelper.colorize(name, foreground.white),
+      ColorHelper.wrapData(name, foreground.white),
       ' ',
-      ColorHelper.colorize(symbol.error, [effect.bright, foreground.red]),
+      ColorHelper.wrapData(symbol.error, [effect.bright, foreground.red]),
       ' ',
-      ColorHelper.colorize(msg, [effect.dim, foreground.red]),
+      ColorHelper.wrapData(msg, [effect.dim, foreground.red]),
     ];
     if (err) {
-      result.push(' ', ColorHelper.colorize(err.message ?? err.name, foreground.red));
+      result.push(' ', ColorHelper.wrapData(err.message ?? err.name, foreground.red));
     }
     console.log(result.join(''));
   }
@@ -57,9 +57,9 @@ class CodegenSingleton {
         this.error('fetch', host, new Error(response.statusText));
         return null;
       }
-      const json = await response.json();
+      const json = (await response.json()) as unknown;
       this.success('fetch', host);
-      return json as unknown;
+      return json;
     } catch (err) {
       this.error('fetch', host, err as Error);
       return null;

@@ -2,11 +2,13 @@ import { ConsoleService } from '../index';
 import process from 'process';
 
 export function initCatch(): void {
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('unhandledRejection', reason, promise);
+  process.on('uncaughtException', (error) => {
+    console.error('uncaughtException', error);
   });
-  process.on('uncaughtException', (err, origin) => {
-    console.error('uncaughtException', err, origin);
+  process.on('unhandledRejection', (reason, promise) => {
+    void promise.catch(() => {
+      console.error('unhandledRejection', reason);
+    });
   });
 }
 
@@ -17,31 +19,36 @@ export function initConsole(): void {
     color: true,
     counter: true,
     date: true,
-    info: true,
     link: true,
-    index: 2,
-    // hidden: true,
-    // performance: true,
+    info: true,
+    performance: true,
+    dataColor: true,
+    dataSort: true,
+    // dataType: true,
+    stackIndex: 2,
+    stackDebug: true,
+    // stackDebugFull: true,
+    // stackErrorFull: true,
   });
   console.log = (...args: unknown[]): void => {
     Console.log(...args);
-    Console.stdout('\n');
+    process.stdout.write('\n');
   };
   console.info = (...args: unknown[]): void => {
     Console.info(...args);
-    Console.stdout('\n');
+    process.stdout.write('\n');
   };
   console.warn = (...args: unknown[]): void => {
     Console.warn(...args);
-    Console.stdout('\n');
+    process.stdout.write('\n');
   };
   console.error = (...args: unknown[]): void => {
     Console.error(...args);
-    Console.stdout('\n');
+    process.stdout.write('\n');
   };
   console.debug = (...args: unknown[]): void => {
     Console.debug(...args);
-    Console.stdout('\n');
+    process.stdout.write('\n');
   };
 }
 
@@ -54,7 +61,7 @@ initConsole();
 /**
  * Decorator Service
  */
-void import('./services/decorator-service.example').then((module) => module.runSync());
+// void import('./services/decorator-service.example').then((module) => module.runSync());
 // void import('./services/decorator-service.example').then((module) => module.runAsync());
 /**
  * Exception Service
@@ -63,4 +70,4 @@ void import('./services/decorator-service.example').then((module) => module.runS
 /**
  * Validator Service
  */
-// void import('./validator-service.example').then((module) => module.run());
+void import('./services/validator-service.example').then((module) => module.run());
