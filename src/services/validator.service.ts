@@ -1,6 +1,6 @@
 import { ClassConstructor } from 'class-transformer';
 import { HttpStatus } from '@nestjs/common';
-import { ErrorService } from './error.service';
+import { ErrorClass } from '../classes/error.class';
 import { validate, validateSync, ValidationError, ValidatorOptions } from 'class-validator';
 
 interface ErrorInterface {
@@ -82,8 +82,8 @@ export class ValidatorService {
   //   }, {});
   //   return DataHelper.isEmptyObject(result) ? null : result;
   // }
-  private throwErrors<T>(instance: T, errors: ErrorInterface[] | null): void {
-    throw new ErrorService({
+  private throwErrors<T>(instance: T, errors: ErrorInterface[]): void {
+    throw new ErrorClass({
       name: (instance as ClassConstructor<T>).constructor.name,
       message: errors,
       status: HttpStatus.INTERNAL_SERVER_ERROR,

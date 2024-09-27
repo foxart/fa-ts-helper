@@ -1,13 +1,22 @@
-import { initConsole } from '../index';
+import { DataHelper } from '../../helpers/data.helper';
+import { ErrorClass } from '../../classes/error.class';
 
-export function ConsoleServiceExample(): void {
-  initConsole();
-  const message = 'lorem ipsum';
-  const data = { number: 1, string: message, date: new Date() };
-  const error = new Error('Custom error');
-  console.log(data);
-  console.info(data);
-  console.warn(data);
-  console.error(error);
-  console.debug(data);
+export function run(): void {
+  try {
+    // @ts-ignore
+    data = 1;
+  } catch (e) {
+    // console.log(e);
+  }
+  // console.log(new ErrorService('simple sting'));
+  // console.log(
+  //   new ErrorService({
+  //     name: 'ErrorServiceName',
+  //     message: { a: 1 },
+  //     status: 500,
+  //   }),
+  // );
+  const data = { key1: { key11: {}, key12: { key121: 1 } }, key2: {} };
+  const result = DataHelper.filter(data, { emptyObject: true, recursive: false });
+  console.log(result);
 }

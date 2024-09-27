@@ -1,19 +1,11 @@
-import { ExceptionService } from '../../index';
+import { ExceptionHelper } from '../../index';
 
 export function run(): void {
   try {
-    // @ts-ignore
-    a = 1;
-  } catch (err: unknown) {
-    const exceptionHelper = new ExceptionService({
-      callback: (stack: string[]): string[] => {
-        return stack.filter((item) => {
-          return item.indexOf('node_modules/@nestjs') !== -1 || item.indexOf('node_modules') === -1;
-        });
-      },
-    });
+    // a = 1;
+  } catch (err) {
     // const result = exceptionHelper.parse(new mongoose.mongo.MongoError('XXX'));
-    const result = exceptionHelper.parse(err);
+    const result = ExceptionHelper.castError(err as Error);
     console.log(result);
   }
 }

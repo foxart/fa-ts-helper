@@ -1,7 +1,7 @@
 import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { ValidatorService } from '../../services/validator.service';
 import { Type } from 'class-transformer';
-import { ErrorService } from '../../services/error.service';
+import { ErrorClass } from '../../classes/error.class';
 
 enum TestEnum {
   A,
@@ -53,12 +53,14 @@ export function run(): void {
   dto.fieldString = 'LOREM';
   // const errors = validator.errorsSync(dto);
   // console.error(errors);
-  const error = new ErrorService({
+  const error = new ErrorClass({
     name: 'myError',
     message: {
       a: 1,
     },
+    status: 500,
   });
-  console.info(error);
-  console.error(new Error('myError'));
+  // console.info(error);
+  // console.error(new Error('myError'));
+  console.debug(error);
 }

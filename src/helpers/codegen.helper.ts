@@ -3,9 +3,11 @@ import path from 'path';
 import { promisify } from 'util';
 import { exec as childProcessExec } from 'child_process';
 import { ColorHelper } from './color.helper';
+import { SymbolHelper } from './symbol.helper';
 
 const exec = promisify(childProcessExec);
-const { foreground, background, effect, symbol } = ColorHelper;
+const { status } = SymbolHelper;
+const { foreground, background, effect } = ColorHelper;
 
 class CodegenSingleton {
   private static self: CodegenSingleton;
@@ -18,34 +20,34 @@ class CodegenSingleton {
   }
 
   public message(name: string, msg: string): void {
-    const result = [ColorHelper.wrapData(` ${name.toUpperCase()} `, background.cyan)];
+    const result = [ColorHelper.wrapData(` ${name.toUpperCase()} `, background.CYAN)];
     if (msg) {
-      result.push(ColorHelper.wrapData(` ${msg}`, foreground.cyan), ' ');
+      result.push(ColorHelper.wrapData(` ${msg}`, foreground.CYAN), ' ');
     }
     console.log(result.join(''));
   }
 
   public success(name: string, msg: string): void {
     const result = [
-      ColorHelper.wrapData(name, foreground.white),
+      ColorHelper.wrapData(name, foreground.WHITE),
       ' ',
-      ColorHelper.wrapData(symbol.success, [effect.bright, foreground.green]),
+      ColorHelper.wrapData(status.SUCCESS, [effect.BOLD, foreground.GREEN]),
       ' ',
-      ColorHelper.wrapData(msg, [effect.dim, foreground.green]),
+      ColorHelper.wrapData(msg, [effect.DIM, foreground.GREEN]),
     ];
     console.log(result.join(''));
   }
 
   public error(name: string, msg: string, err: Error): void {
     const result = [
-      ColorHelper.wrapData(name, foreground.white),
+      ColorHelper.wrapData(name, foreground.WHITE),
       ' ',
-      ColorHelper.wrapData(symbol.error, [effect.bright, foreground.red]),
+      ColorHelper.wrapData(status.ERROR, [effect.BOLD, foreground.RED]),
       ' ',
-      ColorHelper.wrapData(msg, [effect.dim, foreground.red]),
+      ColorHelper.wrapData(msg, [effect.DIM, foreground.RED]),
     ];
     if (err) {
-      result.push(' ', ColorHelper.wrapData(err.message ?? err.name, foreground.red));
+      result.push(' ', ColorHelper.wrapData(err.message ?? err.name, foreground.RED));
     }
     console.log(result.join(''));
   }

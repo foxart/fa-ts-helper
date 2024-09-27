@@ -1,12 +1,12 @@
 import * as process from 'process';
 import * as util from 'util';
-import { ColorHelper, ColorHelperEnum } from '../helpers/color.helper';
+import { ColorHelper } from '../helpers/color.helper';
 import { ParserHelper } from '../helpers/parser.helper';
-import { ErrorService } from './error.service';
+import { ErrorClass } from '../classes/error.class';
 
 const { foreground, background, effect } = ColorHelper;
 
-export enum LevelEnum {
+export enum ConsoleLevelEnum {
   LOG,
   INF,
   WRN,
@@ -51,8 +51,7 @@ export class ConsoleService {
 
   public log(...data: unknown[]): void {
     try {
-      const stack = ParserHelper.stack(new Error().stack);
-      this.print(LevelEnum.LOG, stack[this.stackIndex], data);
+      this.print(ConsoleLevelEnum.LOG, ParserHelper.stack(new Error().stack), data);
     } catch (e) {
       this.console.error(e);
     }
@@ -60,8 +59,7 @@ export class ConsoleService {
 
   public info(...data: unknown[]): void {
     try {
-      const stack = ParserHelper.stack(new Error().stack);
-      this.print(LevelEnum.INF, stack[this.stackIndex], data);
+      this.print(ConsoleLevelEnum.INF, ParserHelper.stack(new Error().stack), data);
     } catch (e) {
       this.console.error(e);
     }
@@ -69,8 +67,7 @@ export class ConsoleService {
 
   public warn(...data: unknown[]): void {
     try {
-      const stack = ParserHelper.stack(new Error().stack);
-      this.print(LevelEnum.WRN, stack[this.stackIndex], data);
+      this.print(ConsoleLevelEnum.WRN, ParserHelper.stack(new Error().stack), data);
     } catch (e) {
       this.console.error(e);
     }
@@ -78,8 +75,7 @@ export class ConsoleService {
 
   public error(...data: unknown[]): void {
     try {
-      const stack = ParserHelper.stack(new Error().stack);
-      this.print(LevelEnum.ERR, stack[this.stackIndex], data);
+      this.print(ConsoleLevelEnum.ERR, ParserHelper.stack(new Error().stack), data);
     } catch (e) {
       this.console.error(e);
     }
@@ -88,71 +84,77 @@ export class ConsoleService {
   public debug(...data: unknown[]): void {
     try {
       const stack = ParserHelper.stack(new Error().stack);
-      this.print(LevelEnum.DBG, stack[this.stackIndex], data);
+      this.print(ConsoleLevelEnum.DBG, stack, data);
     } catch (e) {
       this.console.error(e);
     }
   }
 
-  protected print(level: LevelEnum, stack: string, args: unknown[]): void {
+  protected print(level: ConsoleLevelEnum, stack: string[], args: unknown[]): void {
     this.printInfo(level);
     this.printCounter();
     this.printName(level);
     this.printDate();
     args.forEach((item) => {
       if (item instanceof Error) {
-        this.processStdout(this.colorWrapper(item.name, [effect.bright, foreground.cyan]));
-        this.processStdout(this.colorWrapper(': ', this.getForeground(level)));
-        if (item.message) {
-          if (item instanceof ErrorService) {
-            this.processStdout(this.dataWrapper(item.message));
-          } else {
-            this.processStdout(this.colorWrapper(item.message, [effect.reset, foreground.white]));
-          }
-          this.processStdout(' ');
-        }
-        if (this.options.stackShow) {
-          this.printStack(level, ParserHelper.stack(item.stack, { full: this.options.stackFull }));
-        }
+        this.printError(item);
       } else {
         this.processStdout(this.dataWrapper(item));
         this.processStdout(' ');
       }
     });
-    if (level === LevelEnum.DBG) {
+    if (level === ConsoleLevelEnum.DBG) {
       this.printStack(level, ParserHelper.stack(new Error().stack, { full: this.options.stackFull }));
     }
     this.printPerformance();
-    this.printLink(level, stack);
+    this.printLink(level, stack[this.stackIndex]);
     this.processStdout('\n');
+  }
+
+  protected printError(error: Error): void {
+    this.processStdout(this.colorWrapper(error.name, [effect.BOLD, foreground.CYAN]));
+    this.processStdout(this.colorWrapper(': ', foreground.RED));
+    if (error instanceof ErrorClass) {
+      if (typeof error.data === 'string') {
+        this.processStdout(error.data);
+      } else {
+        this.processStdout(this.dataWrapper(error.data));
+      }
+    } else {
+      this.processStdout(error.message);
+    }
+    this.processStdout(' ');
+    if (this.options.stackShow) {
+      this.printStack(ConsoleLevelEnum.ERR, ParserHelper.stack(error.stack, { full: this.options.stackFull }));
+    }
   }
 
   protected printCounter(): void {
     if (this.options.counter) {
       this.counter++;
-      this.processStdout(this.colorWrapper(this.counter.toString(), foreground.cyan));
-      this.processStdout(this.colorWrapper('/', foreground.white));
+      this.processStdout(this.colorWrapper(this.counter.toString(), foreground.CYAN));
+      this.processStdout(this.colorWrapper('/', foreground.WHITE));
     }
   }
 
   protected printDate(): void {
     if (this.options.date) {
       this.processStdout(
-        this.colorWrapper(new Date().toISOString().replace(/T/, ' ').replace(/Z/, ''), [effect.dim, foreground.cyan]),
+        this.colorWrapper(new Date().toISOString().replace(/T/, ' ').replace(/Z/, ''), [effect.DIM, foreground.CYAN]),
       );
       this.processStdout(' ');
     }
   }
 
-  protected printInfo(level: LevelEnum): void {
-    const info = Object.keys(LevelEnum as object)[Object.values(LevelEnum as object).indexOf(level)];
+  protected printInfo(level: ConsoleLevelEnum): void {
+    const info = Object.keys(ConsoleLevelEnum as object)[Object.values(ConsoleLevelEnum as object).indexOf(level)];
     if (this.options.info) {
       this.processStdout(this.colorWrapper(` ${info} `, this.getBackground(level)));
       this.processStdout(' ');
     }
   }
 
-  protected printLink(level: LevelEnum, link: string): void {
+  protected printLink(level: ConsoleLevelEnum, link: string): void {
     if (this.options.link) {
       this.processStdout('\n');
       if (this.options.info) {
@@ -163,78 +165,82 @@ export class ConsoleService {
     }
   }
 
-  protected printName(level: LevelEnum): void {
+  protected printName(level: ConsoleLevelEnum): void {
     if (this.options.name) {
-      this.processStdout(this.colorWrapper('[', [effect.bright, this.getForeground(level)]));
-      this.processStdout(this.colorWrapper(this.options.name, [effect.dim, this.getForeground(level)]));
-      this.processStdout(this.colorWrapper(']', [effect.bright, this.getForeground(level)]));
+      this.processStdout(this.colorWrapper('[', [effect.BOLD, this.getForeground(level)]));
+      this.processStdout(this.colorWrapper(this.options.name, [effect.DIM, this.getForeground(level)]));
+      this.processStdout(this.colorWrapper(']', [effect.BOLD, this.getForeground(level)]));
       this.processStdout(' ');
     }
   }
 
   protected printPerformance(): void {
     if (this.options.performance) {
-      this.processStdout(this.colorWrapper('+', [effect.dim, foreground.cyan]));
+      this.processStdout(this.colorWrapper('+', [effect.DIM, foreground.CYAN]));
       this.processStdout(
-        this.colorWrapper(Math.floor(performance.now() - this.performance).toString(), foreground.cyan),
+        this.colorWrapper(Math.floor(performance.now() - this.performance).toString(), foreground.CYAN),
       );
-      this.processStdout(this.colorWrapper('ms', [effect.dim, foreground.cyan]));
+      this.processStdout(this.colorWrapper('ms', [effect.DIM, foreground.CYAN]));
       this.processStdout(' ');
     }
   }
 
-  protected printStack(level: LevelEnum, stack: string[]): void {
+  protected printStack(level: ConsoleLevelEnum, stack: string[]): void {
     if (this.options.stackShow) {
-      this.processStdout(this.colorWrapper('{', [effect.dim, this.getForeground(level)]));
-      stack.forEach((item) => {
-        this.processStdout('\n');
-        if (this.options.info) {
-          this.processStdout(this.colorWrapper(' at ', [effect.dim, this.getForeground(level)]));
-        } else {
-          this.processStdout('    ');
-        }
-        this.processStdout(item);
-      });
-      this.processStdout(`\n${this.colorWrapper('}', [effect.dim, this.getForeground(level)])}`);
+      this.processStdout(this.colorWrapper('{', [effect.DIM, this.getForeground(level)]));
+      stack
+        .filter((item) => {
+          return item.indexOf('node_modules') === -1;
+        })
+        .forEach((item) => {
+          this.processStdout('\n');
+          if (this.options.info) {
+            this.processStdout(this.colorWrapper(' at ', [effect.DIM, this.getForeground(level)]));
+          } else {
+            this.processStdout('    ');
+          }
+          this.processStdout(item);
+        });
+      this.processStdout(`\n${this.colorWrapper('}', [effect.DIM, this.getForeground(level)])}`);
       this.processStdout(' ');
     }
   }
 
-  protected getBackground(level: LevelEnum): ColorHelperEnum {
+  protected getBackground(level: ConsoleLevelEnum): string {
     switch (level) {
-      case LevelEnum.LOG:
-        return background.green;
-      case LevelEnum.INF:
-        return background.blue;
-      case LevelEnum.WRN:
-        return background.yellow;
-      case LevelEnum.ERR:
-        return background.red;
-      case LevelEnum.DBG:
-        return background.magenta;
+      case ConsoleLevelEnum.LOG:
+        return background.GREEN;
+      case ConsoleLevelEnum.INF:
+        return background.BLUE;
+      case ConsoleLevelEnum.WRN:
+        return background.YELLOW;
+      case ConsoleLevelEnum.ERR:
+        return background.RED;
+      case ConsoleLevelEnum.DBG:
+        return background.MAGENTA;
       default:
-        return background.gray;
+        return background.GRAY;
     }
   }
 
-  protected getForeground(level: LevelEnum): ColorHelperEnum {
+  protected getForeground(level: ConsoleLevelEnum): string {
     switch (level) {
-      case LevelEnum.LOG:
-        return foreground.green;
-      case LevelEnum.INF:
-        return foreground.blue;
-      case LevelEnum.WRN:
-        return foreground.yellow;
-      case LevelEnum.ERR:
-        return foreground.red;
-      case LevelEnum.DBG:
-        return foreground.magenta;
+      case ConsoleLevelEnum.LOG:
+        return foreground.GREEN;
+      case ConsoleLevelEnum.INF:
+        return foreground.BLUE;
+      case ConsoleLevelEnum.WRN:
+        return foreground.YELLOW;
+      case ConsoleLevelEnum.ERR:
+        return foreground.RED;
+      case ConsoleLevelEnum.DBG:
+        return foreground.MAGENTA;
       default:
-        return foreground.gray;
+        return foreground.GRAY;
     }
   }
 
-  protected colorWrapper(data: string, colors: ColorHelperEnum | ColorHelperEnum[]): string {
+  protected colorWrapper(data: string, colors: string | string[]): string {
     if (!this.options.color) {
       return Array.isArray(data) ? data.join('') : data;
     }
