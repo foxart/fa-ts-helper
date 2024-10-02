@@ -84,8 +84,9 @@ export class ValidatorService {
   // }
   private throwErrors<T>(instance: T, errors: ErrorInterface[]): void {
     throw new ErrorClass({
-      name: (instance as ClassConstructor<T>).constructor.name,
-      message: errors,
+      name: this.constructor.name,
+      message: `${(instance as ClassConstructor<T>).constructor.name} validation failed`,
+      details: errors,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
     });
   }

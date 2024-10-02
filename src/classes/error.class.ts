@@ -1,30 +1,31 @@
-interface ErrorClassInterface {
+export interface ErrorClassInterface {
   name: string;
-  message: string | object;
+  message: string;
+  status: number;
+  details?: object;
   stack?: string;
-  status?: number;
 }
 
 export class ErrorClass extends Error {
-  public readonly data: string | object;
+  public readonly details: object;
 
   public readonly status: number;
 
-  public constructor(error: string | Error | ErrorClassInterface) {
+  public constructor(error: ErrorClassInterface) {
     super();
-    if (typeof error === 'string') {
-      this.name = ErrorClass.name;
-      this.data = error;
-      this.status = 500;
-    } else if (error instanceof Error) {
-      this.name = error.name;
-      this.data = error.message;
-      this.status = 500;
-    } else {
-      this.name = error.name;
-      this.data = error.message;
-      this.status = error.status || 500;
-      this.stack = error.stack ? error.stack : this.stack;
+    // if (error instanceof Error) {
+    //   this.name = error.name;
+    //   this.message = error.message;
+    //   this.status = 500;
+    // } else {
+    this.name = error.name;
+    this.message = error.message;
+    this.status = error.status;
+    if (error.details) {
+      this.details = error.details;
     }
+    this.stack = error.stack ? error.stack : this.stack;
   }
+
+  // }
 }

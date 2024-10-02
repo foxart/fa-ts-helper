@@ -5,7 +5,7 @@ export function run(): void {
     // a = 1;
   } catch (err) {
     // const result = exceptionHelper.parse(new mongoose.mongo.MongoError('XXX'));
-    const result = ExceptionHelper.castError(err as Error);
+    const result = ExceptionHelper.castToException(err as Error);
     console.log(result);
   }
 }

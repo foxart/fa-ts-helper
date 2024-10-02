@@ -1,21 +1,34 @@
 import * as mongoose from 'mongoose';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorClass } from '../classes/error.class';
+import { ErrorClass, ErrorClassInterface } from '../classes/error.class';
 
 export enum ExceptionTypeEnum {
   HTTP_EXCEPTION = 'HttpException',
-  MONGO_ERROR = 'MongoError',
-  ERROR_CLASS = 'ErrorClass',
-  ERROR = 'Error',
-  UNKNOWN = 'Unknown',
+  MONGO_ERROR = 'MongoErrorException',
+  ERROR_CLASS = 'ErrorClassException',
+  ERROR = 'ErrorException',
+  UNKNOWN = 'UnknownException',
 }
 
-export interface ExceptionInterface {
-  name: string;
-  data: unknown;
+export interface ExceptionInterface extends ErrorClassInterface {
   type: ExceptionTypeEnum;
-  status: number;
-  stack?: string;
+}
+
+export enum ExceptionResponseContextEnum {
+  'HTTP' = 'Http',
+  'GRAPHQL' = 'Graphql',
+  'RPC' = 'Rpc',
+  'WS' = 'WebSocket',
+  'UNKNOWN' = 'Unknown',
+}
+
+export interface ExceptionResponseInterface extends ErrorClassInterface {
+  context: ExceptionResponseContextEnum;
+  type: ExceptionTypeEnum;
+  trace: string[];
+  timestamp: string;
+  metadata: unknown;
+  payload: Record<string, unknown>;
 }
 
 class ExceptionSingleton {
@@ -28,84 +41,121 @@ class ExceptionSingleton {
     return ExceptionSingleton.self;
   }
 
-  public castError(error: Error | unknown): ExceptionInterface {
+  public castToException(error: Error | unknown): ExceptionInterface {
     let result;
     if (error instanceof HttpException) {
-      result = this.castToHttpException(error);
+      result = this.castHttpException(error);
     } else if (error instanceof mongoose.mongo.MongoError) {
-      result = this.castToMongoError(error);
+      result = this.castMongoError(error);
     } else if (error instanceof ErrorClass) {
-      result = this.castToErrorClass(error);
+      result = this.castErrorClass(error);
     } else if (error instanceof Error) {
-      result = this.castToError(error);
+      result = this.castError(error);
     } else {
-      result = this.castToUnknown(error);
+      result = this.castUnknown(error);
     }
     return result;
   }
 
-  private castToHttpException(exception: HttpException): ExceptionInterface {
+  public isExceptionResponse(exception: unknown): exception is ExceptionResponseInterface {
+    return (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'context' in exception &&
+      'name' in exception &&
+      'message' in exception &&
+      'type' in exception &&
+      'status' in exception &&
+      'trace' in exception &&
+      'payload' in exception &&
+      'metadata' in exception &&
+      'timestamp' in exception &&
+      // Enum checks
+      Object.values(ExceptionResponseContextEnum).includes(exception.context as ExceptionResponseContextEnum) &&
+      Object.values(ExceptionTypeEnum).includes(exception.type as ExceptionTypeEnum) &&
+      // Type checks
+      typeof exception.name === 'string' &&
+      typeof exception.message === 'string' &&
+      typeof exception.status === 'number' &&
+      Array.isArray(exception.trace) &&
+      exception.trace.every((item: unknown) => {
+        return typeof item === 'string';
+      }) &&
+      typeof exception.timestamp === 'string' &&
+      typeof exception.metadata !== 'undefined' &&
+      typeof exception.payload === 'object' &&
+      exception.payload !== null
+    );
+  }
+
+  private castHttpException(exception: HttpException): ExceptionInterface {
     const response = exception.getResponse();
     return {
       name: typeof response === 'string' ? response : exception.name,
-      data: typeof response === 'object' ? response : exception.message,
+      // details: typeof response === 'object' ? response : exception.message,
+      message: exception.message,
+      details: typeof response === 'object' ? response : undefined,
       type: ExceptionTypeEnum.HTTP_EXCEPTION,
       status: exception.getStatus(),
       stack: exception.stack,
     };
   }
 
-  private castToMongoError(exception: mongoose.mongo.MongoError): ExceptionInterface {
-    let message;
+  private castMongoError(exception: mongoose.mongo.MongoError): ExceptionInterface {
+    let details;
     switch (exception.code) {
       case 11000:
-        const field = exception.message.match(/E([0-9]+) (.+) collection: (.+) index: (.+) dup key: ({ .+ })/);
-        message = field
+        const message = exception.message.match(/E([0-9]+) (.+) collection: (.+) index: (.+) dup key: ({ .+ })/);
+        details = message
           ? {
-              error: field[2],
-              code: parseInt(field[1]),
-              collection: field[3],
-              index: field[4],
-              data: field[5],
+              error: message[2],
+              code: parseInt(message[1]),
+              collection: message[3],
+              index: message[4],
+              data: message[5],
             }
-          : exception.message;
+          : undefined;
         break;
       default:
-        message = exception.message;
+        details = undefined;
     }
     return {
       name: exception.name,
-      data: message,
+      message: exception.message,
+      details: details,
       type: ExceptionTypeEnum.MONGO_ERROR,
       status: HttpStatus.BAD_REQUEST,
       stack: exception.stack,
     };
   }
 
-  private castToErrorClass(exception: ErrorClass): ExceptionInterface {
+  private castErrorClass(exception: ErrorClass): ExceptionInterface {
     return {
       name: exception.name,
-      data: exception.data,
+      message: exception.message,
+      details: exception.details,
       type: ExceptionTypeEnum.ERROR_CLASS,
       status: exception.status,
       stack: exception.stack,
     };
   }
 
-  private castToError(exception: Error): ExceptionInterface {
+  private castError(exception: Error): ExceptionInterface {
     return {
       name: exception.name,
-      data: exception.message,
+      message: exception.message,
+      details: undefined,
       type: ExceptionTypeEnum.ERROR,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       stack: exception.stack,
     };
   }
 
-  private castToUnknown(exception: unknown): ExceptionInterface {
+  private castUnknown(exception: unknown): ExceptionInterface {
     return {
       name: ExceptionSingleton.name,
-      data: exception,
+      message: typeof exception === 'string' ? exception : '',
+      details: typeof exception === 'object' && exception !== null ? exception : undefined,
       type: ExceptionTypeEnum.UNKNOWN,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       stack: new Error().stack,

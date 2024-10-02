@@ -96,7 +96,7 @@ export class ConsoleService {
     this.printName(level);
     this.printDate();
     args.forEach((item) => {
-      if (item instanceof Error) {
+      if (item instanceof Error || item instanceof ErrorClass) {
         this.printError(item);
       } else {
         this.processStdout(this.dataWrapper(item));
@@ -104,28 +104,28 @@ export class ConsoleService {
       }
     });
     if (level === ConsoleLevelEnum.DBG) {
-      this.printStack(level, ParserHelper.stack(new Error().stack, { full: this.options.stackFull }));
+      this.printTrace(level, ParserHelper.stack(new Error().stack, { full: this.options.stackFull }));
     }
     this.printPerformance();
     this.printLink(level, stack[this.stackIndex]);
     this.processStdout('\n');
   }
 
-  protected printError(error: Error): void {
+  protected printError(error: Error | ErrorClass): void {
     this.processStdout(this.colorWrapper(error.name, [effect.BOLD, foreground.CYAN]));
     this.processStdout(this.colorWrapper(': ', foreground.RED));
     if (error instanceof ErrorClass) {
-      if (typeof error.data === 'string') {
-        this.processStdout(error.data);
-      } else {
-        this.processStdout(this.dataWrapper(error.data));
+      this.processStdout(error.message);
+      if (error.details) {
+        this.processStdout(' ');
+        this.processStdout(this.dataWrapper(error.details));
       }
     } else {
       this.processStdout(error.message);
     }
     this.processStdout(' ');
     if (this.options.stackShow) {
-      this.printStack(ConsoleLevelEnum.ERR, ParserHelper.stack(error.stack, { full: this.options.stackFull }));
+      this.printTrace(ConsoleLevelEnum.ERR, ParserHelper.stack(error.stack, { full: this.options.stackFull }));
     }
   }
 
@@ -185,10 +185,10 @@ export class ConsoleService {
     }
   }
 
-  protected printStack(level: ConsoleLevelEnum, stack: string[]): void {
+  protected printTrace(level: ConsoleLevelEnum, trace: string[]): void {
     if (this.options.stackShow) {
       this.processStdout(this.colorWrapper('{', [effect.DIM, this.getForeground(level)]));
-      stack
+      trace
         .filter((item) => {
           return item.indexOf('node_modules') === -1;
         })
