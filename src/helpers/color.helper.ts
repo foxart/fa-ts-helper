@@ -1,5 +1,5 @@
-class ConsoleColorSingleton {
-  private static self: ConsoleColorSingleton;
+class ColorSingleton {
+  private static self: ColorSingleton;
 
   public readonly effect = {
     RESET: '\x1b[0m',
@@ -35,11 +35,11 @@ class ConsoleColorSingleton {
     GRAY: '\x1b[100m',
   };
 
-  public static getInstance(): ConsoleColorSingleton {
-    if (!ConsoleColorSingleton.self) {
-      ConsoleColorSingleton.self = new ConsoleColorSingleton();
+  public static getInstance(): ColorSingleton {
+    if (!ColorSingleton.self) {
+      ColorSingleton.self = new ColorSingleton();
     }
-    return ConsoleColorSingleton.self;
+    return ColorSingleton.self;
   }
 
   public wrapData(data: string, colors: string | string[]): string {
@@ -48,4 +48,4 @@ class ConsoleColorSingleton {
   }
 }
 
-export const ColorHelper = ConsoleColorSingleton.getInstance();
+export const ColorHelper = ColorSingleton.getInstance();

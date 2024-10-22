@@ -1,6 +1,6 @@
 import { ClassConstructor, ClassTransformOptions, instanceToPlain, plainToInstance } from 'class-transformer';
 
-export class TransformerService {
+export class TransformerClass {
   public constructor(private readonly config: ClassTransformOptions) {}
 
   public getConfig(): ClassTransformOptions {

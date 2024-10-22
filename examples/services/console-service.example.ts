@@ -1,4 +1,4 @@
-import { ErrorClass } from '../../classes/error.class';
+import { ErrorClass } from '../../src/classes/error.class';
 
 export function run(): void {
   // try {

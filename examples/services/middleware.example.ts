@@ -1,9 +1,9 @@
-import { MiddlewareService } from '../../services/middleware.service';
+import { MiddlewareClass } from '../../src/classes/middleware.class';
 
 function middlewareAddUse(): void {
   const payload1 = { name: 'case 1', data: 1 };
   const payload2 = { name: 'case 1', data: 10 };
-  const middleware = new MiddlewareService<{ name: string; data: number }>();
+  const middleware = new MiddlewareClass<{ name: string; data: number }>();
   middleware.add((payload, next) => {
     next({
       name: payload.name,

@@ -1,7 +1,6 @@
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
-import { ValidatorService } from '../../services/validator.service';
 import { Type } from 'class-transformer';
-import { ErrorClass } from '../../classes/error.class';
+import { IsArray, IsEnum, IsNotEmpty, IsString, MinLength, ValidateNested } from 'class-validator';
+import { ValidatorClass } from '../../src/classes/validator.class';
 
 enum TestEnum {
   A,
@@ -30,7 +29,7 @@ class TestDto {
 }
 
 export function run(): void {
-  const validator = new ValidatorService({
+  const validator = new ValidatorClass({
     forbidNonWhitelisted: true,
     forbidUnknownValues: true,
     whitelist: true,

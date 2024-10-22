@@ -1,4 +1,4 @@
-import { DecoratorService } from '../../services/decorator.service';
+import { DecoratorClass } from '../../src/classes/decorator.class';
 
 abstract class AbstractClass {}
 
@@ -14,10 +14,11 @@ export class DecoratorServiceParamValueDto {
 
 export class DecoratorServiceMethodEntity {
   public key: string;
+
   public value: number;
 }
 
-const Decorator = new DecoratorService('__FA_DECORATOR__');
+const Decorator = new DecoratorClass('__FA_DECORATOR__');
 export const ClassDecorator = (data: string): ClassDecorator => {
   return Decorator.decorateClass({
     data: data,

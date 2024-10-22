@@ -77,7 +77,7 @@ const DESIGN_TYPE = 'design:type';
 const DESIGN_PARAMETER_TYPE_LIST = 'design:paramtypes';
 const DESIGN_RETURN_TYPE = 'design:returntype';
 
-export class DecoratorService {
+export class DecoratorClass {
   private readonly symbol: symbol;
 
   public constructor(symbol: string) {
@@ -142,9 +142,9 @@ export class DecoratorService {
     propertyKey: string | symbol,
     args: unknown[],
   ): unknown[] {
-    const classMetadata = DecoratorService.getClassMetadata(symbol, target);
-    const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
-    const parameterMetadata = DecoratorService.getParameterMetadata(symbol, target, propertyKey);
+    const classMetadata = DecoratorClass.getClassMetadata(symbol, target);
+    const methodMetadata = DecoratorClass.getMethodMetadata(symbol, target, propertyKey);
+    const parameterMetadata = DecoratorClass.getParameterMetadata(symbol, target, propertyKey);
     return args.map((value, index) => {
       return parameterMetadata.has(index)
         ? (parameterMetadata.get(index) as ParameterMetadataInterface[]).reduce(
@@ -179,15 +179,15 @@ export class DecoratorService {
     context: PropertyDescriptor,
     method: FunctionType,
   ): (...args: unknown[]) => unknown | Promise<unknown> {
-    const classMetadata = DecoratorService.getClassMetadata(symbol, target);
-    const methodMetadata = DecoratorService.getMethodMetadata(symbol, target, propertyKey);
+    const classMetadata = DecoratorClass.getClassMetadata(symbol, target);
+    const methodMetadata = DecoratorClass.getMethodMetadata(symbol, target, propertyKey);
     const methodCallbackMetadata: MethodCallbackMetadataInterface = {
       className: target.constructor.name,
       classData: classMetadata?.data,
       methodName: method.name,
       methodData: methodMetadata?.data,
     };
-    return DecoratorService.getDesignMetadata(target, propertyKey).returntype === Promise
+    return DecoratorClass.getDesignMetadata(target, propertyKey).returntype === Promise
       ? async (...args: unknown[]): Promise<unknown> => {
           const beforeArgs =
             methodMetadata?.beforeParameterCallbackMetadata && methodMetadata?.type !== 'GET'
@@ -195,7 +195,7 @@ export class DecoratorService {
               : args;
           const result = await method.apply(
             context,
-            DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
+            DecoratorClass.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
           return methodMetadata?.afterResultCallbackMetadata && methodMetadata?.type !== 'SET'
             ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
@@ -208,7 +208,7 @@ export class DecoratorService {
               : args;
           const result = method.apply(
             context,
-            DecoratorService.handleParameters(symbol, target, propertyKey, beforeArgs),
+            DecoratorClass.handleParameters(symbol, target, propertyKey, beforeArgs),
           );
           return methodMetadata?.afterResultCallbackMetadata && methodMetadata?.type !== 'SET'
             ? methodMetadata.afterResultCallbackMetadata(methodCallbackMetadata, result)
@@ -222,7 +222,7 @@ export class DecoratorService {
       const classMetadata: ClassMetadataInterface = {
         data: data?.data,
       };
-      DecoratorService.setClassMetadata(this.symbol, target, classMetadata);
+      DecoratorClass.setClassMetadata(this.symbol, target, classMetadata);
     };
   }
 
@@ -239,11 +239,11 @@ export class DecoratorService {
         beforeParameterCallbackMetadata: data?.beforeParameterCallback,
         afterResultCallbackMetadata: data?.afterResultCallback,
       };
-      DecoratorService.setMethodMetadata(symbol, target, propertyKey, methodMetadata);
+      DecoratorClass.setMethodMetadata(symbol, target, propertyKey, methodMetadata);
       if (descriptor.value) {
         const descriptorValue = descriptor.value as FunctionType;
         descriptor.value = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorValue)(...args);
+          return DecoratorClass.rewriteDescriptor(symbol, target, propertyKey, this, descriptorValue)(...args);
         };
         Object.getOwnPropertyNames(descriptorValue).forEach((property) => {
           Object.defineProperty(descriptor.value, property, { value: propertyKey });
@@ -252,13 +252,13 @@ export class DecoratorService {
       if (descriptor.get) {
         const descriptorGet = descriptor.get;
         descriptor.get = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorGet)(...args);
+          return DecoratorClass.rewriteDescriptor(symbol, target, propertyKey, this, descriptorGet)(...args);
         };
       }
       if (descriptor.set) {
         const descriptorSet = descriptor.set;
         descriptor.set = function (...args: unknown[]): unknown {
-          return DecoratorService.rewriteDescriptor(symbol, target, propertyKey, this, descriptorSet)(...args);
+          return DecoratorClass.rewriteDescriptor(symbol, target, propertyKey, this, descriptorSet)(...args);
         };
       }
       return descriptor;
@@ -267,7 +267,7 @@ export class DecoratorService {
 
   public decorateParameter(data?: ParameterDecoratorInterface): ParameterDecorator {
     return <T>(target: ConstructableType, propertyKey: string | symbol, parameterIndex: number): T | void => {
-      const designMetadata = DecoratorService.getDesignMetadata(target, propertyKey);
+      const designMetadata = DecoratorClass.getDesignMetadata(target, propertyKey);
       const parameterMetadata: ParameterMetadataInterface = data
         ? {
             name: designMetadata.paramtypes[parameterIndex].name,
@@ -279,7 +279,7 @@ export class DecoratorService {
             name: designMetadata.paramtypes[parameterIndex].name,
             type: designMetadata.paramtypes[parameterIndex],
           };
-      const parameterMetadataMap = DecoratorService.getParameterMetadata(this.symbol, target, propertyKey);
+      const parameterMetadataMap = DecoratorClass.getParameterMetadata(this.symbol, target, propertyKey);
       if (parameterMetadataMap.has(parameterIndex)) {
         parameterMetadataMap.set(parameterIndex, [
           parameterMetadata,
@@ -288,7 +288,7 @@ export class DecoratorService {
       } else {
         parameterMetadataMap.set(parameterIndex, [parameterMetadata]);
       }
-      DecoratorService.setParameterMetadata(this.symbol, target, propertyKey, parameterMetadataMap);
+      DecoratorClass.setParameterMetadata(this.symbol, target, propertyKey, parameterMetadataMap);
     };
   }
 }

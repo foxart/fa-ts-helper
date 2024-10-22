@@ -1,5 +1,5 @@
-import { ConsoleService } from '../index';
 import process from 'process';
+import { ConsoleClass } from '../src';
 
 export function initCatch(): void {
   process.on('uncaughtException', (error) => {
@@ -14,7 +14,7 @@ export function initCatch(): void {
 
 export function initConsole(): void {
   Array.from(Array(15).keys()).forEach(() => console.log('|'));
-  const Console = new ConsoleService({
+  const Console = new ConsoleClass({
     name: 'CONTEXT',
     color: true,
     info: true,
@@ -58,11 +58,15 @@ initConsole();
 /**
  * Console Helper
  */
-void import('./services/console-service.example').then((module) => module.run());
+// void import('./services/console-service.example').then((module) => module.run());
 /**
  * Converter Helper
  */
 // void import('./converter-helper.example').then((module) => module.run());
+/**
+ * Parser Helper
+ */
+void import('./helpers/parser-helper.example').then((module) => module.run());
 /**
  * Decorator Service
  */

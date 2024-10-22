@@ -2,7 +2,7 @@ import * as process from 'process';
 import * as util from 'util';
 import { ColorHelper } from '../helpers/color.helper';
 import { ParserHelper } from '../helpers/parser.helper';
-import { ErrorClass } from '../classes/error.class';
+import { ErrorClass } from './error.class';
 
 const { foreground, background, effect } = ColorHelper;
 
@@ -33,7 +33,7 @@ export interface ConsoleServiceOptionsInterface {
   dataSort?: boolean;
 }
 
-export class ConsoleService {
+export class ConsoleClass {
   public readonly console: Console;
 
   public readonly stackIndex: number;

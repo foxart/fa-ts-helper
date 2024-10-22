@@ -1,3 +1,3 @@
 #!/bin/sh
 
-npm pack --pack-destination packages --omit=dev
+npm pack --pack-destination export --omit=dev

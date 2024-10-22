@@ -1,7 +1,8 @@
-import { ClassConstructor } from 'class-transformer';
 import { HttpStatus } from '@nestjs/common';
-import { ErrorClass } from '../classes/error.class';
+import { ClassConstructor } from 'class-transformer';
 import { validate, validateSync, ValidationError, ValidatorOptions } from 'class-validator';
+import { DataHelper } from '../helpers/data.helper';
+import { ErrorClass } from './error.class';
 
 interface ErrorInterface {
   property?: string;
@@ -9,7 +10,7 @@ interface ErrorInterface {
   constraints?: Record<string, string>[];
 }
 
-export class ValidatorService {
+export class ValidatorClass {
   public constructor(private readonly config: ValidatorOptions = {}) {}
 
   public getConfig(): ValidatorOptions {
@@ -38,6 +39,23 @@ export class ValidatorService {
       this.throwErrors(instance, errors);
     }
     return instance;
+  }
+
+  public toValidateType(type: unknown): boolean {
+    const types: unknown[] = [String, Boolean, Number, Array, Object];
+    return !types.includes(type);
+  }
+
+  public toValidateValue(value: unknown, instances?: unknown[]): boolean {
+    // !(instances || []).some((instance) => {
+    //   return typeof instance === 'function' && value instanceof instance;
+    // });
+    return (
+      DataHelper.isInstanceObject(value) &&
+      !(instances || []).some((instance) => {
+        return value instanceof (instance as ClassConstructor<unknown>);
+      })
+    );
   }
 
   private getError(errorList: ValidationError[]): ErrorInterface[] | null {

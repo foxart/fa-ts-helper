@@ -1,4 +1,4 @@
-import { ConverterHelper } from '../../helpers/converter.helper';
+import { ConverterHelper } from '../../src/helpers/converter.helper';
 
 class EmptyClass {}
 

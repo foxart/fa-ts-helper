@@ -1,4 +1,4 @@
-import { CodegenHelper } from '../../index';
+import { CodegenHelper } from '../../src';
 
 export function CodegenHelperExample(): void {
   console.clear();

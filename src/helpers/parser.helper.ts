@@ -1,5 +1,19 @@
-import path from 'path';
 import process from 'node:process';
+import path from 'path';
+
+type GraphqlRequestBodyType = Record<'query' | 'mutation' | 'subscription', string>;
+
+enum GraphqlOperationTypeEnum {
+  QUERY = 'QUERY',
+  MUTATION = 'MUTATION',
+  SUBSCRIPTION = 'SUBSCRIPTION',
+  UNKNOWN = 'UNKNOWN',
+}
+
+interface GraphqlOperationInterface {
+  type: GraphqlOperationTypeEnum;
+  operation: string;
+}
 
 interface StackOptionInterface {
   full?: boolean;
@@ -27,8 +41,9 @@ class ParserSingleton {
 
   private constructor() {
     this.cwd = process.cwd();
-    // this.stackRegexp = /\((\/?.+:\d+:\d+)\)/gm;
-    this.stackRegexp = /\/?(\/.+:\d+:\d+)/gm;
+    // this.stackRegexp = /\/?(\/.+:\d+:\d+)/gm;
+    // this.stackRegexp = /\/?[a-zA-Z0-9@_.\/\-]+(?:\.js|\.ts):\d+:\d+/gm;
+    this.stackRegexp = new RegExp('\\/?[a-zA-Z0-9@_.\\/\\-]+(?:\\.js|\\.ts):\\d+:\\d+', 'gm');
     this.urlRegexp = new RegExp(
       [
         '^(https?:)//', // protocol
@@ -47,12 +62,31 @@ class ParserSingleton {
     return ParserSingleton.self;
   }
 
+  public graphqlBody(body: GraphqlRequestBodyType): GraphqlOperationInterface {
+    if (!!body.query) {
+      return {
+        type: GraphqlOperationTypeEnum.QUERY,
+        operation: body.query.replace(/\s+/g, ' ').trim(),
+      };
+    } else if (!!body.mutation) {
+      return {
+        type: GraphqlOperationTypeEnum.MUTATION,
+        operation: body.mutation.replace(/\s+/g, ' ').trim(),
+      };
+    } else {
+      return {
+        type: GraphqlOperationTypeEnum.SUBSCRIPTION,
+        operation: body.subscription.replace(/\s+/g, ' ').trim(),
+      };
+    }
+  }
+
   public stack(stack?: string, options?: StackOptionInterface): string[] {
     const result: string[] = [];
     let match = this.stackRegexp.exec(stack || '');
     while (match) {
       if (match[0].indexOf(this.cwd) !== -1) {
-        result.push(options?.full ? match[1] : path.relative(this.cwd, match[1]));
+        result.push(options?.full ? match[0] : path.relative(this.cwd, match[0]));
       }
       match = this.stackRegexp.exec(stack || '');
     }

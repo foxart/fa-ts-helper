@@ -26,6 +26,4 @@ export class ErrorClass extends Error {
     }
     this.stack = error.stack ? error.stack : this.stack;
   }
-
-  // }
 }

@@ -1,6 +1,6 @@
 .DS_STORE
 /.idea
 /dist
+/export
 /node_modules
-/packages
 /temp

@@ -1,4 +1,4 @@
-import { DataHelper, FilterOptionsInterface } from '../../index';
+import { DataHelper, FilterOptionsInterface } from '../../src';
 
 class EmptyClass {}
 
