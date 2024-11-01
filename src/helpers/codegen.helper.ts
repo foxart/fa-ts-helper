@@ -1,9 +1,12 @@
+import { exec as childProcessExec } from 'child_process';
 import fs from 'fs';
+import { buildClientSchema, printSchema } from 'graphql/utilities';
+import type { IntrospectionQuery } from 'graphql/utilities/getIntrospectionQuery';
 import path from 'path';
 import { promisify } from 'util';
-import { exec as childProcessExec } from 'child_process';
 import { ColorHelper } from './color.helper';
 import { SymbolHelper } from './symbol.helper';
+import { SystemHelper } from './system.helper';
 
 const exec = promisify(childProcessExec);
 const { status } = SymbolHelper;
@@ -56,14 +59,14 @@ class CodegenSingleton {
     try {
       const response = await fetch(host, init);
       if (!response.ok) {
-        this.error('fetch', host, new Error(response.statusText));
+        this.error(this.fetchJson.name, host, new Error(response.statusText));
         return null;
       }
       const json = (await response.json()) as unknown;
-      this.success('fetch', host);
+      this.success(this.fetchJson.name, host);
       return json;
-    } catch (err) {
-      this.error('fetch', host, err as Error);
+    } catch (e) {
+      this.error(this.fetchJson.name, host, e as Error);
       return null;
     }
   }
@@ -72,19 +75,28 @@ class CodegenSingleton {
     try {
       const response = await fetch(host, init);
       if (!response.ok) {
-        this.error('fetch', host, new Error(response.statusText));
+        this.error(this.fetchTxt.name, host, new Error(response.statusText));
         return null;
       }
       const text = await response.text();
-      this.success('fetch', host);
+      this.success(this.fetchTxt.name, host);
       return text;
-    } catch (err) {
-      this.error('fetch', host, err as Error);
+    } catch (e) {
+      this.error(this.fetchTxt.name, host, e as Error);
       return null;
     }
   }
 
-  public async buildProto(source: string, destination: string, file: string): Promise<void> {
+  public buildGraphql(filePath: string, introspectionQuery: IntrospectionQuery): void {
+    try {
+      SystemHelper.createFileSync(filePath, printSchema(buildClientSchema(introspectionQuery)));
+      this.success(this.buildGraphql.name, path.basename(filePath));
+    } catch (e) {
+      this.error(this.buildGraphql.name, path.basename(filePath), e as Error);
+    }
+  }
+
+  public async buildProto(source: string, destination: string, filePath: string): Promise<void> {
     try {
       fs.mkdirSync(destination, { recursive: true });
       const command = [
@@ -93,12 +105,12 @@ class CodegenSingleton {
         `--js_out=import_style=commonjs,binary:${destination}`,
         // `--csharp_out=${destination}`,
         `--ts_out=${destination}`,
-        file,
+        filePath,
       ];
       await exec(command.join(' '));
-      this.success('build', path.basename(file));
-    } catch (err) {
-      this.error('build', path.basename(file), err as Error);
+      this.success(this.buildProto.name, path.basename(filePath));
+    } catch (e) {
+      this.error(this.buildProto.name, path.basename(filePath), e as Error);
     }
   }
 }

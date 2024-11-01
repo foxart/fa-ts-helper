@@ -66,7 +66,7 @@ initConsole();
 /**
  * Parser Helper
  */
-void import('./helpers/parser-helper.example').then((module) => module.run());
+// void import('./helpers/parser-helper.example').then((module) => module.run());
 /**
  * Decorator Service
  */
