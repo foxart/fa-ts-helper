@@ -257,7 +257,11 @@ export class ConsoleClass {
   }
 
   protected processStdout(data: string): void {
-    // process.stdout.write(effect.reset);
-    process.stdout.write(data);
+    try {
+      process.stdout.write(data);
+    } catch (e) {
+      this.console.error(e);
+      this.console.log(data);
+    }
   }
 }

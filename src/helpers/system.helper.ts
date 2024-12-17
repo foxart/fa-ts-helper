@@ -1,6 +1,7 @@
-import path from 'path';
 import fs, { ObjectEncodingOptions, WriteFileOptions } from 'fs';
+import ms from 'ms';
 import process from 'node:process';
+import path from 'path';
 
 export interface PackageInfoInterface {
   name?: string;
@@ -14,6 +15,7 @@ export interface PackageInfoInterface {
 
 class SystemSingleton {
   private static self: SystemSingleton;
+
   private readonly timeMap: Map<string, [number, number]>;
 
   private constructor() {
@@ -47,11 +49,12 @@ class SystemSingleton {
     return result;
   }
 
-  public sleep(ms: number): Promise<void> {
+  public sleep(time: string): Promise<void> {
     return new Promise((resolve) => {
       setTimeout((): void => {
+        console.log(ms(time));
         resolve();
-      }, ms);
+      }, ms(time));
     });
   }
 
