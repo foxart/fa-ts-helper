@@ -28,7 +28,7 @@ function scanDirectories(directory: string, filter?: RegExp[]): void {
 
 export async function systemExample(): Promise<void> {
   const directory = './temp';
-  const data = { name: 'Иван123', password: CryptHelper.bcryptSalt() };
+  const data = { name: 'Иван123', password: CryptHelper.salt() };
   await sleep(100);
   writeFile(`${directory}/temp.json`, JSON.stringify(data, null, 4));
   scanFiles(directory);

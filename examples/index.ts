@@ -28,7 +28,7 @@ export function initConsole(): void {
     // stackFull: true,
     /** */
     dataColor: true,
-    dataSort: true,
+    // dataSort: true,
     // dataType: true,
   });
   console.log = (...args: unknown[]): void => {
@@ -58,15 +58,19 @@ initConsole();
 /**
  * Console Helper
  */
-// void import('./services/console-service.example').then((module) => module.run());
+// void import('./services/console-service.example').then((module) => module.cryptHelperExample());
+/**
+ *
+ */
+void import('./helpers/crypt-helper.example').then((module) => module.run());
 /**
  * Converter Helper
  */
-// void import('./converter-helper.example').then((module) => module.run());
+// void import('./converter-helper.example').then((module) => module.cryptHelperExample());
 /**
  * Parser Helper
  */
-// void import('./helpers/parser-helper.example').then((module) => module.run());
+// void import('./helpers/parser-helper.example').then((module) => module.cryptHelperExample());
 /**
  * Decorator Service
  */
@@ -75,8 +79,8 @@ initConsole();
 /**
  * Exception Service
  */
-// void import('./services/exception-service.example').then((module) => module.run());
+// void import('./services/exception-service.example').then((module) => module.cryptHelperExample());
 /**
  * Validator Service
  */
-// void import('./services/validator-service.example').then((module) => module.run());
+// void import('./services/validator-service.example').then((module) => module.cryptHelperExample());

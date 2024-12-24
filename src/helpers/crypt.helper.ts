@@ -1,11 +1,14 @@
 import bcrypt from 'bcryptjs';
-import CryptoJS from 'crypto-js';
-import { v4 } from 'uuid';
-
+import * as crypto from 'crypto';
+// import CryptoJS from 'crypto-js';
 type WordArray = CryptoJS.lib.WordArray;
 
 class CryptSingleton {
   private static self: CryptSingleton;
+
+  private readonly algorithm = 'aes-256-cbc';
+
+  private readonly encoding = 'base64';
 
   public static getInstance(): CryptSingleton {
     if (!CryptSingleton.self) {
@@ -14,36 +17,54 @@ class CryptSingleton {
     return CryptSingleton.self;
   }
 
-  public encrypt<T>(data: T, secret: string, throws?: boolean): T {
-    if (!data) {
-      return data;
-    }
+  public encrypt(data: string, secret: string, throws = false): string {
     try {
-      const encJson = CryptoJS.AES.encrypt(JSON.stringify(data), secret).toString();
-      return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(encJson)) as T;
+      // const iv = crypto.randomBytes(16);
+      // const key = crypto.scryptSync(secret, 'salt', 32);
+      // const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+      // let encrypted = cipher.update(data, 'utf8', 'base64');
+      // encrypted += cipher.final('base64');
+      // return iv.toString('base64') + ':' + encrypted;
+      const key = crypto.createHash('sha256').update(secret).digest();
+      const iv = Buffer.from(Array(16).fill(0));
+      const cipher = crypto.createCipheriv(this.algorithm, key, iv);
+      let encrypted = cipher.update(data, 'utf8', this.encoding);
+      encrypted += cipher.final(this.encoding);
+      return encrypted;
     } catch (e) {
-      if (!!throws) {
-        (e as Error).name = (e as Error).message;
-        (e as Error).message = `Encryption failed for: ${data as string}`;
+      (e as Error).name = (e as Error).message;
+      (e as Error).message = `Encryption failed for: ${data}`;
+      if (throws) {
         throw e;
+      } else {
+        console.log(e);
       }
       return data;
     }
   }
 
-  public decrypt<T>(data: T, secret: string, throws?: boolean): T {
-    if (!data) {
-      return data;
-    }
+  public decrypt(data: string, secret: string, throws = false): string {
     try {
-      const decData = CryptoJS.enc.Base64.parse(data as string).toString(CryptoJS.enc.Utf8);
-      const bytes = CryptoJS.AES.decrypt(decData, secret).toString(CryptoJS.enc.Utf8);
-      return JSON.parse(bytes) as T;
+      // const [ivString, encryptedData] = data.split(':');
+      // const iv = Buffer.from(ivString, 'base64');
+      // const key = crypto.scryptSync(secret, 'salt', 32);
+      // const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+      // let decrypted = decipher.update(encryptedData, 'base64', 'utf8');
+      // decrypted += decipher.final('utf8');
+      // return decrypted;
+      const key = crypto.createHash('sha256').update(secret).digest();
+      const iv = Buffer.from(Array(16).fill(0));
+      const decipher = crypto.createDecipheriv(this.algorithm, key, iv);
+      let decrypted = decipher.update(data, this.encoding, 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
     } catch (e) {
-      if (!!throws) {
-        (e as Error).name = (e as Error).message;
-        (e as Error).message = `Decryption failed for: ${data as string}`;
+      (e as Error).name = (e as Error).message;
+      (e as Error).message = `Decryption failed for: ${data}`;
+      if (throws) {
         throw e;
+      } else {
+        console.log(e);
       }
       return data;
     }
@@ -51,78 +72,32 @@ class CryptSingleton {
 
   public md5(message: string, key?: string): string {
     if (key) {
-      return this.wordArrayToString(CryptoJS.HmacMD5(message, key));
+      return crypto.createHmac('md5', key).update(message).digest('hex');
     }
-    return this.wordArrayToString(CryptoJS.MD5(message));
+    return crypto.createHash('md5').update(message).digest('hex');
   }
 
-  public sha1(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA1(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA1(message));
-  }
-
-  public sha224(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA224(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA224(message));
-  }
-
-  public sha256(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA256(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA256(message));
-  }
-
-  public sha3(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA3(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA3(message));
-  }
-
-  public sha384(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA384(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA384(message));
-  }
-
-  public sha512(message: string, key?: string): string {
-    if (key) {
-      return this.wordArrayToString(CryptoJS.HmacSHA512(message, key));
-    }
-    return this.wordArrayToString(CryptoJS.SHA512(message));
-  }
-
-  public bcryptPassword(password: string, rounds?: number | string): string {
+  public cryptPassword(password: string, rounds = 10): string {
     return bcrypt.hashSync(password, rounds);
   }
 
-  public bcryptCompare(password: string, hash: string): boolean {
+  public comparePassportWithHash(password: string, hash: string): boolean {
     return bcrypt.compareSync(password, hash);
   }
 
-  public bcryptSalt(rounds?: number): string {
-    return bcrypt.genSaltSync(rounds ? rounds : 10);
+  public salt(rounds = 10): string {
+    return bcrypt.genSaltSync(rounds);
   }
 
-  public bcryptInput(input: string): { algorithm: string; cost: string; salt: string; hash: string } {
+  public parseHash(input: string): { algorithm: string; cost: string; salt: string; hash: string } {
     const [, algorithm, cost, saltHash] = input.split('$');
-    const salt = saltHash.substring(0, 22);
-    const hash = saltHash.substring(22, 22 + 31);
-    return {
-      algorithm,
-      cost,
-      salt,
-      hash,
-    };
+    const [salt, hash] = [saltHash.slice(0, 22), saltHash.slice(22)];
+    return { algorithm, cost, salt, hash };
   }
-  public v4(): string {
-    return v4();
+
+  public random(nBytes = 16): string {
+    // return CryptoJS.lib.WordArray.random(nBytes ? nBytes : 16).toString();
+    return crypto.randomBytes(nBytes).toString('hex');
   }
 
   private wordArrayToString(data: WordArray): string {
