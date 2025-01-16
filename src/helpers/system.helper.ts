@@ -52,7 +52,6 @@ class SystemSingleton {
   public sleep(time: string): Promise<void> {
     return new Promise((resolve) => {
       setTimeout((): void => {
-        console.log(ms(time));
         resolve();
       }, ms(time));
     });

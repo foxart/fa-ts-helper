@@ -1,13 +1,13 @@
-import { CryptHelper } from '../../src';
+import { CryptClass } from '../../src';
+
+const CryptHelper = new CryptClass('123');
 
 function encryptDecrypt(): void {
   const data = 'Иван';
-  const secret = '123';
-  const encrypted = CryptHelper.encrypt(data, secret);
-  const decrypted = CryptHelper.decrypt(encrypted, secret);
+  const encrypted = CryptHelper.encrypt(data);
+  const decrypted = CryptHelper.decrypt(encrypted);
   console.log(encryptDecrypt.name, {
     data,
-    secret,
     encrypted,
     decrypted,
   });
@@ -16,11 +16,11 @@ function encryptDecrypt(): void {
 
 function comparePassport(): void {
   const password = '123';
-  const hash = CryptHelper.cryptPassword(password);
+  const hash = CryptHelper.passwordCrypt(password);
   console.log(comparePassport.name, {
     password,
     hash,
-    valid: CryptHelper.comparePassportWithHash(password, hash),
+    valid: CryptHelper.passwordHashCompare(password, hash),
   });
 }
 

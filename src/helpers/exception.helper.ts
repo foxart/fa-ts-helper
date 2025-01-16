@@ -1,34 +1,14 @@
-import * as mongoose from 'mongoose';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import * as mongoose from 'mongoose';
 import { ErrorClass, ErrorClassInterface } from '../classes/error.class';
-
-export enum ExceptionTypeEnum {
-  HTTP_EXCEPTION = 'HttpException',
-  MONGO_ERROR = 'MongoErrorException',
-  ERROR_CLASS = 'ErrorClassException',
-  ERROR = 'ErrorException',
-  UNKNOWN = 'UnknownException',
-}
+import {
+  ExceptionResponseContextEnum,
+  ExceptionResponseInterface,
+  ExceptionResponseTypeEnum,
+} from '../declarations/exception-response.interface';
 
 export interface ExceptionInterface extends ErrorClassInterface {
-  type: ExceptionTypeEnum;
-}
-
-export enum ExceptionResponseContextEnum {
-  'HTTP' = 'Http',
-  'GRAPHQL' = 'Graphql',
-  'RPC' = 'Rpc',
-  'WS' = 'WebSocket',
-  'UNKNOWN' = 'Unknown',
-}
-
-export interface ExceptionResponseInterface extends ErrorClassInterface {
-  context: ExceptionResponseContextEnum;
-  type: ExceptionTypeEnum;
-  trace: string[];
-  timestamp: string;
-  metadata: unknown;
-  payload: Record<string, unknown>;
+  type: ExceptionResponseTypeEnum;
 }
 
 class ExceptionSingleton {
@@ -72,7 +52,7 @@ class ExceptionSingleton {
       'timestamp' in exception &&
       // Enum checks
       Object.values(ExceptionResponseContextEnum).includes(exception.context as ExceptionResponseContextEnum) &&
-      Object.values(ExceptionTypeEnum).includes(exception.type as ExceptionTypeEnum) &&
+      Object.values(ExceptionResponseTypeEnum).includes(exception.type as ExceptionResponseTypeEnum) &&
       // Type checks
       typeof exception.name === 'string' &&
       typeof exception.message === 'string' &&
@@ -95,7 +75,7 @@ class ExceptionSingleton {
       // details: typeof response === 'object' ? response : exception.message,
       message: exception.message,
       details: typeof response === 'object' ? response : undefined,
-      type: ExceptionTypeEnum.HTTP_EXCEPTION,
+      type: ExceptionResponseTypeEnum.HTTP_EXCEPTION,
       status: exception.getStatus(),
       stack: exception.stack,
     };
@@ -123,7 +103,7 @@ class ExceptionSingleton {
       name: exception.name,
       message: exception.message,
       details: details,
-      type: ExceptionTypeEnum.MONGO_ERROR,
+      type: ExceptionResponseTypeEnum.MONGO_ERROR,
       status: HttpStatus.BAD_REQUEST,
       stack: exception.stack,
     };
@@ -134,7 +114,7 @@ class ExceptionSingleton {
       name: exception.name,
       message: exception.message,
       details: exception.details,
-      type: ExceptionTypeEnum.ERROR_CLASS,
+      type: ExceptionResponseTypeEnum.ERROR_CLASS,
       status: exception.status,
       stack: exception.stack,
     };
@@ -145,7 +125,7 @@ class ExceptionSingleton {
       name: exception.name,
       message: exception.message,
       details: undefined,
-      type: ExceptionTypeEnum.ERROR,
+      type: ExceptionResponseTypeEnum.ERROR,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       stack: exception.stack,
     };
@@ -156,7 +136,7 @@ class ExceptionSingleton {
       name: ExceptionSingleton.name,
       message: typeof exception === 'string' ? exception : '',
       details: typeof exception === 'object' && exception !== null ? exception : undefined,
-      type: ExceptionTypeEnum.UNKNOWN,
+      type: ExceptionResponseTypeEnum.UNKNOWN,
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       stack: new Error().stack,
     };

@@ -1,4 +1,4 @@
-import { ParserHelper } from '../../src/helpers/parser.helper';
+import { ParserHelper } from '../../src';
 
 export function run(): void {
   const stack1 =
